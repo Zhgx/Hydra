@@ -28,10 +28,14 @@ class HydraArgParse():
         #     help="run auto max lun test")
         self.parser.add_argument(
             '-s',
-            '--string',
             action="store",
-            dest="unique_str",
+            dest="uniq_str",
             help="The unique string for this test, affects related naming")
+        self.parser.add_argument(
+            '-id',
+            action="store",
+            dest="id_range",
+            help='The ID range of test, split with ","')
 
     def _storage(self, unique_id, unique_str):
         '''
@@ -73,13 +77,26 @@ class HydraArgParse():
     def run(self):
         args = self.parser.parse_args()
         '''
-        unique_str: The unique string for this test, affects related naming
+        uniq_str: The unique string for this test, affects related naming
         '''
-        if args.unique_str:
-            for i in range(83, 85):
+        if args.uniq_str:
+            if args.id_range:
+                id_range = args.id_range.split(',')
+                if len(id_range) == 2:
+                    id_start, id_end = int(id_range[0]), int(id_range[1])
+                else:
+                    self.parser.print_help()
+                    sys.exit()
+            else:
+                self.parser.print_help()
+                sys.exit()
+
+            for i in range(id_start, id_end):
+                print(f'\n======*** Start working for ID {i} ***======')
                 self._storage(i, args.unique_str)
                 self._vplx_drbd(i, args.unique_str)
                 self._vplx_crm(i, args.unique_str)
+                time.sleep(1.5)
                 self._host_test(i)
         else:
             self.parser.print_help()

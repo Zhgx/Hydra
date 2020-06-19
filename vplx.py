@@ -14,7 +14,7 @@ user = 'root'
 password = 'password'
 timeout = 3
 
-re_find_id_dev = r'''\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'''
+
 
 target_iqn = "iqn.2020-06.com.example:test-max-lun"
 initiator_iqn = "iqn.1993-08.org.debian:01:885240c2d86c"
@@ -28,41 +28,36 @@ class VplxDrbd(object):
 
     def __init__(self, unique_id, unique_name):
         self.ssh = connect.ConnSSH(host, port, user, password, timeout)
-        self.lun_id = unique_id
+        self.id = unique_id
         self.res_name = f'res_{unique_name}_{unique_id}'
         self.blk_dev_name = None
         self.drbd_device_name = f'drbd{unique_id}'
 
-    # def _find_blk_dev(self, lun_id, ls_result):
+    # def _find_blk_dev(self, id, ls_result):
     #     '''
-    #     Use re to get the blk_dev_name through lun_id
+    #     Use re to get the blk_dev_name through id
     #     '''
     #     re_vplx_id_path = re.compile(
     #         r'''\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})''')
     #     stor_result = re_vplx_id_path.findall(ls_result)
     #     if stor_result:
     #         dict_stor = dict(stor_result)
-    #         if str(lun_id) in dict_stor.keys():
-    #             blk_dev_name = dict_stor[str(lun_id)]
+    #         if str(id) in dict_stor.keys():
+    #             blk_dev_name = dict_stor[str(id)]
     #             return blk_dev_name
 
     def discover_new_lun(self):
         '''
         Scan and find the disk from NetApp
         '''
-        self.ssh.excute_command('/usr/bin/rescan-scsi-bus.sh')
-        time.sleep(1)
-        ls_cmd = self.ssh.excute_command('lsscsi')
-        if ls_cmd:
-            self.blk_dev_name = s.find_device(
-                re_find_id_dev, self.lun_id, ls_cmd.decode('utf-8'))
-            if self.blk_dev_name:
-                print(f'Query to map new LUN {self.lun_id} succeeded')
-                return True
-            else:
-                s.pe('LUN does not exist')
+        if self.ssh.excute_command('/usr/bin/rescan-scsi-bus.sh'):
+            lsscsi_result = self.ssh.excute_command('lsscsi')
         else:
-            s.pe('lsscsi check failed')
+            s.pe(f'Scan new LUN failed on NetApp')
+        re_find_id_dev = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
+        self.blk_dev_name = s.GetDiskPath(self.id, re_find_id_dev, lsscsi_result, 'NetApp').explore_disk()
+        print(f'Find device {self.blk_dev_name} for LUN id {self.id}')
+            
 
     def prepare_config_file(self):
         '''
@@ -78,13 +73,26 @@ class VplxDrbd(object):
                    r'\ \ \ \}',
                    r'}']
 
-        for echo_command in context:
-            echo_result = self.ssh.excute_command(
-                f'echo {echo_command} >> /etc/drbd.d/{self.res_name}.res')
+        # for echo_command in context:
+        #     echo_result = self.ssh.excute_command(
+        #         f'echo {echo_command} >> /etc/drbd.d/{self.res_name}.res')
+        #     if echo_result is True:
+        #         continue
+        #     else:
+        #         s.pe('fail to prepare drbd config file..')
+
+        for i in range(len(context)):
+            if i == 0:
+                echo_result = self.ssh.excute_command(
+                    f'echo {context[i]} > /etc/drbd.d/{self.res_name}.res')
+            else:
+                echo_result = self.ssh.excute_command(
+                    f'echo {context[i]} >> /etc/drbd.d/{self.res_name}.res')
             if echo_result is True:
                 continue
             else:
                 s.pe('fail to prepare drbd config file..')
+        print(f'Create DRBD config file "{self.res_name}.res" done')
 
     def _drbd_init(self):
         '''
@@ -174,7 +182,7 @@ class VplxCrm(VplxDrbd):
         '''
         crm_create_cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{self.target_iqn}" \
-            implementation=lio-t lun={self.lun_id} path="/dev/{self.drbd_device_name}"\
+            implementation=lio-t lun={self.id} path="/dev/{self.drbd_device_name}"\
             allowed_initiators="{self.initiator_iqn}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
 
         if self.ssh.excute_command(crm_create_cmd) is True:

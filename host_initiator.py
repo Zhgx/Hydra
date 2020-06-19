@@ -13,7 +13,6 @@ user = 'root'
 password = 'password'
 timeout = 3
 
-re_find_id_dev = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
 mount_point = '/mnt'
 
 
@@ -75,20 +74,12 @@ class HostTest(object):
          Scan and get the device path from VersaPLX
         '''
         if self.ssh.excute_command('/usr/bin/rescan-scsi-bus.sh'):
+            time.sleep(0.5)
             lsscsi_result = self.ssh.excute_command('lsscsi')
-            if lsscsi_result and lsscsi_result is not True:
-                dev_path = s.find_device(
-                    re_find_id_dev, self.id, lsscsi_result.decode('utf-8'))
-                if dev_path:
-                    return dev_path
-                else:
-                    s.pe("did not find the new LUN from VersaPLX")
-
-            else:
-                s.pe("command 'lsscsi' failed")
-
         else:
-            s.pe('scan failed')
+            s.pe(f'Scan new LUN failed on VersaPLX')
+        re_find_id_dev = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
+        return s.GetDiskPath(self.id, re_find_id_dev, lsscsi_result, 'VersaPLX').explore_disk()
 
     def _judge_format(self, arg_bytes):
         '''
@@ -119,11 +110,14 @@ class HostTest(object):
         '''
         Use re to get the speed of test
         '''
-        re_performance = re.compile(r'.*s, ([1-9.]* [A-Z]B/s)')
+        re_performance = re.compile(r'.*s, ([0-9.]* [A-Z]B/s)')
         string = arg_str.decode('utf-8')
         re_result = re_performance.findall(string)
         perf = re_result
-        return perf[0]
+        if perf:
+            return perf[0]
+        else:
+            s.pe('Can not get test result')
 
     def write_test(self):
         '''
@@ -131,6 +125,7 @@ class HostTest(object):
         '''
         test_cmd = f'dd if=/dev/zero of={mount_point}/t.dat bs=512k count=16'
         test_result = self.ssh.excute_command(test_cmd)
+        time.sleep(0.5)
         if test_result:
             return self._get_dd_perf(test_result)
 
