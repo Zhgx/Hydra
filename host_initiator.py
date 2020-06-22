@@ -149,7 +149,7 @@ class HostTest(object):
         print(f'read speed: {read_perf}')
 
     def start_test(self):
-        if not self.find_session:
+        if not self.find_session():
             self.iscsi_login()
         dev_name = self.explore_disk()
         mount_status = self.format_mount(dev_name)

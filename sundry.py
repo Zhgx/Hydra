@@ -3,10 +3,12 @@
 import sys
 import re
 
+
 def pe(print_str):
     'print and exit'
     print(print_str)
     sys.exit()
+
 
 class GetDiskPath(object):
     def __init__(self, lun_id, re_string, lsscsi_result, str_target):
@@ -40,5 +42,3 @@ class GetDiskPath(object):
                 pe(f'Did not find the new LUN from {self.target}')
         else:
             pe(f'Command "lsscsi" failed on {self.target}')
-
-        

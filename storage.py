@@ -44,9 +44,23 @@ class Storage:
         pass
 
 
+class StorageDel(object):
+    def __init__(self):
+        self.telnet_conn = connect.ConnTelnet(
+            host, port, username, password, timeout)
+
+    def lun_unmap(self, lun_name):
+        unmap = f'lun unmap {lun_name} hydra'
+        self.telnet_conn.excute_command(unmap)
+
+    def lun_destory(self, lun_name):
+        destory_cmd = f'lun destroy {lun_name}'
+        self.telnet_conn.excute_command(destory_cmd)
+
+
 if __name__ == '__main__':
-    # test_stor = Storage('18', 'luntest')
-    # test_stor.lun_create()
-    # test_stor.lun_map()
-    # test_stor.telnet_conn.close()
-    pass
+    test_stor = Storage('8', 'test')
+    test_stor.lun_create()
+    test_stor.lun_map()
+    test_stor.telnet_conn.close()
+    # pass

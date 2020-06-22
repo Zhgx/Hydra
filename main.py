@@ -93,9 +93,9 @@ class HydraArgParse():
 
             for i in range(id_start, id_end):
                 print(f'\n======*** Start working for ID {i} ***======')
-                self._storage(i, args.unique_str)
-                self._vplx_drbd(i, args.unique_str)
-                self._vplx_crm(i, args.unique_str)
+                self._storage(i, args.uniq_str)
+                self._vplx_drbd(i, args.uniq_str)
+                self._vplx_crm(i, args.uniq_str)
                 time.sleep(1.5)
                 self._host_test(i)
         else:

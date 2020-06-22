@@ -15,7 +15,6 @@ password = 'password'
 timeout = 3
 
 
-
 target_iqn = "iqn.2020-06.com.example:test-max-lun"
 initiator_iqn = "iqn.1993-08.org.debian:01:885240c2d86c"
 target_name = 't_test'
@@ -55,9 +54,9 @@ class VplxDrbd(object):
         else:
             s.pe(f'Scan new LUN failed on NetApp')
         re_find_id_dev = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-        self.blk_dev_name = s.GetDiskPath(self.id, re_find_id_dev, lsscsi_result, 'NetApp').explore_disk()
+        self.blk_dev_name = s.GetDiskPath(
+            self.id, re_find_id_dev, lsscsi_result, 'NetApp').explore_disk()
         print(f'Find device {self.blk_dev_name} for LUN id {self.id}')
-            
 
     def prepare_config_file(self):
         '''
@@ -238,10 +237,124 @@ class VplxCrm(VplxDrbd):
                 if self._crm_start():
                     return True
 
-    def crm_verify(self):
-        pass
+    def _crm_verify(self):
+        verify_result = self.ssh.excute_command('crm res show')
+        re_show = re.compile(f'({self.res_name})\s.*:\s(\w*)')
+        if verify_result:
+            re_show_result = re_show.findall(verify_result.decode('utf-8'))
+            dict_show_result = dict(re_show_result)
+            if self.res_name in dict_show_result.keys():
+                crm_status = dict_show_result[self.res_name]
+                if crm_status == 'Started':
+                    return True
+                else:
+                    return False
+        else:
+            s.pe('crm show failed')
+
+    def crm_status(self):
+        n = 0
+        while n < 10:
+            n += 1
+            if self._crm_verify():
+                print(f'{self.res_name} is Started')
+                return True
+            else:
+                print(f'{self.res_name} is Started, Wait a moment...')
+                time.sleep(1.5)
+        else:
+            return False
+
+
+class VplxDel(object):
+    def __init__(self, unique_name, unique_id=r'\w*'):
+        self.ssh = connect.ConnSSH(host, port, user, password, timeout)
+        self.unique_name = unique_name
+        self.unique_id = unique_id
+
+    def crm_show(self):
+        show_result = self.ssh.excute_command('crm res show')
+        re_showstr = re.compile(f'(res_{self.unique_name}_{self.unique_id})\s')
+        re_show_result = re_showstr.findall(str(show_result, encoding='utf-8'))
+        if re_show_result:
+            return re_show_result
+        else:
+            s.pe('')
+
+    def _crm_verify(self, res_name):
+        verify_result = self.ssh.excute_command('crm res show')
+        re_show = re.compile(f'({res_name})\s.*:\s(\w*)')
+        if verify_result:
+            re_show_result = re_show.findall(verify_result.decode('utf-8'))
+            dict_show_result = dict(re_show_result)
+            if res_name in dict_show_result.keys():
+                crm_status = dict_show_result[res_name]
+                if crm_status == 'Stopped':
+                    return True
+                else:
+                    return False
+        else:
+            s.pe('crm show failed')
+
+    def crm_status(self, res_name):
+        n = 0
+        while n < 10:
+            n += 1
+            if self._crm_verify(res_name):
+                print(f'{res_name} is Stopped')
+                return True
+            else:
+                print(f'{res_name} is Stopped, Wait a moment...')
+                time.sleep(1.5)
+        else:
+            return False
+
+    def _crm_stop(self, res_name):
+        crm_stop_cmd = (f'crm res stop {res_name}')
+        if self.ssh.excute_command(crm_stop_cmd) is True:
+            if self.crm_status(res_name):
+                return True
+        else:
+            s.pe('')  
+
+    def _crm_del(self, res_name):
+        crm_del_cmd = f'crm cof delete {res_name}'
+        del_result = self.ssh.excute_command(crm_del_cmd)  # 正则
+        if del_result:
+            re_delstr = re.compile('')
+            re_result = re_delstr.findall(str(del_result, encoding='utf-8'))
+            if re_result:
+                return True
+            else:
+                s.pe('')
+
+    def _drbd_down(self, res_name):
+        drbd_down_cmd = f'drbdadm down {res_name}'
+        self.ssh.excute_command(drbd_down_cmd)
+
+    def _drbd_del(self, res_name):
+        drbd_del_cmd = f'rm /etc/drbd.d/{res_name}.res'
+        if self.ssh.excute_command(drbd_del_cmd) is True:
+            return True
+
+    def start_del(self, res_name):
+        if self._crm_stop(res_name):
+            if self._crm_del(res_name):
+                if self._drbd_down(res_name):
+                    if self._drbd_del(res_name):
+                        return True
+
+    def vplx_del(self):
+        for res_name in self.crm_show():
+            self.start_del(res_name)
 
 
 if __name__ == '__main__':
-    test_crm = VplxCrm('72', 'luntest')
-    test_crm.discover_new_lun()
+    # test_crm = VplxCrm('8', 'test')
+    # test_crm.discover_new_lun()
+    # test_crm.prepare_config_file()
+    # test_crm.drbd_cfg()
+    # test_crm.drbd_status_verify()
+    # test_crm.crm_cfg()
+    # test_crm.ssh.close()
+    pass
