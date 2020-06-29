@@ -20,12 +20,11 @@ class HydraArgParse():
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
                                               description='Test max lun number of VersaRAID-SDS')
-        # self.parser.add_argument(
-        #     '-r',
-        #     '--run',
-        #     action="store_true",
-        #     dest="run_test",
-        #     help="run auto max lun test")
+        self.parser.add_argument(
+            '-d',
+            action="store_true",
+            dest="delete",
+            help="to confirm delete lun")
         self.parser.add_argument(
             '-s',
             action="store",
@@ -79,28 +78,49 @@ class HydraArgParse():
         '''
         uniq_str: The unique string for this test, affects related naming
         '''
-        if args.uniq_str:
-            if args.id_range:
-                id_range = args.id_range.split(',')
-                if len(id_range) == 2:
-                    id_start, id_end = int(id_range[0]), int(id_range[1])
+        if not args.delete:
+            if args.uniq_str:
+                if args.id_range:
+                    id_range = args.id_range.split(',')
+                    if len(id_range) == 2:
+                        id_start, id_end = int(id_range[0]), int(id_range[1])
+                    else:
+                        self.parser.print_help()
+                        sys.exit()
                 else:
                     self.parser.print_help()
                     sys.exit()
+
+                for i in range(id_start, id_end):
+                    print(f'\n======*** Start working for ID {i} ***======')
+                    self._storage(i, args.uniq_str)
+                    self._vplx_drbd(i, args.uniq_str)
+                    self._vplx_crm(i, args.uniq_str)
+                    time.sleep(1.5)
+                    self._host_test(i)
+            else:
+                self.parser.print_help()
+        elif args.delete:
+            if args.uniq_str:
+                if args.id_range:
+                    v_del=vplx.VplxCrm(args.id_range,args.uniq_str)
+                    if ',' in args.id_range:
+                        id_range = args.id_range.split(',')
+                        id_start, id_end = int(id_range[0]), int(id_range[1])
+                        list_id=[id_start,id_end]
+                        v_del.vlpx_del(args.uniq_str,list_id)
+                        
+                    else:
+                        list_id=[]
+                        list_id.append(args.id_range)
+                        v_del.vlpx_del(args.uniq_str,list_id)
+                        
+                else:
+                    v_del=vplx.VplxCrm(args.id_range,args.uniq_str)
+                    v_del.vlpx_del(args.uniq_str)                
             else:
                 self.parser.print_help()
                 sys.exit()
-
-            for i in range(id_start, id_end):
-                print(f'\n======*** Start working for ID {i} ***======')
-                self._storage(i, args.uniq_str)
-                self._vplx_drbd(i, args.uniq_str)
-                self._vplx_crm(i, args.uniq_str)
-                time.sleep(1.5)
-                self._host_test(i)
-        else:
-            self.parser.print_help()
-
 
 if __name__ == '__main__':
     w = HydraArgParse()
