@@ -25,34 +25,23 @@ class HostTest(object):
         self.ssh = c.ConnSSH(host, port, user, password, timeout)
         self.id = unique_id
 
-    def iscsi_login(self):
+    def initiator_login(self):
         '''
         Discover iSCSI and login to session
         '''
         login_cmd = f'iscsiadm -m discovery -t st -p {vplx_ip} -l'
         login_result = self.ssh.excute_command(login_cmd)
-        if login_result:
-            login_result = login_result.decode('utf-8')
-            re_login = re.compile(
-                f'Login to.*portal: ({vplx_ip}).*successful')
-            re_result = re_login.findall(login_result)
-            if re_result:
-                return True
-            else:
-                s.pe(f'iscsi login to {vplx_ip} failed')
+        if s.iscsi_login(vplx_ip, login_result):
+            return True
 
-    def find_session(self):
+    def initiator_session(self):
         '''
         Execute the command and check up the status of session
         '''
         session_cmd = 'iscsiadm -m session'
         session_result = self.ssh.excute_command(session_cmd)
-        if session_result:
-            session_result = session_result.decode('utf-8')
-            re_session = re.compile(f'tcp:.*({vplx_ip}):.*')
-            re_result = re_session.findall(session_result)
-            if re_result:
-                return True
+        if s.find_session(vplx_ip, session_result):
+            return True
 
     # def _find_device(self, command_result):
     #     '''
@@ -149,8 +138,8 @@ class HostTest(object):
         print(f'read speed: {read_perf}')
 
     def start_test(self):
-        if not self.find_session():
-            self.iscsi_login()
+        if not self.initiator_session():
+            self.initiator_login()
         dev_name = self.explore_disk()
         mount_status = self.format_mount(dev_name)
         if mount_status:
@@ -158,11 +147,25 @@ class HostTest(object):
         else:
             s.pe(f'Device {dev_name} mount failed')
 
+    def initiator_logout(self):
+        logout_cmd = 'iscsiadm -m node -T iqn.2020-06.com.example:test-max-lun --logout'
+        logout_result = self.ssh.excute_command(logout_cmd)
+        if s.iscsi_logout(vplx_ip, logout_result):
+            return True
+
+    def retry_login(self):
+        if not self.initiator_session():
+            self.initiator_login()
+        elif self.initiator_session():
+            if self.initiator_logout():
+                self.initiator_login()
+
 
 if __name__ == "__main__":
     test = HostTest(21)
-    command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
-    [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda 
-    [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb 
-    [33:0:0:21]  disk    LIO-ORG  res_luntest_21   4.0   /dev/sdc '''
-    print(command_result)
+    test.retry_login()
+    # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
+    # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda
+    # [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb
+    # [33:0:0:21]  disk    LIO-ORG  res_luntest_21   4.0   /dev/sdc '''
+    # print(command_result)

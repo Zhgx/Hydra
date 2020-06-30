@@ -11,7 +11,6 @@ class ConnSSH(object):
     '''
     ssh connect to VersaPLX
     '''
-
     def __init__(self, host, port, username, password, timeout):
         self._host = host
         self._port = port
@@ -19,7 +18,7 @@ class ConnSSH(object):
         self._username = username
         self._password = password
         self.SSHConnection = None
-        self._connect()
+        self.ssh_connect()
 
     def _connect(self):
         try:
@@ -47,6 +46,11 @@ class ConnSSH(object):
         if data == b'':
             return True
 
+    def ssh_connect(self):
+        self._connect()
+        if not self.SSHConnection:
+            self._connect()
+
     def close(self):
         self.SSHConnection.close()
 
@@ -63,11 +67,11 @@ class ConnTelnet(object):
         self._password = password
         self._timeout = timeout
         self.telnet = telnetlib.Telnet()
-        self._connect()
+        self.telnet_connect()
 
     def _connect(self):
         try:
-            self.telnet.open(self._host, self._port)
+            self.telnet.open(self._host, self._port, self._timeout)
             self.telnet.read_until(b'Username:', timeout=1)
             self.telnet.write(self._username.encode() + b'\n')
 
@@ -82,6 +86,18 @@ class ConnTelnet(object):
         self.telnet.write(cmd.encode().strip() + b'\r')
         time.sleep(0.25)
         rely = self.telnet.read_very_eager().decode()
+        return rely
+
+    def _connect_retry(self):
+        if self.telnet:
+            return True
+        else:
+            self._connect()
+
+    def telnet_connect(self):
+        self._connect()
+        if not self._connect():
+            self._connect_retry()
 
     def close(self):
         self.telnet.close()

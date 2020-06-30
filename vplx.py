@@ -14,7 +14,7 @@ user = 'root'
 password = 'password'
 timeout = 3
 
-
+Netapp_ip = '10.203.1.231'
 target_iqn = "iqn.2020-06.com.example:test-max-lun"
 initiator_iqn = "iqn.1993-08.org.debian:01:885240c2d86c"
 target_name = 't_test'
@@ -57,6 +57,11 @@ class VplxDrbd(object):
         self.blk_dev_name = s.GetDiskPath(
             self.id, re_find_id_dev, lsscsi_result, 'NetApp').explore_disk()
         print(f'Find device {self.blk_dev_name} for LUN id {self.id}')
+
+    def start_discover(self):
+        if not self.vplx_session():
+            self.vplx_login()
+        self.discover_new_lun()
 
     def prepare_config_file(self):
         '''
@@ -163,6 +168,24 @@ class VplxDrbd(object):
                     s.pe(f'{self.res_name} DRBD verification failed')
             else:
                 s.pe(f'{self.res_name} DRBD does not exist')
+
+    def vplx_login(self):
+        login_cmd = f'iscsiadm -m discovery -t st -p {Netapp_ip} -l'
+        login_result = self.ssh.excute_command(login_cmd)
+        if s.iscsi_login(Netapp_ip, login_result):
+            return True
+
+    def vplx_logout(self):
+        logout_cmd = ' iscsiadm -m node -T iqn.1992-08.com.netapp:sn.84305553 --logout'
+        logout_result = self.ssh.excute_command(logout_cmd)
+        if s.iscsi_logout(Netapp_ip, logout_result):
+            return True
+
+    def vplx_session(self):
+        session_cmd = 'iscsiadm -m session'
+        session_result = self.ssh.excute_command(session_cmd)
+        if s.find_session(Netapp_ip, session_result):
+            return True
 
 
 class VplxCrm(VplxDrbd):
@@ -305,11 +328,11 @@ class VplxCrm(VplxDrbd):
 
     def _crm_del(self, res_name):
         crm_del_cmd = f'crm cof delete {res_name}'
-        del_result = self.ssh.excute_command(crm_del_cmd)  # 正则
+        del_result = self.ssh.excute_command(crm_del_cmd)
         if del_result:
-            re_delstr = re.compile('')
+            re_delstr = re.compile('deleted')
             re_result = re_delstr.findall(str(del_result, encoding='utf-8'))
-            if re_result:
+            if len(re_result) == 2:
                 return True
             else:
                 s.pe('crm cof delete failed')
@@ -335,40 +358,45 @@ class VplxCrm(VplxDrbd):
                     if self._drbd_del(res_name):
                         return True
 
-    def vplx_show(self, unique_str, unique_id=''):
+    def range_uid(self, unique_str, unique_id, res_show_result):
+        list_res = []
+        for i in range(unique_id[0], unique_id[1]+1):
+            res_name = f'res_{unique_str}_{i}'
+            re_res_show = re.compile(res_name)
+            re_res_name = re_res_show.findall(
+                res_show_result.decode('utf-8'))
+            if re_res_name:
+                list_res.append(re_res_name[0])
+                print(f'{res_name} already found')
+            else:
+                print(f'{res_name} not found')
+        return list_res
+
+    def one_uid(self, unique_str, unique_id, res_show_result):
+        res_name = f'res_{unique_str}_{unique_id[0]}'
+        re_res_show = re.compile(res_name)
+        re_res_name = re_res_show.findall(
+            res_show_result.decode('utf-8'))
+        if re_res_name:
+            print(f'{re_res_name} already found')
+            return re_res_name
+        else:
+            s.pe(f'{res_name} not found')
+
+    def vplx_show(self, unique_str, unique_id):
         res_show_result = self.ssh.excute_command('crm res show')
         if res_show_result:
             re_show = re.compile(f'res_{unique_str}_\w*')
             re_result = re_show.findall(res_show_result.decode('utf-8'))
             if unique_id:
                 if len(unique_id) == 2:
-                    list_res = []
-                    for i in range(unique_id[0], unique_id[1]+1):
-                        res_name = f'res_{unique_str}_{i}'
-                        re_res_show = re.compile(res_name)
-                        re_res_name = re_res_show.findall(
-                            res_show_result.decode('utf-8'))
-                        if re_res_name:
-                            list_res.append(re_res_name[0])
-                            print(f'{res_name} already found')
-                        else:
-                            print(f'{res_name} not found')
-                    return list_res
+                    return self.range_uid(unique_str, unique_id, res_show_result)
                 elif len(unique_id) == 1:
-                    res_name = f'res_{unique_str}_{unique_id[0]}'
-                    re_res_show = re.compile(res_name)
-                    re_res_name = re_res_show.findall(
-                        res_show_result.decode('utf-8'))
-                    if re_res_name:
-                        print(f'{re_res_name} already found')
-                        return re_res_name
-                    else:
-                        s.pe(f'{res_name} not found')
+                    self.one_uid(unique_str, unique_id, res_show_result)
                 else:
                     s.pe('please enter a valid value')
-
             else:
-                print(re_result)
+                print(f'{re_result} is found')
                 return re_result
 
     def del_comfirm(self, del_result):
@@ -379,10 +407,16 @@ class VplxCrm(VplxDrbd):
         else:
             s.pe('Cancel succeed')
 
-    def vlpx_del(self, unique_str,unique_id=''):
+    def vlpx_del(self, unique_str, unique_id):
         del_result = self.vplx_show(unique_str, unique_id)
-        print(del_result)
         self.del_comfirm(del_result)
+
+    def retry_login(self):
+        if not self.vplx_session():
+            self.vplx_login()
+        elif self.vplx_session():
+            if self.vplx_logout():
+                self.vplx_login()
 
 
 if __name__ == '__main__':

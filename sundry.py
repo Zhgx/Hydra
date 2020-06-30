@@ -10,6 +10,38 @@ def pe(print_str):
     sys.exit()
 
 
+def iscsi_about(re_string, result):
+    if result:
+        result = result.decode('utf-8')
+        re_str = re.compile(re_string)
+        re_result = re_str.findall(result)
+        if re_result:
+            return True
+
+
+def iscsi_login(ip, login_result):
+    re_string = f'Login to.*portal: ({ip}).*successful'
+    if iscsi_about(re_string, login_result):
+        print(f'iscsi login to {ip} succeed')
+        return True
+    else:
+        pe(f'iscsi login to {ip} failed')
+
+
+def iscsi_logout(ip, logout_result):
+    re_string = r'Logout of \w* successful.'
+    if iscsi_about(re_string, logout_result):
+        return True
+    else:
+        pe(f'iscsi logout to {ip} failed')
+
+
+def find_session(ip, session_result):
+    re_string = f'tcp:.*({ip}):.*'
+    if iscsi_about(re_string, session_result):
+        return True
+
+
 class GetDiskPath(object):
     def __init__(self, lun_id, re_string, lsscsi_result, str_target):
         self.id = str(lun_id)

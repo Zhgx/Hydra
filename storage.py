@@ -1,7 +1,8 @@
 #  coding: utf-8
 import connect
 import time
-
+import sundry as s
+import re
 host = '10.203.1.231'
 port = 23
 username = 'root'
@@ -43,24 +44,75 @@ class Storage:
     def lun_map_verify(self):
         pass
 
-
-class StorageDel(object):
-    def __init__(self):
-        self.telnet_conn = connect.ConnTelnet(
-            host, port, username, password, timeout)
-
     def lun_unmap(self, lun_name):
-        unmap = f'lun unmap {lun_name} hydra'
-        self.telnet_conn.excute_command(unmap)
+        unmap = f'lun unmap /vol/esxi/{lun_name} hydra'
+        unmap_result = self.telnet_conn.excute_command(unmap)
+        if unmap_result:
+            unmap_re = re.compile(r'unmapped from initiator group hydra')
+            re_result = unmap_re.findall(unmap_result)
+            if re_result:
+                return True
+            else:
+                print(f'{lun_name} unmap failed')
 
-    def lun_destory(self, lun_name):
-        destory_cmd = f'lun destroy {lun_name}'
-        self.telnet_conn.excute_command(destory_cmd)
+    def lun_destroy(self, lun_name):
+        destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
+        destroy_result = self.telnet_conn.excute_command(destroy_cmd)
+        if destroy_result:
+            destroy_re = re.compile(r'destroyed')
+            re_result = destroy_re.findall(destroy_result)
+            if re_result:
+                return True
+            else:
+                s.pe(f'{lun_name} destory failed')
+
+    def all_lun(self, unique_str):
+        show_cmd = 'lun show'
+        show_result = self.telnet_conn.excute_command(show_cmd)
+        if show_result:
+            show_re = re.compile(f'{unique_str}_[0-9]*')
+            re_result = show_re.findall(show_result)
+            print(re_result)
+            if re_result:
+                return re_result
+            else:
+                s.pe('lun is not found')
+
+    def have_uid(self, unique_str, unique_id):
+        if len(unique_id) == 2:
+            list_lun = []
+            for i in range(unique_id[0], unique_id[1]+1):
+                lun_name = f'{unique_str}_{i}'
+                list_lun.append(lun_name)
+            return list_lun
+        if len(unique_id) == 1:
+            lun_name = f'{unique_str}_{unique_id[0]}'
+            list_lun = []
+            list_lun.append(lun_name)
+            return list_lun
+        else:
+            s.pe('please enter a valid value')
+
+    def lun_getname(self, unique_str, unique_id):
+        if unique_id:
+            return self.have_uid(unique_str, unique_id)
+        else:
+            return self.all_lun(unique_str)
+
+    def stor_del(self, unique_str, unique_id=''):
+        del_name = self.lun_getname(unique_str, unique_id)
+        for lun_name in del_name:
+            self.lun_unmap(lun_name)
+            time.sleep(0.25)
+            self.lun_destroy(lun_name)
+            time.sleep(0.25)
 
 
 if __name__ == '__main__':
-    test_stor = Storage('8', 'test')
-    test_stor.lun_create()
-    test_stor.lun_map()
-    test_stor.telnet_conn.close()
+    test_stor = Storage('1', 'luntest')
+    # test_stor.telnet_conn.excute_command('lun show')
+    test_stor.stor_del('luntest')
+    # test_stor.lun_create()
+    # test_stor.lun_map()
+    # test_stor.telnet_conn.close()
     # pass

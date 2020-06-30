@@ -1,4 +1,3 @@
-
 #  coding: utf-8
 import storage
 import vplx
@@ -51,7 +50,7 @@ class HydraArgParse():
         Go on DRDB resource configuration
         '''
         drbd = vplx.VplxDrbd(unique_id, unique_str)
-        drbd.discover_new_lun()
+        drbd.start_discover()
         drbd.prepare_config_file()
         drbd.drbd_cfg()
         drbd.drbd_status_verify()
@@ -72,6 +71,14 @@ class HydraArgParse():
         host = host_initiator.HostTest(unique_id)
         host.ssh.excute_command('umount /mnt')
         host.start_test()
+
+    def _stor_del(self, unique_str, unique_id=''):
+        stor_del = storage.Storage(unique_id, unique_str)
+        stor_del.stor_del(unique_str, unique_id)
+
+    def _vplx_del(self, unique_str, unique_id=''):
+        v_del = vplx.VplxCrm(unique_id, unique_str)
+        v_del.vlpx_del(unique_str, unique_id)
 
     def run(self):
         args = self.parser.parse_args()
@@ -103,24 +110,25 @@ class HydraArgParse():
         elif args.delete:
             if args.uniq_str:
                 if args.id_range:
-                    v_del=vplx.VplxCrm(args.id_range,args.uniq_str)
                     if ',' in args.id_range:
                         id_range = args.id_range.split(',')
                         id_start, id_end = int(id_range[0]), int(id_range[1])
-                        list_id=[id_start,id_end]
-                        v_del.vlpx_del(args.uniq_str,list_id)
-                        
+                        list_id = [id_start, id_end]
+                        self._vplx_del(args.uniq_str, list_id)
+                        self._stor_del(args.uniq_str, list_id)
+
                     else:
-                        list_id=[]
+                        list_id = []
                         list_id.append(args.id_range)
-                        v_del.vlpx_del(args.uniq_str,list_id)
-                        
+                        self._vplx_del(args.uniq_str, list_id)
+                        self._stor_del(args.uniq_str, list_id)
                 else:
-                    v_del=vplx.VplxCrm(args.id_range,args.uniq_str)
-                    v_del.vlpx_del(args.uniq_str)                
+                    self._vplx_del(args.uniq_str)
+                    self._stor_del(args.uniq_str)
             else:
                 self.parser.print_help()
                 sys.exit()
+
 
 if __name__ == '__main__':
     w = HydraArgParse()
