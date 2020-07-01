@@ -11,16 +11,18 @@ def pe(print_str):
 
 
 def iscsi_about(re_string, result):
-    if result:
-        result = result.decode('utf-8')
-        re_str = re.compile(re_string)
-        re_result = re_str.findall(result)
-        if re_result:
-            return True
+    '''
+    iscsi login,session&logout regular matching 
+    '''
+    result = result.decode('utf-8')
+    re_str = re.compile(re_string)
+    re_result = re_str.findall(result)
+    if re_result:
+        return True
 
 
 def iscsi_login(ip, login_result):
-    re_string = f'Login to.*portal: ({ip}).*successful'
+    re_string = f'Login to.*portal: {ip}.*successful'
     if iscsi_about(re_string, login_result):
         print(f'iscsi login to {ip} succeed')
         return True
@@ -41,9 +43,16 @@ def find_session(ip, session_result):
     if iscsi_about(re_string, session_result):
         return True
 
-def range_uid(unique_str,unique_id, show_result,re_string=''):
+
+def range_uid(unique_str, unique_id, show_result, re_string=''):
+    '''
+    Generate some names with a range of id values and determine whether these names exist
+    name is lun name /resource name
+    list_name is used to return the list value
+    list_none is used to judge that none of these names exist
+    '''
     list_name = []
-    list_none=[]
+    list_none = []
     for i in range(unique_id[0], unique_id[1]+1):
         name = f'{re_string}{unique_str}_{i}'
         re_show = re.compile(name)
@@ -55,11 +64,16 @@ def range_uid(unique_str,unique_id, show_result,re_string=''):
         else:
             print(f'{name} not found')
             list_none.append(list_none)
-            if (unique_id[1]+1-unique_id[0])==len(list_none):
+            if (unique_id[1]+1-unique_id[0]) == len(list_none):
                 pe('No lun needs to be deleted')
     return list_name
 
-def one_uid(unique_str, unique_id, res_show_result,re_string=''):
+
+def one_uid(unique_str, unique_id, res_show_result, re_string=''):
+    '''
+    Generate a name with a fixed id value and determine whether these names exist
+    name is lun name /resource name
+    '''
     name = f'{re_string}{unique_str}_{unique_id[0]}'
     re_show = re.compile(name)
     re_name = re_show.findall(

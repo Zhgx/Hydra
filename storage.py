@@ -77,16 +77,15 @@ class Storage:
             else:
                 s.pe('lun is not found')
 
-   
     def have_uid(self, unique_str, unique_id):
         if len(unique_id) == 2:
-            show_result=self.all_lun(unique_str)
-            lun_ids=s.range_uid(unique_str,unique_id,show_result)
+            show_result = self.all_lun(unique_str)
+            lun_ids = s.range_uid(unique_str, unique_id, show_result)
             return lun_ids
-           
+
         if len(unique_id) == 1:
-            show_result=self.all_lun(unique_str)
-            lun_ids=s.one_uid(unique_str,unique_id,show_result)
+            show_result = self.all_lun(unique_str)
+            lun_ids = s.one_uid(unique_str, unique_id, show_result)
             return lun_ids
         else:
             s.pe('please enter a valid value')
@@ -108,7 +107,7 @@ class Storage:
 if __name__ == '__main__':
     test_stor = Storage('1', 'luntest')
     # test_stor.telnet_conn.excute_command('lun show')
-    test_stor.stor_del('log_test',[31,32])
+    test_stor.stor_del('luntest', [10, 20])
     # test_stor.lun_create()
     # test_stor.lun_map()
     # test_stor.telnet_conn.close()

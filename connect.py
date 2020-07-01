@@ -11,6 +11,7 @@ class ConnSSH(object):
     '''
     ssh connect to VersaPLX
     '''
+
     def __init__(self, host, port, username, password, timeout):
         self._host = host
         self._port = port
@@ -86,7 +87,6 @@ class ConnTelnet(object):
         time.sleep(0.25)
         rely = self.telnet.read_very_eager().decode()
         return rely
-
 
     def telnet_connect(self):
         self._connect()

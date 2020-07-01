@@ -148,12 +148,18 @@ class HostTest(object):
             s.pe(f'Device {dev_name} mount failed')
 
     def initiator_logout(self):
+        '''
+        Logout initiator for retrying login
+        '''
         logout_cmd = 'iscsiadm -m node -T iqn.2020-06.com.example:test-max-lun --logout'
         logout_result = self.ssh.excute_command(logout_cmd)
         if s.iscsi_logout(vplx_ip, logout_result):
             return True
 
     def retry_login(self):
+        '''
+        Log back after deleting
+        '''
         if not self.initiator_session():
             self.initiator_login()
         elif self.initiator_session():
