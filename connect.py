@@ -67,7 +67,7 @@ class ConnTelnet(object):
         self._password = password
         self._timeout = timeout
         self.telnet = telnetlib.Telnet()
-        self._connect()
+        self.telnet_connect()
 
     def _connect(self):
         try:
@@ -87,16 +87,11 @@ class ConnTelnet(object):
         rely = self.telnet.read_very_eager().decode()
         return rely
 
-    def _connect_retry(self):
-        if self.telnet:
-            return True
-        else:
-            self._connect()
 
     def telnet_connect(self):
         self._connect()
-        if not self._connect():
-            self._connect_retry()
+        if not self.telnet:
+            self._connect()
 
     def close(self):
         self.telnet.close()

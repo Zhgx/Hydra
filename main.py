@@ -136,8 +136,8 @@ class HydraArgParse():
                 else:
                     self._vplx_del(args.uniq_str)
                     self._stor_del(args.uniq_str)
-                    self._host_retry(list_id)
-                    self._vplx_retry(args.uniq_str, list_id)
+                    self._host_retry(args.id_range)
+                    self._vplx_retry(args.uniq_str,args.id_range)
             else:
                 self.parser.print_help()
                 sys.exit()

@@ -358,30 +358,6 @@ class VplxCrm(VplxDrbd):
                     if self._drbd_del(res_name):
                         return True
 
-    def range_uid(self, unique_str, unique_id, res_show_result):
-        list_res = []
-        for i in range(unique_id[0], unique_id[1]+1):
-            res_name = f'res_{unique_str}_{i}'
-            re_res_show = re.compile(res_name)
-            re_res_name = re_res_show.findall(
-                res_show_result.decode('utf-8'))
-            if re_res_name:
-                list_res.append(re_res_name[0])
-                print(f'{res_name} already found')
-            else:
-                print(f'{res_name} not found')
-        return list_res
-
-    def one_uid(self, unique_str, unique_id, res_show_result):
-        res_name = f'res_{unique_str}_{unique_id[0]}'
-        re_res_show = re.compile(res_name)
-        re_res_name = re_res_show.findall(
-            res_show_result.decode('utf-8'))
-        if re_res_name:
-            print(f'{re_res_name} already found')
-            return re_res_name
-        else:
-            s.pe(f'{res_name} not found')
 
     def vplx_show(self, unique_str, unique_id):
         res_show_result = self.ssh.excute_command('crm res show')
@@ -391,9 +367,9 @@ class VplxCrm(VplxDrbd):
             if re_result:
                 if unique_id:
                     if len(unique_id) == 2:
-                        return self.range_uid(unique_str, unique_id, res_show_result)
+                        return s.range_uid(unique_str, unique_id,re_result,'res_')
                     elif len(unique_id) == 1:
-                        return self.one_uid(unique_str, unique_id, res_show_result)
+                        return s.one_uid(unique_str, unique_id, re_result,'res_')
                     else:
                         s.pe('please enter a valid value')
                 else:
@@ -424,6 +400,8 @@ class VplxCrm(VplxDrbd):
 
 
 if __name__ == '__main__':
+    test=VplxCrm('13','luntest')
+    test.retry_login()
     # for i  in range(140,174):
     #     test_crm = VplxCrm(i, 'luntest')
     #     test_crm.prepare_config_file()
@@ -432,4 +410,4 @@ if __name__ == '__main__':
     #         test_crm.ssh.excute_command(f'rm /etc/drbd.d/res_luntest_{i}.res')
     #         print(i)
     #     test_crm.ssh.close()
-    pass
+    # pass

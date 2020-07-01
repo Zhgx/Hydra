@@ -29,7 +29,7 @@ def iscsi_login(ip, login_result):
 
 
 def iscsi_logout(ip, logout_result):
-    re_string = r'Logout of \w* successful.'
+    re_string = f'Logout of.*portal: {ip}.*successful'
     if iscsi_about(re_string, logout_result):
         return True
     else:
@@ -40,6 +40,35 @@ def find_session(ip, session_result):
     re_string = f'tcp:.*({ip}):.*'
     if iscsi_about(re_string, session_result):
         return True
+
+def range_uid(unique_str,unique_id, show_result,re_string=''):
+    list_name = []
+    list_none=[]
+    for i in range(unique_id[0], unique_id[1]+1):
+        name = f'{re_string}{unique_str}_{i}'
+        re_show = re.compile(name)
+        re_name = re_show.findall(
+            str(show_result))
+        if re_name:
+            list_name.append(re_name[0])
+            print(f'{name} already found')
+        else:
+            print(f'{name} not found')
+            list_none.append(list_none)
+            if (unique_id[1]+1-unique_id[0])==len(list_none):
+                pe('No lun needs to be deleted')
+    return list_name
+
+def one_uid(unique_str, unique_id, res_show_result,re_string=''):
+    name = f'{re_string}{unique_str}_{unique_id[0]}'
+    re_show = re.compile(name)
+    re_name = re_show.findall(
+        str(res_show_result))
+    if re_name:
+        print(f'{name} already found')
+        return re_name
+    else:
+        pe(f'{name} not found')
 
 
 class GetDiskPath(object):
