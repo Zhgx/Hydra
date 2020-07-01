@@ -79,6 +79,13 @@ class HydraArgParse():
     def _vplx_del(self, unique_str, unique_id=''):
         v_del = vplx.VplxCrm(unique_id, unique_str)
         v_del.vlpx_del(unique_str, unique_id)
+    def _vplx_retry(self,unique_str, unique_id):
+        v_retry=vplx.VplxCrm(unique_str, unique_id)
+        v_retry.retry_login()
+    
+    def _host_retry(self,unique_id):
+        host_retry=host_initiator.HostTest(unique_id)
+        host_retry.retry_login()
 
     def run(self):
         args = self.parser.parse_args()
@@ -116,15 +123,21 @@ class HydraArgParse():
                         list_id = [id_start, id_end]
                         self._vplx_del(args.uniq_str, list_id)
                         self._stor_del(args.uniq_str, list_id)
+                        self._host_retry(list_id)
+                        self._vplx_retry(args.uniq_str, list_id)
 
                     else:
                         list_id = []
                         list_id.append(args.id_range)
                         self._vplx_del(args.uniq_str, list_id)
                         self._stor_del(args.uniq_str, list_id)
+                        self._host_retry(list_id)
+                        self._vplx_retry(args.uniq_str, list_id)
                 else:
                     self._vplx_del(args.uniq_str)
                     self._stor_del(args.uniq_str)
+                    self._host_retry(list_id)
+                    self._vplx_retry(args.uniq_str, list_id)
             else:
                 self.parser.print_help()
                 sys.exit()

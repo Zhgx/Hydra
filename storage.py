@@ -64,7 +64,7 @@ class Storage:
             if re_result:
                 return True
             else:
-                s.pe(f'{lun_name} destory failed')
+                print(f'{lun_name} destory failed')
 
     def all_lun(self, unique_str):
         show_cmd = 'lun show'
@@ -72,7 +72,6 @@ class Storage:
         if show_result:
             show_re = re.compile(f'{unique_str}_[0-9]*')
             re_result = show_re.findall(show_result)
-            print(re_result)
             if re_result:
                 return re_result
             else:
@@ -103,7 +102,6 @@ class Storage:
         del_name = self.lun_getname(unique_str, unique_id)
         for lun_name in del_name:
             self.lun_unmap(lun_name)
-            time.sleep(0.25)
             self.lun_destroy(lun_name)
             time.sleep(0.25)
 

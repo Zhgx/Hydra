@@ -176,7 +176,7 @@ class VplxDrbd(object):
             return True
 
     def vplx_logout(self):
-        logout_cmd = ' iscsiadm -m node -T iqn.1992-08.com.netapp:sn.84305553 --logout'
+        logout_cmd = r'iscsiadm -m node -T iqn.1992-08.com.netapp:sn.84305553 --logout'
         logout_result = self.ssh.excute_command(logout_cmd)
         if s.iscsi_logout(Netapp_ip, logout_result):
             return True
@@ -388,16 +388,19 @@ class VplxCrm(VplxDrbd):
         if res_show_result:
             re_show = re.compile(f'res_{unique_str}_\w*')
             re_result = re_show.findall(res_show_result.decode('utf-8'))
-            if unique_id:
-                if len(unique_id) == 2:
-                    return self.range_uid(unique_str, unique_id, res_show_result)
-                elif len(unique_id) == 1:
-                    self.one_uid(unique_str, unique_id, res_show_result)
+            if re_result:
+                if unique_id:
+                    if len(unique_id) == 2:
+                        return self.range_uid(unique_str, unique_id, res_show_result)
+                    elif len(unique_id) == 1:
+                        return self.one_uid(unique_str, unique_id, res_show_result)
+                    else:
+                        s.pe('please enter a valid value')
                 else:
-                    s.pe('please enter a valid value')
+                    print(f'{re_result} is found')
+                    return re_result
             else:
-                print(f'{re_result} is found')
-                return re_result
+                s.pe('LUNs does not exists,exit this program')
 
     def del_comfirm(self, del_result):
         comfirm = input('Do you want to delete these lun (yes/no):')
@@ -416,7 +419,8 @@ class VplxCrm(VplxDrbd):
             self.vplx_login()
         elif self.vplx_session():
             if self.vplx_logout():
-                self.vplx_login()
+                if self.vplx_login():
+                    return True
 
 
 if __name__ == '__main__':

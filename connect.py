@@ -67,14 +67,13 @@ class ConnTelnet(object):
         self._password = password
         self._timeout = timeout
         self.telnet = telnetlib.Telnet()
-        self.telnet_connect()
+        self._connect()
 
     def _connect(self):
         try:
             self.telnet.open(self._host, self._port, self._timeout)
             self.telnet.read_until(b'Username:', timeout=1)
             self.telnet.write(self._username.encode() + b'\n')
-
             self.telnet.read_until(b'Password:', timeout=1)
             self.telnet.write(self._password.encode() + b'\n')
 

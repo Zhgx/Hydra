@@ -158,7 +158,8 @@ class HostTest(object):
             self.initiator_login()
         elif self.initiator_session():
             if self.initiator_logout():
-                self.initiator_login()
+                if self.initiator_login():
+                    return True
 
 
 if __name__ == "__main__":
