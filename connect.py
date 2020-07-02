@@ -83,9 +83,10 @@ class ConnTelnet(object):
 
     # 定义exctCMD函数,用于执行命令
     def excute_command(self, cmd):
+        self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
-        time.sleep(0.25)
-        rely = self.telnet.read_very_eager().decode()
+        rely = self.telnet.read_until(b'fas270>').decode()
+        self.telnet.write(b'\r')
         return rely
 
     def telnet_connect(self):
@@ -98,27 +99,29 @@ class ConnTelnet(object):
 
 
 if __name__ == '__main__':
-    # telnet
-    host = '10.203.1.231'
+    # SSH
+    host = '10.203.1.199'
     port = '22'
     username = 'root'
-    password = 'Feixi@123'
+    password = 'password'
     timeout = 5
     ssh = ConnSSH(host, port, username, password, timeout)
-    strout = ssh.excute_command('?')
-    w = strout.decode('utf-8')
-    print(type(w))
-    print(w.split('\n'))
-    pprint.pprint(w)
-    time.sleep(2)
-    strout = ssh.excute_command('lun show -m')
-    pprint.pprint(strout)
+    strout = ssh.excute_command('rescan-scsi-bus.sh -r')
+    # w = strout.decode('utf-8')
+    # print(type(w))
+    # print(w.split('\n'))
+    # pprint.pprint(w)
+    # time.sleep(2)
+    # strout = ssh.excute_command('lun show -m')
+    # pprint.pprint(strout)
 
     # telnet
-    # host='10.203.1.231'
-    # Port='23'
-    # username='root'
-    # password='Feixi@123'
-    # timeout=10
+    # host = '10.203.1.231'
+    # Port = '23'
+    # username = 'root'
+    # password = 'Feixi@123'
+    # timeout = 10
+    # w = ConnTelnet(host, Port, username, password, timeout)
+    # print(w.excute_command('lun show'))
 
     pass

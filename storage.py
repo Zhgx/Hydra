@@ -45,28 +45,39 @@ class Storage:
         pass
 
     def lun_unmap(self, lun_name):
+        '''
+        Unmap LUN and determine its succeed
+        '''
         unmap = f'lun unmap /vol/esxi/{lun_name} hydra'
         unmap_result = self.telnet_conn.excute_command(unmap)
         if unmap_result:
             unmap_re = re.compile(r'unmapped from initiator group hydra')
             re_result = unmap_re.findall(unmap_result)
             if re_result:
+                print(f'{lun_name} unmap succeed')
                 return True
             else:
                 print(f'{lun_name} unmap failed')
 
     def lun_destroy(self, lun_name):
+        '''
+        delete LUN and determine its succeed
+        '''
         destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
         destroy_result = self.telnet_conn.excute_command(destroy_cmd)
         if destroy_result:
             destroy_re = re.compile(r'destroyed')
             re_result = destroy_re.findall(destroy_result)
             if re_result:
+                print(f'{lun_name} destory succeed')
                 return True
             else:
                 print(f'{lun_name} destory failed')
 
     def all_lun(self, unique_str):
+        '''
+        Get all luns through regular matching
+        '''
         show_cmd = 'lun show'
         show_result = self.telnet_conn.excute_command(show_cmd)
         if show_result:
@@ -78,13 +89,15 @@ class Storage:
                 s.pe('lun is not found')
 
     def have_uid(self, unique_str, unique_id):
+        '''
+        Distinguish whether the lun id is a range value or a single value and then perform regular matching
+        '''
+        show_result = self.all_lun(unique_str)
         if len(unique_id) == 2:
-            show_result = self.all_lun(unique_str)
             lun_ids = s.range_uid(unique_str, unique_id, show_result)
             return lun_ids
 
         if len(unique_id) == 1:
-            show_result = self.all_lun(unique_str)
             lun_ids = s.one_uid(unique_str, unique_id, show_result)
             return lun_ids
         else:
@@ -97,6 +110,9 @@ class Storage:
             return self.all_lun(unique_str)
 
     def stor_del(self, unique_str, unique_id=''):
+        '''
+        Call the function method to delete
+        '''
         del_name = self.lun_getname(unique_str, unique_id)
         for lun_name in del_name:
             self.lun_unmap(lun_name)
@@ -107,7 +123,7 @@ class Storage:
 if __name__ == '__main__':
     test_stor = Storage('1', 'luntest')
     # test_stor.telnet_conn.excute_command('lun show')
-    test_stor.stor_del('luntest', [10, 20])
+    test_stor.stor_del('asdfaf', [201])
     # test_stor.lun_create()
     # test_stor.lun_map()
     # test_stor.telnet_conn.close()

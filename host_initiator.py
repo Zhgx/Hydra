@@ -147,30 +147,17 @@ class HostTest(object):
         else:
             s.pe(f'Device {dev_name} mount failed')
 
-    def initiator_logout(self):
+    def initiator_rescan(self):
         '''
-        Logout initiator for retrying login
+        initiator rescan after delete
         '''
-        logout_cmd = 'iscsiadm -m node -T iqn.2020-06.com.example:test-max-lun --logout'
-        logout_result = self.ssh.excute_command(logout_cmd)
-        if s.iscsi_logout(vplx_ip, logout_result):
-            return True
-
-    def retry_login(self):
-        '''
-        Log back after deleting
-        '''
-        if not self.initiator_session():
-            self.initiator_login()
-        elif self.initiator_session():
-            if self.initiator_logout():
-                if self.initiator_login():
-                    return True
+        rescan_cmd = 'rescan-scsi-bus.sh -r'
+        rescan_result = self.ssh.excute_command(rescan_cmd)
 
 
 if __name__ == "__main__":
     test = HostTest(21)
-    test.retry_login()
+
     # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
     # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda
     # [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb

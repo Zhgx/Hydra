@@ -80,19 +80,19 @@ class HydraArgParse():
         v_del = vplx.VplxCrm(unique_id, unique_str)
         v_del.vlpx_del(unique_str, unique_id)
 
-    def _vplx_retry(self, unique_str, unique_id):
-        v_retry = vplx.VplxCrm(unique_str, unique_id)
-        v_retry.retry_login()
+    def _vplx_rescan(self, unique_str, unique_id):
+        v_rescan = vplx.VplxCrm(unique_str, unique_id)
+        v_rescan.vplx_rescan()
 
-    def _host_retry(self, unique_id):
-        host_retry = host_initiator.HostTest(unique_id)
-        host_retry.retry_login()
+    def _host_rescan(self, unique_id):
+        host_rescan = host_initiator.HostTest(unique_id)
+        host_rescan.initiator_rescan()
 
     def start_all_del(self, uniq_str, list_id=''):
         self._vplx_del(uniq_str, list_id)
         self._stor_del(uniq_str, list_id)
-        self._host_retry(list_id)
-        self._vplx_retry(uniq_str, list_id)
+        self._host_rescan(list_id)
+        self._vplx_rescan(uniq_str, list_id)
 
     def run(self):
         args = self.parser.parse_args()
@@ -100,7 +100,22 @@ class HydraArgParse():
         uniq_str: The unique string for this test, affects related naming
         '''
         if args.uniq_str:
-            if not args.delete:
+            if args.delete:
+                if args.id_range:
+                    if ',' in args.id_range:
+                        id_range = args.id_range.split(',')
+                        id_start, id_end = int(id_range[0]), int(id_range[1])
+                        list_id = [id_start, id_end]
+                        self.start_all_del(args.uniq_str, list_id)
+
+                    else:
+                        list_id = []
+                        list_id.append(args.id_range)
+                        self.start_all_del(args.uniq_str, list_id)
+                else:
+                    self.start_all_del(args.uniq_str)
+
+            else:
                 if args.id_range:
                     id_range = args.id_range.split(',')
                     if len(id_range) == 2:
@@ -119,24 +134,12 @@ class HydraArgParse():
                     self._vplx_crm(i, args.uniq_str)
                     self._host_test(i)
 
-            else:
-                if args.id_range:
-                    if ',' in args.id_range:
-                        id_range = args.id_range.split(',')
-                        id_start, id_end = int(id_range[0]), int(id_range[1])
-                        list_id = [id_start, id_end]
-                        self.start_all_del(args.uniq_str, list_id)
-
-                    else:
-                        list_id = []
-                        list_id.append(args.id_range)
-                        self.start_all_del(args.uniq_str, list_id)
-                else:
-                    self.start_all_del(args.uniq_str)
         else:
             self.parser.print_help()
 
 
 if __name__ == '__main__':
     w = HydraArgParse()
+    # w._host_rescan('1')
+    # w._vplx_rescan('1','2')
     w.run()

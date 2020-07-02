@@ -56,12 +56,18 @@ class VplxDrbd(object):
         re_find_id_dev = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
         self.blk_dev_name = s.GetDiskPath(
             self.id, re_find_id_dev, lsscsi_result, 'NetApp').explore_disk()
-        print(f'Find device {self.blk_dev_name} for LUN id {self.id}')
+
+    def retry_rescan(self):
+        self.discover_new_lun()
+        if self.blk_dev_name:
+            print(f'Find device {self.blk_dev_name} for LUN id {self.id}')
+        else:
+            self.discover_new_lun()
 
     def start_discover(self):
         if not self.vplx_session():
             self.vplx_login()
-        self.discover_new_lun()
+        self.retry_rescan()
 
     def prepare_config_file(self):
         '''
@@ -176,15 +182,6 @@ class VplxDrbd(object):
         login_cmd = f'iscsiadm -m discovery -t st -p {Netapp_ip} -l'
         login_result = self.ssh.excute_command(login_cmd)
         if s.iscsi_login(Netapp_ip, login_result):
-            return True
-
-    def vplx_logout(self):
-        '''
-        Logout vplx for retrying login
-        '''
-        logout_cmd = r'iscsiadm -m node -T iqn.1992-08.com.netapp:sn.84305553 --logout'
-        logout_result = self.ssh.excute_command(logout_cmd)
-        if s.iscsi_logout(Netapp_ip, logout_result):
             return True
 
     def vplx_session(self):
@@ -309,7 +306,6 @@ class VplxCrm(VplxDrbd):
         stop the iSCSILogicalUnit resource
         '''
         crm_stop_cmd = (f'crm res stop {res_name}')
-        print(crm_stop_cmd)
         crm_stop = self.ssh.excute_command(crm_stop_cmd)
         if crm_stop is True:
             if self.crm_status(res_name, 'Stopped'):
@@ -325,7 +321,7 @@ class VplxCrm(VplxDrbd):
         del_result = self.ssh.excute_command(crm_del_cmd)
         if del_result:
             re_delstr = re.compile('deleted')
-            re_result = re_delstr.findall(del_result.decode('utf-8'))
+            re_result = re_delstr.findall(str(del_result, encoding='utf-8'))
             if len(re_result) == 2:
                 return True
             else:
@@ -393,26 +389,21 @@ class VplxCrm(VplxDrbd):
 
     def vlpx_del(self, unique_str, unique_id):
         '''
-        For calling function
+        Call the function method to delete
         '''
         del_result = self.vplx_show(unique_str, unique_id)
         self.del_comfirm(del_result)
 
-    def retry_login(self):
+    def vplx_rescan(self):
         '''
-        Log back after deleting
+        vplx rescan after delete
         '''
-        if not self.vplx_session():
-            self.vplx_login()
-        elif self.vplx_session():
-            if self.vplx_logout():
-                if self.vplx_login():
-                    return True
+        rescan_cmd = 'rescan-scsi-bus.sh -r'
+        self.ssh.excute_command(rescan_cmd)
 
 
 if __name__ == '__main__':
     test = VplxCrm('13', 'luntest')
-    test.retry_login()
     # for i  in range(140,174):
     #     test_crm = VplxCrm(i, 'luntest')
     #     test_crm.prepare_config_file()
