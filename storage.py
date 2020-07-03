@@ -69,10 +69,10 @@ class Storage:
             destroy_re = re.compile(r'destroyed')
             re_result = destroy_re.findall(destroy_result)
             if re_result:
-                print(f'{lun_name} destory succeed')
+                print(f'{lun_name} destroy succeed')
                 return True
             else:
-                print(f'{lun_name} destory failed')
+                print(f'{lun_name} destroy failed')
 
     def all_lun(self, unique_str):
         '''

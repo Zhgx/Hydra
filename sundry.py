@@ -104,6 +104,6 @@ class GetDiskPath(object):
             if dev_path:
                 return dev_path
             else:
-                pe(f'Did not find the new LUN from {self.target}')
+                print(f'Did not find the new LUN from {self.target}')
         else:
             pe(f'Command "lsscsi" failed on {self.target}')

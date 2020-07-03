@@ -24,6 +24,7 @@ class HostTest(object):
     def __init__(self, unique_id):
         self.ssh = c.ConnSSH(host, port, user, password, timeout)
         self.id = unique_id
+        self.dev_name=None
 
     def initiator_login(self):
         '''
@@ -68,7 +69,19 @@ class HostTest(object):
         else:
             s.pe(f'Scan new LUN failed on VersaPLX')
         re_find_id_dev = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-        return s.GetDiskPath(self.id, re_find_id_dev, lsscsi_result, 'VersaPLX').explore_disk()
+        self.dev_name=s.GetDiskPath(self.id, re_find_id_dev, lsscsi_result, 'VersaPLX').explore_disk()
+
+    def retry_rescan(self):
+        self.explore_disk()
+        if self.dev_name:
+            print(f'Find device {self.dev_name} for LUN id {self.id}')
+            return self.dev_name
+        else:
+            print('Rescanning...')
+            self.explore_disk()
+            if not self.dev_name:
+                s.pe('Did not find the new LUN from Netapp,program exit...')
+
 
     def _judge_format(self, arg_bytes):
         '''
@@ -140,7 +153,7 @@ class HostTest(object):
     def start_test(self):
         if not self.initiator_session():
             self.initiator_login()
-        dev_name = self.explore_disk()
+        dev_name = self.retry_rescan()
         mount_status = self.format_mount(dev_name)
         if mount_status:
             self.get_test_perf()
@@ -152,7 +165,7 @@ class HostTest(object):
         initiator rescan after delete
         '''
         rescan_cmd = 'rescan-scsi-bus.sh -r'
-        rescan_result = self.ssh.excute_command(rescan_cmd)
+        self.ssh.excute_command(rescan_cmd)
 
 
 if __name__ == "__main__":

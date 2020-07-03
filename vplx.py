@@ -49,7 +49,7 @@ class VplxDrbd(object):
         '''
         Scan and find the disk from NetApp
         '''
-        if self.ssh.excute_command('/usr/bin/rescan-scsi-bus.sh'):
+        if self.ssh.excute_command('/usr/bin/rescan-scsi-bus.sh -r'):
             lsscsi_result = self.ssh.excute_command('lsscsi')
         else:
             s.pe(f'Scan new LUN failed on NetApp')
@@ -62,7 +62,10 @@ class VplxDrbd(object):
         if self.blk_dev_name:
             print(f'Find device {self.blk_dev_name} for LUN id {self.id}')
         else:
+            print('Rescanning...')
             self.discover_new_lun()
+            if not self.blk_dev_name:
+                s.pe('Did not find the new LUN from Netapp,program exit...')
 
     def start_discover(self):
         if not self.vplx_session():
