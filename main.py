@@ -1,11 +1,12 @@
 #  coding: utf-8
-import storage
-import vplx
-import host_initiator
 import argparse
 import sys
 import time
-
+import storage
+import vplx
+import host_initiator
+import sundry
+import log
 
 class HydraArgParse():
     '''
@@ -14,6 +15,8 @@ class HydraArgParse():
     '''
 
     def __init__(self):
+        self.transaction_id = sundry.get_transaction_id()
+        self.logger = log.Log(self.transaction_id)
         self.argparse_init()
 
     def argparse_init(self):
@@ -33,78 +36,105 @@ class HydraArgParse():
             '-id',
             action="store",
             dest="id_range",
-            help='The ID range of test, split with ","')
+            help='ID or ID range(split with ",")')
 
-    def _storage(self, unique_id, unique_str):
+    def _storage(self):
         '''
-        Connect to NetApp Storage
-        Create LUN and Map to VersaPLX
+        Connect to NetApp Storage, Create LUN and Map to VersaPLX
         '''
-        netapp = storage.Storage(unique_id, unique_str)
+        netapp = storage.Storage(self.logger)
         netapp.lun_create()
         netapp.lun_map()
 
-    def _vplx_drbd(self, unique_id, unique_str):
+    def _vplx_drbd(self):
         '''
-        Connect to VersaPLX
-        Go on DRDB resource configuration
+        Connect to VersaPLX, Config DRDB resource
         '''
-        drbd = vplx.VplxDrbd(unique_id, unique_str)
-        drbd.start_discover()
-        drbd.prepare_config_file()
-        drbd.drbd_cfg()
-        drbd.drbd_status_verify()
+        drbd = vplx.VplxDrbd(self.logger)
+        # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
+        drbd.prepare_config_file() # 创建配置文件
+        drbd.drbd_cfg() # run
+        drbd.drbd_status_verify() # 验证有没有启动（UptoDate）
 
-    def _vplx_crm(self, unique_id, unique_str):
+    def _vplx_crm(self):
         '''
-        Connect to VersaPLX
-        Go on crm configuration
+        Connect to VersaPLX, Config iSCSI Target
         '''
-        crm = vplx.VplxCrm(unique_id, unique_str)
+        crm = vplx.VplxCrm(self.logger)
         crm.crm_cfg()
 
-    def _host_test(self, unique_id):
+    def _host_test(self):
         '''
         Connect to host
         Umount and start to format, write, and read iSCSI LUN
         '''
-        host = host_initiator.HostTest(unique_id)
-        host.ssh.excute_command('umount /mnt')
+        host = host_initiator.HostTest(self.logger)
+        # host.ssh.execute_command('umount /mnt')
         host.start_test()
-
-    def _stor_del(self, unique_str, unique_id):
-        stor_del = storage.Storage(unique_id, unique_str)
+        
+    def _stor_del(self,unique_str, unique_id):
+        stor_del = storage.Storage(self.logger)
         stor_del.stor_del(unique_str, unique_id)
 
-    def _vplx_del(self, unique_str, unique_id):
-        v_del = vplx.VplxCrm(unique_id, unique_str)
+    def _vplx_del(self,unique_str, unique_id):
+        v_del = vplx.VplxCrm(self.logger)
         v_del.vlpx_del(unique_str, unique_id)
 
-    def _vplx_rescan(self, unique_str, unique_id):
-        v_rescan = vplx.VplxCrm(unique_str, unique_id)
+    def _vplx_rescan(self):
+        v_rescan = vplx.VplxCrm(self.logger)
         v_rescan.vplx_rescan()
 
-    def _host_rescan(self, unique_id):
-        host_rescan = host_initiator.HostTest(unique_id)
+    def _host_rescan(self):
+        host_rescan = host_initiator.HostTest(self.logger)
         host_rescan.initiator_rescan()
 
     def start_all_del(self, uniq_str, list_id=''):
+        vplx.ID = list_id
+        vplx.STRING = uniq_str
         self._vplx_del(uniq_str, list_id)
+        storage.ID = list_id
+        storage.STRING = uniq_str
         self._stor_del(uniq_str, list_id)
-        self._host_rescan(list_id)
-        self._vplx_rescan(uniq_str, list_id)
+        self._host_rescan()
+        self._vplx_rescan()
 
+    def execute(self, id, string):
+        self.transaction_id = sundry.get_transaction_id()
+        self.logger = log.Log(self.transaction_id)
+
+        print(f'\n======*** Start working for ID {id} ***======')
+
+        storage.ID = id
+        storage.STRING = string
+        self._storage()
+        
+        vplx.ID = id
+        vplx.STRING = string
+        self._vplx_drbd()
+        self._vplx_crm()
+        time.sleep(1.5)
+        
+        host_initiator.ID = id
+        self._host_test()
+
+    @sundry.record_exception
     def run(self):
+        if sys.argv:
+            path = sundry.get_path()
+            cmd = ' '.join(sys.argv)
+            # self.logger.write_to_log('DATA', 'input', 'user_input', cmd)
+            # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
+            # [time],[transaction_id],[s],[DATA],[input],[user_input],[cmd],[f{cmd}]
+
         args = self.parser.parse_args()
-        '''
-        uniq_str: The unique string for this test, affects related naming
-        '''
+
+        # uniq_str: The unique string for this test, affects related naming
         if args.uniq_str:
             if args.delete:
                 if args.id_range:
                     if ',' in args.id_range:
-                        id_range = args.id_range.split(',')
-                        id_start, id_end = int(id_range[0]), int(id_range[1])
+                        ids = args.id_range.split(',')
+                        id_start, id_end = int(ids[0]), int(ids[1])
                         list_id = [id_start, id_end]
                         self.start_all_del(args.uniq_str, list_id)
 
@@ -114,27 +144,19 @@ class HydraArgParse():
                         self.start_all_del(args.uniq_str, list_id)
                 else:
                     self.start_all_del(args.uniq_str)
-
             else:
-                if args.id_range:
-                    id_range = args.id_range.split(',')
-                    if len(id_range) == 2:
-                        id_start, id_end = int(id_range[0]), int(id_range[1])
-                    else:
-                        self.parser.print_help()
-                        sys.exit()
+                ids = args.id_range.split(',')
+                if len(ids) == 1:
+                    self.execute(int(ids[0]), args.uniq_str)
+                elif len(ids) == 2:
+                    id_start, id_end = int(ids[0]), int(ids[1])
+                    for i in range(id_start, id_end):
+                        self.execute(i, args.uniq_str)
                 else:
                     self.parser.print_help()
-                    sys.exit()
-
-                for i in range(id_start, id_end):
-                    print(f'\n======*** Start working for ID {i} ***======')
-                    self._storage(i, args.uniq_str)
-                    self._vplx_drbd(i, args.uniq_str)
-                    self._vplx_crm(i, args.uniq_str)
-                    self._host_test(i)
 
         else:
+            # self.logger.write_to_log('INFO','info','','print_help') 
             self.parser.print_help()
 
 
