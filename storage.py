@@ -20,13 +20,11 @@ class Storage:
 
     def __init__(self,logger):
         self.logger = logger
-        print('Start config lun on NetApp Storage')
+        print('Start to configure LUN on NetApp Storage')
+        self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.telnet_conn = connect.ConnTelnet(host, port, username, password, timeout,logger)
         # print('Connect to storage NetApp')
         self.lun_name = f'{STRING}_{ID}'
-
-        # [time],[transaction_id],[s],[INFO],[info],[start],[d2],[f'']
-        self.logger.write_to_log('T','INFO','info','start','','Start config lun on NetApp Storage')
 
 
     def lun_create(self):

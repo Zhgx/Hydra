@@ -9,6 +9,7 @@ import vplx
 import host_initiator
 import sundry
 import log
+import logdb
 
 class HydraArgParse():
     '''
@@ -40,6 +41,28 @@ class HydraArgParse():
             action="store",
             dest="id_range",
             help='ID or ID range(split with ",")')
+
+        sub_parser = self.parser.add_subparsers(dest='replay')
+        parser_replay = sub_parser.add_parser(
+            'replay',
+            aliases=['re'],
+            formatter_class=argparse.RawTextHelpFormatter
+        )
+
+        parser_replay.add_argument(
+            '-t',
+            '--transactionid',
+            dest='transactionid',
+            metavar='',
+            help='transaction id')
+
+        parser_replay.add_argument(
+            '-d',
+            '--date',
+            dest='date',
+            metavar='',
+            nargs=2,
+            help='date')
 
     def _storage(self):
         '''
@@ -94,12 +117,39 @@ class HydraArgParse():
         host_initiator.ID = id
         self._host_test()
 
+    def replay(self, args):
+        if args.transactionid or args.date:
+            db = logdb.LogDB()
+            db.get_logdb()
+
+        if args.transactionid and args.date:
+            print('1')
+        elif args.transactionid:
+            # result = logdb.get_info_via_tid(args.transactionid)
+            # data = logdb.get_data_via_tid(args.transactionid)
+            # for info in result:
+            #     print(info[0])
+            # print('============ * data * ==============')
+            # for data_one in data:
+            #     print(data_one[0])
+            db.print_info_via_tid(args.transactionid)
+
+            # logdb.replay_via_tid(args.transactionid)
+
+
+        elif args.date:
+            # python3 vtel_client_main.py re -d '2020/06/16 16:08:00' '2020/06/16 16:08:10'
+            print('data')
+        else:
+            print('replay help')
+
+
     @sundry.record_exception
     def run(self):
         if sys.argv:
             path = sundry.get_path()
             cmd = ' '.join(sys.argv)
-            # self.logger.write_to_log('DATA', 'input', 'user_input', cmd)
+            self.logger.write_to_log('T','DATA','input', 'user_input', '',cmd)
             # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
             # [time],[transaction_id],[s],[DATA],[input],[user_input],[cmd],[f{cmd}]
 
@@ -116,6 +166,9 @@ class HydraArgParse():
                     self.execute(i, args.uniq_str)
             else:
                 self.parser.print_help()
+
+        elif args.replay:
+            self.replay(args)
 
         else:
             # self.logger.write_to_log('INFO','info','','print_help') 

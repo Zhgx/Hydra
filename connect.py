@@ -30,7 +30,7 @@ class ConnSSH(object):
         # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
         # start 
         # [time],[transaction_id],[-],[DATA],[value],[dict],['data for SSH connect'],[{host:self._host}]
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'start to connect VersaPLX via SSH')
+        self.logger.write_to_log('T', 'INFO', 'info', 'start', '', '  Start to connect VersaPLX via SSH')
         self.logger.write_to_log('F','DATA','value','dict','data for SSH connect',{'host':self._host,'port':self._port,'username':self._username,'password':self._password})
 
         try:
@@ -42,18 +42,16 @@ class ConnSSH(object):
                                  username=self._username,
                                  password=self._password,
                                  timeout=self._timeout)
-            # 如何验证SSH连接成功
-            # log : SSH_connect_result [T/F]
-            self.logger.write_to_log('T','INFO','info','finish','','SSH connection succeeded')
+            # 连接成功log记录？
             self.SSHConnection = objSSHClient
-            # info star
         except Exception as e:
             # self.logger.write_to_log('INFO', 'error', '', (str(traceback.format_exc())))
             # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
             # [time],[transaction_id],[s],[INFO],[error],[exit],[d2],['ssh connect failed with error {e}']
             # [time],[transaction_id],[-],[DATA],[debug],[exception],[d2],[str(traceback.format_exc())]
             self.logger.write_to_log('F','DATA','debug','exception','ssh connect',str(traceback.format_exc()))
-            s.pwe(self.logger,f'Connect to {self._host} failed with error: {e}')
+            s.pwe(self.logger,f'  Connect to {self._host} failed with error: {e}')
+
 
     def execute_command(self, command):
         oprt_id = s.get_oprt_id()
@@ -71,7 +69,7 @@ class ConnSSH(object):
         err = stderr.read()
         if len(err) > 0:
             output = {'sts':0, 'rst':err}
-            self.logger.write_to_log('T','INFO','warning','failed','',f'command "{command}" execute failed')
+            self.logger.write_to_log('T','INFO','warning','failed','',f'  Command "{command}" execute failed')
             self.logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, output)
             # print(err.strip())
             # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
@@ -108,7 +106,7 @@ class ConnTelnet(object):
         try:
             # self.logger.write_to_log('INFO','info','','start to connect VersaPLX via telnet')
             # log : telnet_open
-            self.logger.write_to_log('T','INFO','info','start','','start to connect VersaPLX via telnet')
+            self.logger.write_to_log('T','INFO','info','start','','  Start to connect NetApp via telnet')
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',
                                      {'host': self._host, 'port': self._port, 'username': self._username,
                                       'password': self._password})
@@ -120,7 +118,7 @@ class ConnTelnet(object):
 
         except Exception as e:
             self.logger.write_to_log('INFO', 'error', '', (str(traceback.format_exc())))
-            s.pwe(self.logger,f'Connect to {self._host} failed with error: {e}')
+            s.pwe(self.logger,f'  Connect to {self._host} failed with error: {e}')
 
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
