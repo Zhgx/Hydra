@@ -18,6 +18,7 @@ timeout = 3
 
 mount_point = '/mnt'
 
+
 def init_ssh(logger):
     global SSH
     if not SSH:
@@ -25,15 +26,18 @@ def init_ssh(logger):
     else:
         pass
 
+
 def umount_mnt(logger):
     print('  Umount "/mnt"')
     SSH.execute_command('umount /mnt')
+
 
 def iscsi_login(logger):
     '''
     Discover iSCSI and login to session
     '''
-    logger.write_to_log('T','INFO','info','start','',f'discover iscsi and login to {vplx_ip}')
+    logger.write_to_log('T', 'INFO', 'info', 'start', '',
+                        f'discover iscsi and login to {vplx_ip}')
     cmd_iscsi_login = f'iscsiadm -m discovery -t st -p {vplx_ip} -l'
     result_iscsi_login = SSH.execute_command(cmd_iscsi_login)
 
@@ -44,22 +48,27 @@ def iscsi_login(logger):
         re_result = re_login.findall(result_iscsi_login)
         # self.logger.write_to_log('DATA','output','re_result',re_result)
         oprt_id = s.get_oprt_id()
-        logger.write_to_log('T','OPRT','regular','findall',oprt_id,result_iscsi_login)
-        logger.write_to_log('F','DATA','regular','findall',oprt_id,re_result)
+        logger.write_to_log('T', 'OPRT', 'regular',
+                            'findall', oprt_id, result_iscsi_login)
+        logger.write_to_log('F', 'DATA', 'regular',
+                            'findall', oprt_id, re_result)
 
         if re_result:
             print(f'  iSCSI login to {vplx_ip} successful')
-            logger.write_to_log('T','INFO','info','finish','',f'iSCSI login to {vplx_ip} successful')
+            logger.write_to_log('T', 'INFO', 'info', 'finish',
+                                '', f'iSCSI login to {vplx_ip} successful')
             return True
         else:
-            s.pwe(logger,f'  iSCSI login to {vplx_ip} failed')
+            s.pwe(logger, f'  iSCSI login to {vplx_ip} failed')
+
 
 def find_session(logger):
     '''
     Execute the command and check up the status of session
     '''
     # self.logger.write_to_log('INFO', 'info', '', 'start to execute the command and check up the status of session')
-    logger.write_to_log('T','INFO','info','start','','execute the command and check up the status of session')
+    logger.write_to_log('T', 'INFO', 'info', 'start', '',
+                        'execute the command and check up the status of session')
     cmd_session = 'iscsiadm -m session'
     result_session = SSH.execute_command(cmd_session)
     if result_session['sts']:
@@ -67,51 +76,77 @@ def find_session(logger):
         re_session = re.compile(f'tcp:.*({vplx_ip}):.*')
         re_result = re_session.findall(result_session)
         oprt_id = s.get_oprt_id()
-        logger.write_to_log('T','OPRT','regular','findall',oprt_id,result_session)
-        logger.write_to_log('F','DATA','regular','findall',oprt_id,re_result)
+        logger.write_to_log('T', 'OPRT', 'regular',
+                            'findall', oprt_id, result_session)
+        logger.write_to_log('F', 'DATA', 'regular',
+                            'findall', oprt_id, re_result)
         # self.logger.write_to_log('DATA', 'output', 're_result', re_result)
         if re_result:
             # self.logger.write_to_log('HostTest','return','find_session',True)
             print('  iSCSI already login to VersaPLX')
-            logger.write_to_log('T','INFO','info','finish','','  iSCSI already login to VersaPLX')
+            logger.write_to_log('T', 'INFO', 'info', 'finish',
+                                '', '  iSCSI already login to VersaPLX')
             return True
         else:
             print('  iSCSI not login to VersaPLX, Try to login')
-            logger.write_to_log('T','INFO','warning','failed','','  iSCSI not login to VersaPLX, Try to login')
+            logger.write_to_log('T', 'INFO', 'warning', 'failed',
+                                '', '  iSCSI not login to VersaPLX, Try to login')
 
 
-def discover_new_lun(logger):
+def discover_new_lun(logger, cmd_rescan):
     '''
     Scan and find the disk from NetApp
     '''
     # self.logger.write_to_log('INFO','info','',f'start to discover_new_lun for id {ID}')
     print('  Start to scan SCSI device from VersaPLX')
-    logger.write_to_log('T','INFO','info','start','','  Start to scan SCSI device from VersaPLX')
-    cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
+    logger.write_to_log('T', 'INFO', 'info', 'start', '',
+                        '  Start to scan SCSI device from VersaPLX')
     result_rescan = SSH.execute_command(cmd_rescan)
     if result_rescan['sts']:
         print('  Start to list all SCSI device')
-        logger.write_to_log('T','INFO','info','start','','  Start to list all SCSI device')
+        logger.write_to_log('T', 'INFO', 'info', 'start',
+                            '', '  Start to list all SCSI device')
         cmd_lsscsi = 'lsscsi'
         result_lsscsi = SSH.execute_command(cmd_lsscsi)
         if result_lsscsi['sts']:
             result_lsscsi = result_lsscsi['rst'].decode('utf-8')
         else:
             print(f'  Command {cmd_lsscsi} execute failed')
-            logger.write_to_log('T','INFO','warning','failed','',f'  Command {cmd_lsscsi} execute failed')
+            logger.write_to_log('T', 'INFO', 'warning', 'failed',
+                                '', f'  Command {cmd_lsscsi} execute failed')
 
     # if SSH.execute_command('/usr/bin/rescan-scsi-bus.sh'):#新的返回值有状态和数值,以状态判断,记录数值
     #     result_lsscsi = SSH.execute_command('lsscsi')
     else:
         print('  Scan SCSI device failed')
-        logger('T','INFO','warning','failed','','  Scan SCSI device failed')
+        logger('T', 'INFO', 'warning', 'failed',
+               '', '  Scan SCSI device failed')
         # s.pwe(self.logger,f'Scan new LUN failed on NetApp')
     re_find_id_dev = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    blk_dev_name = s.get_disk_dev(str(ID), re_find_id_dev, result_lsscsi, 'NetApp',logger)
+    blk_dev_name = s.get_disk_dev(
+        str(ID), re_find_id_dev, result_lsscsi, 'NetApp', logger)
     print(f'    Find new device {blk_dev_name} for LUN id {ID}')
     # self.logger.write_to_log('INFO', 'info', '', f'Find device {blk_dev_name} for LUN id {ID}')
-    logger.write_to_log('T','INFO','warning','failed','',f'    Find new device {blk_dev_name} for LUN id {ID}')
+    logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
+                        f'    Find new device {blk_dev_name} for LUN id {ID}')
     return blk_dev_name
+
+
+def retry_rescan(logger):
+    cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
+    blk_dev_name = discover_new_lun(logger, cmd_rescan)
+    # print(blk_dev_name)
+    if blk_dev_name:
+        return blk_dev_name
+    else:
+        print('Rescanning...')
+        cmd_rescan = '/usr/bin/rescan-scsi-bus.sh -a'
+        blk_dev_name = discover_new_lun(logger, cmd_rescan)
+        if not blk_dev_name:
+            s.pwe(logger, 'Did not find the new LUN from VersaPLX,program exit...')
+        else:
+            return blk_dev_name
+
 
 class HostTest(object):
     '''
@@ -119,12 +154,13 @@ class HostTest(object):
     '''
 
     def __init__(self, logger):
-        
+
         self.logger = logger
         # self.logger.host = host # 给logger对象的host属性附上这个模块的host
         init_ssh(self.logger)
         print('Start IO test on initiator host')
-        self.logger.write_to_log('T','INFO','info','start','','Start IO test on initiator host')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', '', 'Start IO test on initiator host')
         umount_mnt(self.logger)
         if not find_session(logger):
             iscsi_login(logger)
@@ -151,31 +187,36 @@ class HostTest(object):
         '''
         # self.logger.write_to_log('INFO','info','',f'start to format disk {dev_name} and mount disk {dev_name}')
         print(f'  Start to format {dev_name}')
-        self.logger.write_to_log('T','INFO','info','start','',f'  Start to format {dev_name}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', '', f'  Start to format {dev_name}')
         cmd_format = f'mkfs.ext4 {dev_name} -F'
         result_format = SSH.execute_command(cmd_format)
         if result_format['sts']:
             result_format = result_format['rst'].decode('utf-8')
             if self._judge_format(result_format):
                 print(f'  Try mount {dev_name} to "/mnt"')
-                self.logger.write_to_log('T','INFO','info','start','',f'  Try mount {dev_name} to "/mnt"')
+                self.logger.write_to_log(
+                    'T', 'INFO', 'info', 'start', '', f'  Try mount {dev_name} to "/mnt"')
                 cmd_mount = f'mount {dev_name} {mount_point}'
                 result_mount = SSH.execute_command(cmd_mount)
                 if result_mount['sts']:
                     print(f'  Disk {dev_name} mounted to "/mnt"')
-                    self.logger.write_to_log('T','INFO','info','finish','',f'  Disk {dev_name} mounted to "/mnt"')
+                    self.logger.write_to_log(
+                        'T', 'INFO', 'info', 'finish', '', f'  Disk {dev_name} mounted to "/mnt"')
                     #self.logger.write_to_log('HostTest', 'return', 'format_mount', True)
                     return True
                 else:
                     print(f'  Disk {dev_name} mount to "/mnt" failed')
-                    s.pwe(self.logger,f"mount {dev_name} to {mount_point} failed")
+                    s.pwe(self.logger,
+                          f"mount {dev_name} to {mount_point} failed")
 
             else:
                 # print(f'  Format {dev_name} failed')
-                s.pwe(self.logger,f'  Format {dev_name} failed')
+                s.pwe(self.logger, f'  Format {dev_name} failed')
         else:
             print(f'Format command {cmd_format} execute failed')
-            self.logger.write_to_log('T','INFO','warning','failed','',f'Format command {cmd_format} execute failed')
+            self.logger.write_to_log(
+                'T', 'INFO', 'warning', 'failed', '', f'Format command {cmd_format} execute failed')
 
     def _get_dd_perf(self, cmd_dd):
         '''
@@ -187,43 +228,48 @@ class HostTest(object):
         re_performance = re.compile(r'.*s, ([0-9.]* [A-Z]B/s)')
         re_result = re_performance.findall(result_dd)
         oprt_id = s.get_oprt_id()
-        self.logger.write_to_log('T','OPRT','regular','findall',oprt_id,result_dd)
+        self.logger.write_to_log(
+            'T', 'OPRT', 'regular', 'findall', oprt_id, result_dd)
     # self.logger.write_to_log('DATA', 'output', 're_result', re_result)
         if re_result:
             # self.logger.write_to_log('DATA', 'output', 'return', perf[0])
             dd_perf = re_result[0]
-            self.logger.write_to_log('F','DATA','regular','findall',oprt_id,dd_perf)
+            self.logger.write_to_log(
+                'F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
             return dd_perf
         else:
-            s.pwe(self.logger,'Can not get test result') 
+            s.pwe(self.logger, 'Can not get test result')
 
     def get_test_perf(self):
         '''
         Calling method to read&write test
         '''
         print('  Start speed test ... ... ... ... ... ...')
-        self.logger.write_to_log('T','INFO','info','start','','  Start speed test ... ... ... ... ... ...')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', '', '  Start speed test ... ... ... ... ... ...')
         cmd_dd_write = f'dd if=/dev/zero of={mount_point}/t.dat bs=512k count=16'
         cmd_dd_read = f'dd if={mount_point}/t.dat of=/dev/zero bs=512k count=16'
         # self.logger.write_to_log('INFO', 'info', '', 'start calling method to read&write test')
         write_perf = self._get_dd_perf(cmd_dd_write)
         print(f'    Write Speed: {write_perf}')
-        self.logger.write_to_log('T','INFO','info','finish','',f'    Write Speed: {write_perf}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', '', f'    Write Speed: {write_perf}')
         # self.logger.write_to_log('INFO', 'info', '', (f'write speed: {write_perf}'))
         time.sleep(0.25)
         read_perf = self._get_dd_perf(cmd_dd_read)
         print(f'    Read  Speed: {read_perf}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
         # self.logger.write_to_log('INFO', 'info', '', (f'read speed: {read_perf}'))
 
     def start_test(self):
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
-        dev_name = discover_new_lun(self.logger)
+        dev_name = retry_rescan(self.logger)
         mount_status = self.format_mount(dev_name)
         if mount_status:
             self.get_test_perf()
         else:
-            s.pwe(self.logger,f'Device {dev_name} mount failed')
+            s.pwe(self.logger, f'Device {dev_name} mount failed')
 
     def initiator_rescan(self):
         '''
@@ -231,6 +277,7 @@ class HostTest(object):
         '''
         rescan_cmd = 'rescan-scsi-bus.sh -r'
         SSH.execute_command(rescan_cmd)
+        # SSH.execute_command('rescan-scsi-bus.sh -a')
 
 
 if __name__ == "__main__":
