@@ -132,7 +132,7 @@ def discover_new_lun(logger, cmd_rescan):
     return blk_dev_name
 
 
-def retry_rescan(logger):
+def start_rescan(logger):
     cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
     blk_dev_name = discover_new_lun(logger, cmd_rescan)
     # print(blk_dev_name)
@@ -145,7 +145,8 @@ def retry_rescan(logger):
         if blk_dev_name:
             return blk_dev_name
         else:
-            s.pwe(logger, 'Did not find the new LUN from VersaPLX,program exit...')
+            print('Did not find the new LUN from VersaPLX,program exit...')
+            sys.exit()
 
 
 class HostTest(object):
@@ -157,7 +158,7 @@ class HostTest(object):
 
         self.logger = logger
         # self.logger.host = host # 给logger对象的host属性附上这个模块的host
-        print('Start IO test on initiator host')
+        # print('Start IO test on initiator host')
         self.logger.write_to_log(
             'T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
         init_ssh(self.logger)
@@ -266,7 +267,7 @@ class HostTest(object):
 
     def start_test(self):
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
-        dev_name = retry_rescan(self.logger)
+        dev_name = start_rescan(self.logger)
         mount_status = self.format_mount(dev_name)
         if mount_status:
             self.get_test_perf()

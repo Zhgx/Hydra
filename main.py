@@ -9,6 +9,7 @@ import sundry
 import log
 import logdb
 
+
 class HydraArgParse():
     '''
     Hydra project
@@ -75,9 +76,9 @@ class HydraArgParse():
         '''
         drbd = vplx.VplxDrbd(self.logger)
         # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
-        drbd.prepare_config_file() # 创建配置文件
-        drbd.drbd_cfg() # run
-        drbd.drbd_status_verify() # 验证有没有启动（UptoDate）
+        drbd.prepare_config_file()  # 创建配置文件
+        drbd.drbd_cfg()  # run
+        drbd.drbd_status_verify()  # 验证有没有启动（UptoDate）
 
     def _vplx_crm(self):
         '''
@@ -94,14 +95,6 @@ class HydraArgParse():
         host = host_initiator.HostTest(self.logger)
         # host.ssh.execute_command('umount /mnt')
         host.start_test()
-        
-    def _stor_del(self,unique_str, unique_id):
-        stor_del = storage.Storage(self.logger)
-        stor_del.stor_del(unique_str, unique_id)
-
-    def _vplx_del(self,unique_str, unique_id):
-        v_del = vplx.VplxCrm(self.logger)
-        v_del.vlpx_del(unique_str, unique_id)
 
     def _vplx_rescan(self):
         v_rescan = vplx.VplxCrm(self.logger)
@@ -111,15 +104,33 @@ class HydraArgParse():
         host_rescan = host_initiator.HostTest(self.logger)
         host_rescan.initiator_rescan()
 
-    def start_all_del(self, uniq_str, list_id=''):
-        vplx.ID = list_id
-        vplx.STRING = uniq_str
-        self._vplx_del(uniq_str, list_id)
+    def del_comfirm(self, uniq_str, list_id):
+        '''
+        User determines whether to delete
+        '''
         storage.ID = list_id
         storage.STRING = uniq_str
-        self._stor_del(uniq_str, list_id)
-        self._host_rescan()
-        self._vplx_rescan()
+        vplx.ID = list_id
+        vplx.STRING = uniq_str
+
+        vplx_del = vplx.VplxCrm(self.logger)
+        crm_name = vplx_del.vplx_crm_show()
+        drbd_name = vplx_del.vplx_drbd_show()
+        stor_del = storage.Storage(self.logger)
+        stor_name = stor_del.storage_lun_show()
+
+        comfirm = input('Do you want to delete these lun (yes/no):')
+        if comfirm == 'yes':
+            for res_name in crm_name:
+                vplx_del.crm_del(res_name)
+            for res_name in drbd_name:
+                vplx_del.drbd_del(res_name)
+            for lun_name in stor_name:
+                stor_del.lun_unmap(lun_name)
+                stor_del.lun_destroy(lun_name)
+                time.sleep(0.25)
+        else:
+            sundry.pwe(self.logger, 'Cancel succeed')
 
     def execute(self, id, string):
         self.transaction_id = sundry.get_transaction_id()
@@ -130,13 +141,13 @@ class HydraArgParse():
         storage.ID = id
         storage.STRING = string
         self._storage()
-        
+
         vplx.ID = id
         vplx.STRING = string
         self._vplx_drbd()
         self._vplx_crm()
         time.sleep(1.5)
-        
+
         host_initiator.ID = id
         self._host_test()
 
@@ -159,20 +170,35 @@ class HydraArgParse():
 
             # logdb.replay_via_tid(args.transactionid)
 
-
         elif args.date:
             # python3 vtel_client_main.py re -d '2020/06/16 16:08:00' '2020/06/16 16:08:10'
             print('data')
         else:
             print('replay help')
 
+    def get_ids(self, ids):
+        ids = [int(i) for i in ids.split(',')]
+        if len(ids) == 2:
+            ids[1]+1
+        return ids
+
+    def create_lun(self, uniq_str, ids):
+        if len(ids) == 1:
+            self.execute(int(ids[0]), uniq_str)
+        elif len(ids) == 2:
+            id_start, id_end = int(ids[0]), int(ids[1])
+            for i in range(id_start, id_end):
+                self.execute(i, uniq_str)
+        else:
+            self.parser.print_help()
 
     @sundry.record_exception
     def run(self):
         if sys.argv:
             path = sundry.get_path()
             cmd = ' '.join(sys.argv)
-            self.logger.write_to_log('T','DATA','input', 'user_input', '',cmd)
+            self.logger.write_to_log(
+                'T', 'DATA', 'input', 'user_input', '', cmd)
             # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
             # [time],[transaction_id],[s],[DATA],[input],[user_input],[cmd],[f{cmd}]
 
@@ -180,37 +206,14 @@ class HydraArgParse():
 
         # uniq_str: The unique string for this test, affects related naming
         if args.uniq_str:
-            if args.delete:
-                if args.id_range:
-                    if ',' in args.id_range:
-                        ids = args.id_range.split(',')
-                        id_start, id_end = int(ids[0]), int(ids[1])
-                        list_id = [id_start, id_end]
-                        self.start_all_del(args.uniq_str, list_id)
-
-                    else:
-                        list_id = []
-                        list_id.append(args.id_range)
-                        self.start_all_del(args.uniq_str, list_id)
-                else:
-                    self.start_all_del(args.uniq_str)
+            if args.id_range:
+                ids = self.get_ids(args.id_range)
             else:
-                ids = args.id_range.split(',')
-                if len(ids) == 1:
-                    self.execute(int(ids[0]), args.uniq_str)
-                elif len(ids) == 2:
-                    id_start, id_end = int(ids[0]), int(ids[1])
-                    for i in range(id_start, id_end):
-                        self.execute(i, args.uniq_str)
-                else:
-                    self.parser.print_help()
-
-        elif args.replay:
-            self.replay(args)
-
-        else:
-            # self.logger.write_to_log('INFO','info','','print_help') 
-            self.parser.print_help()
+                ids = ''
+            if args.delete:
+                self.del_comfirm(args.uniq_str, ids)
+            else:
+                self.create_lun(args.uniq_str, ids)
 
 
 if __name__ == '__main__':

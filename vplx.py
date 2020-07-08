@@ -66,7 +66,7 @@ def discover_new_lun(logger, cmd_rescan):
     return blk_dev_name
 
 
-def retry_rescan(logger):
+def start_rescan(logger):
     cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
     blk_dev_name = discover_new_lun(logger, cmd_rescan)
     # print(blk_dev_name)
@@ -79,7 +79,8 @@ def retry_rescan(logger):
         if blk_dev_name:
             return blk_dev_name
         else:
-            s.pwe(logger, 'Did not find the new LUN from Netapp,program exit...')
+            print('Did not find the new LUN from Netapp,program exit...')
+            sys.exit()
 
 
 class VplxDrbd(object):
@@ -92,7 +93,7 @@ class VplxDrbd(object):
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  'Start to configure DRDB resource and crm resource on VersaPLX')
         init_ssh(self.logger)
-        self.blk_dev_name = retry_rescan(logger)
+        self.blk_dev_name = start_rescan(logger)
         self.res_name = f'res_{STRING}_{ID}'
         global DRBD_DEV_NAME
         DRBD_DEV_NAME = f'drbd{ID}'
@@ -366,10 +367,11 @@ class VplxCrm(object):
         cmd_lu_start = f'crm res start {self.lu_name}'
         result_lu_start = SSH.execute_command(cmd_lu_start)
         if result_lu_start['sts']:
-            print('  iSCSI LUN start successful')
-            self.logger.write_to_log(
-                'T', 'INFO', 'info', 'finish', '', '      ISCSI LUN start successful')
-            return True
+            if self.crm_status(self.lu_name, 'running on: maxluntarget '):
+                print('  iSCSI LUN start successful')
+                self.logger.write_to_log(
+                    'T', 'INFO', 'info', 'finish', '', '      ISCSI LUN start successful')
+                return True
         else:
             s.pwe(self.logger, 'iscsi lun start failed')
 
@@ -379,22 +381,19 @@ class VplxCrm(object):
                 if self._crm_start():
                     return True
 
-    def _crm_verify(self, res_name, status):
+    def _crm_verify(self, res_name):
         '''
         Check the crm resource status
         '''
-        verify_result = SSH.execute_command('crm res show')
+        verify_result = SSH.execute_command(f'crm res show {res_name}')
         if verify_result:
-            re_show = re.compile(f'({res_name})\s.*:\s(\w*)')
+            re_show = re.compile(f'resource {res_name} is (.*)')
             re_show_result = re_show.findall(
                 verify_result['rst'].decode('utf-8'))
-            dict_show_result = dict(re_show_result)
-            if res_name in dict_show_result.keys():
-                crm_status = dict_show_result[res_name]
-                if crm_status == f'{status}':
-                    return True
-                else:
-                    return False
+            if re_show_result:
+                return re_show_result[0]
+            else:
+                print('crm verify failed')
         else:
             s.pwe(self.logger, 'crm show failed')
 
@@ -405,11 +404,12 @@ class VplxCrm(object):
         n = 0
         while n < 10:
             n += 1
-            if self._crm_verify(res_name, status):
+            crm_verify = self._crm_verify(res_name)
+            if crm_verify == status:
                 print(f'{res_name} is {status}')
                 return True
             else:
-                print(f'{res_name} is {status}, Wait a moment...')
+                print(f'{res_name} is {crm_verify}, Wait a moment...')
                 time.sleep(1.5)
         else:
             return False
@@ -421,7 +421,7 @@ class VplxCrm(object):
         crm_stop_cmd = (f'crm res stop {res_name}')
         crm_stop = SSH.execute_command(crm_stop_cmd)
         if crm_stop['sts'] == 1:
-            if self.crm_status(res_name, 'Stopped'):
+            if self.crm_status(res_name, 'NOT running'):
                 return True
         else:
             s.pwe(self.logger, 'crm stop failed')
@@ -452,7 +452,7 @@ class VplxCrm(object):
         else:
             s.pwe(self.logger, 'drbd down failed')
 
-    def _drbd_del(self, res_name):
+    def _drbd_del_config(self, res_name):
         '''
         remove the DRBD config file
         '''
@@ -463,52 +463,36 @@ class VplxCrm(object):
         else:
             s.pwe(self.logger, 'drbd remove config file fail')
 
-    def start_del(self, res_name):
+    def vplx_drbd_show(self):
+        drbd_show_result = SSH.execute_command('drbdadm status')
+        re_string = f'res_{STRING}_\w*'
+        if drbd_show_result:
+            drbd_name = s.re_getshow(self.logger, STRING, ID, re_string,
+                                     drbd_show_result['rst'].decode('utf-8'), 'DRBD', 'res_')
+            return drbd_name
+        else:
+            print(self.logger, 'drbd resource does not exists,exit this program')
+
+    def crm_del(self, res_name):
         if self._crm_stop(res_name):
             if self._crm_del(res_name):
-                if self._drbd_down(res_name):
-                    if self._drbd_del(res_name):
-                        return True
+                return True
 
-    def vplx_show(self, unique_str, unique_id):
+    def drbd_del(self, res_name):
+        if self._drbd_down(res_name):
+            if self._drbd_del_config(res_name):
+                return True
+
+    def vplx_crm_show(self):
         '''
         Get the resource name through regular matching and determine whether these LUNs exist
         '''
         res_show_result = SSH.execute_command('crm res show')
+        re_string = f'res_{STRING}_\w*'
         if res_show_result:
-            re_show = re.compile(f'res_{unique_str}_\w*')
-            re_result = re_show.findall(res_show_result['rst'].decode('utf-8'))
-            if re_result:
-                if unique_id:
-                    if len(unique_id) == 2:
-                        return s.range_uid(self.logger, unique_str, unique_id, re_result, 'res_')
-                    elif len(unique_id) == 1:
-                        return s.one_uid(self.logger, unique_str, unique_id, re_result, 'res_')
-                    else:
-                        s.pwe(self.logger, 'please enter a valid value')
-                else:
-                    print(f'{re_result} is found')
-                    return re_result
-            else:
-                s.pwe(self.logger, 'LUNs does not exists,exit this program')
-
-    def del_comfirm(self, del_result):
-        '''
-        User determines whether to delete
-        '''
-        comfirm = input('Do you want to delete these lun (yes/no):')
-        if comfirm == 'yes':
-            for res_name in del_result:
-                self.start_del(res_name)
+            return s.re_getshow(self.logger, STRING, ID, re_string, res_show_result['rst'].decode('utf-8'), 'crm', 'res_')
         else:
-            s.pwe(self.logger, 'Cancel succeed')
-
-    def vlpx_del(self, unique_str, unique_id):
-        '''
-        Call the function method to delete
-        '''
-        del_result = self.vplx_show(unique_str, unique_id)
-        self.del_comfirm(del_result)
+            print(self.logger, 'crm resource LUNs does not exists,exit this program')
 
     def vplx_rescan(self):
         '''
@@ -519,6 +503,6 @@ class VplxCrm(object):
         SSH.execute_command('rescan-scsi-bus.sh -a')
 
 
-# if __name__ == '__main__':
-#     test_crm = VplxCrm('72', 'luntest')
-#     test_crm.discover_new_lun()
+if __name__ == '__main__':
+    test_crm = VplxCrm(1)
+    test_crm._crm_verify('res_luntest_10')
