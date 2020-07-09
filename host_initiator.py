@@ -96,17 +96,18 @@ def find_session(logger):
             logger.write_to_log('T','INFO','warning','failed','','  ISCSI not login to VersaPLX, Try to login')
 
 
-def discover_new_lun(logger):
+def discover_new_lun(logger):#有问题，blk_dev_name返回为None
     '''
     Scan and find the disk from NetApp
     '''
-    unique_str = 'zWuZsV8e'
+    unique_str_one = 'zWuZsV8e'
+    unique_str_two = 'JRQb18mg'
     oprt_id_one = s.get_oprt_id()
     oprt_id_two = s.get_oprt_id()
     print('  Start to scan SCSI device from VersaPLX')
     logger.write_to_log('T','INFO','info','start','','    Start to scan SCSI device from VersaPLX')
     cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
-    result_rescan = ex_ssh_cmd(logger,unique_str,cmd_rescan,oprt_id_one)
+    result_rescan = ex_ssh_cmd(logger,unique_str_one,cmd_rescan,oprt_id_one)
     # result_rescan = SSH.execute_command(cmd_rescan)
     # if result_rescan['sts']:
     if result_rescan:
@@ -114,7 +115,7 @@ def discover_new_lun(logger):
         logger.write_to_log('T','INFO','info','start','','    Start to list all SCSI device')
         cmd_lsscsi = 'lsscsi'
         # result_lsscsi = SSH.execute_command(cmd_lsscsi)
-        result_lsscsi = ex_ssh_cmd(logger,unique_str,cmd_rescan,oprt_id_two)
+        result_lsscsi = ex_ssh_cmd(logger,unique_str_two,cmd_rescan,oprt_id_two)
         # if result_lsscsi != None:
         #     pass
             # result_lsscsi = result_lsscsi['rst'].decode('utf-8')
@@ -200,40 +201,43 @@ class HostTest(object):
             sys.exit()
         # self.logger.write_to_log('INFO','info','','_judge_format end')
 
-    def format_mount(self, dev_name):
+    def mount(self, dev_name):
+        '''
+        Mount disk
+        '''
+        oprt_id = s.get_oprt_id()
+        unique_str2 = '6CJ5opVX'
+        cmd_mount = f'mount {dev_name} {mount_point}'
+        self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'    Try mount {dev_name} to "/mnt"')
+        result_mount = ex_ssh_cmd(self.logger, unique_str2, cmd_mount, oprt_id)  # 这里返回的值是result['rst']
+        if result_mount:
+            print(f'  Disk {dev_name} mounted to "/mnt"')
+            self.logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id, f'    Disk {dev_name} mounted to "/mnt"')
+            return True
+        else:
+            print(f'  Disk {dev_name} mount to "/mnt" failed')
+            s.pwe(self.logger, f"mount {dev_name} to {mount_point} failed")
+
+    def format(self, dev_name):
         '''
         Format disk and mount disk
         '''
         # self.logger.write_to_log('INFO','info','',f'start to format disk {dev_name} and mount disk {dev_name}')
-
         oprt_id = s.get_oprt_id()
         unique_str1 = '7afztNL6'
-        unique_str2 = '6CJ5opVX'
         cmd_format = f'mkfs.ext4 {dev_name} -F'
-        cmd_mount = f'mount {dev_name} {mount_point}'
-
 
         print(f'  Start to format {dev_name}')
-        self.logger.write_to_log('T','INFO','info','start',oprt_id,f'    Start to format {dev_name}')
+        self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'    Start to format {dev_name}')
         result_format = ex_ssh_cmd(self.logger,unique_str1,cmd_format,oprt_id)
         if result_format:
             if self._judge_format(result_format):
-                print(f'  Try mount {dev_name} to "/mnt"')
-                self.logger.write_to_log('T','INFO','info','start','',f'    Try mount {dev_name} to "/mnt"')
-                result_mount = ex_ssh_cmd(self.logger,unique_str2,cmd_mount,oprt_id) # 这里返回的值是result['rst']
-                if result_mount:
-                    print(f'  Disk {dev_name} mounted to "/mnt"')
-                    self.logger.write_to_log('T','INFO','info','finish','',f'    Disk {dev_name} mounted to "/mnt"')
-                    #self.logger.write_to_log('HostTest', 'return', 'format_mount', True)
-                    return True
-                else:
-                    print(f'  Disk {dev_name} mount to "/mnt" failed')
-                    s.pwe(self.logger,f"mount {dev_name} to {mount_point} failed")
+                return True
             else:
                 s.pwe(self.logger,f'  Format {dev_name} failed')
         else:
             print(f'  Format command {cmd_format} execute failed')
-            self.logger.write_to_log('T','INFO','warning','failed','',f'  Format command "{cmd_format}" execute failed')
+            self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',f'  Format command "{cmd_format}" execute failed')
 
     def _get_dd_perf(self, cmd_dd):
         '''
@@ -275,7 +279,10 @@ class HostTest(object):
     def start_test(self):
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
         dev_name = discover_new_lun(self.logger)
-        mount_status = self.format_mount(dev_name)
+        mount_status = None
+        if self.format(dev_name):
+            mount_status = self.mount(dev_name)
+        # mount_status = self.format_mount(dev_name)
         if mount_status:
             self.get_test_perf()
         else:

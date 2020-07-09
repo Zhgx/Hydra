@@ -421,7 +421,6 @@ class VplxCrm(object):
             if self._crm_setting():
                 if self._crm_start():
                     print('------* drbd end *------')
-                    sys.exit()
                     return True
 
     def crm_verify(self):
