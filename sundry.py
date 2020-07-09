@@ -1,5 +1,7 @@
+
 #  coding: utf-8
 import sundry
+import consts
 
 import sys
 import re
@@ -31,15 +33,13 @@ def get_disk_dev(lun_id, re_string, lsscsi_result, dev_label,logger):
     re_find_path_via_id = re.compile(re_string)
     # self.logger.write_to_log('GetDiskPath','regular_before','find_device',lsscsi_result)
     re_result = re_find_path_via_id.findall(lsscsi_result)
-    # self.logger.write_to_log('DATA', 'output', 're_result', re_result)
     oprt_id = sundry.get_oprt_id()
-    logger.write_to_log('T','OPRT','regular','findall',oprt_id,{re_find_path_via_id:re_string})
+    logger.write_to_log('T','OPRT','regular','findall',oprt_id,{re_string:lsscsi_result})
     logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
     if re_result:
         dict_id_disk = dict(re_result)
         if lun_id in dict_id_disk.keys():
             blk_dev_name = dict_id_disk[lun_id]
-            # self.logger.write_to_log('GetDiskPath','return','find_device',blk_dev_name)
             return blk_dev_name
         else:
             print(f'no disk device with SCSI ID {lun_id} found')
@@ -83,3 +83,6 @@ def get_hostname():
 # Get the path of the program
 def get_path():
     return os.getcwd()
+
+def change_pointer(new_id):
+    consts.set_value('ID',new_id)

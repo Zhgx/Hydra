@@ -1,15 +1,16 @@
-
 #  coding: utf-8
 import argparse
 import sys
 import time
 
-import storage
 import vplx
+import storage
 import host_initiator
 import sundry
 import log
 import logdb
+import consts
+
 
 class HydraArgParse():
     '''
@@ -21,6 +22,7 @@ class HydraArgParse():
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         self.argparse_init()
+        consts._init()  # 初始化一个全局变量：ID
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
@@ -78,9 +80,9 @@ class HydraArgParse():
         '''
         drbd = vplx.VplxDrbd(self.logger)
         # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
-        drbd.prepare_config_file() # 创建配置文件
-        drbd.drbd_cfg() # run
-        drbd.drbd_status_verify() # 验证有没有启动（UptoDate）
+        # drbd.prepare_config_file() # 创建配置文件
+        drbd.drbd_cfg()  # run
+        # drbd.drbd_status_verify() # 验证有没有启动（UptoDate）
 
     def _vplx_crm(self):
         '''
@@ -101,55 +103,32 @@ class HydraArgParse():
     def execute(self, id, string):
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
-
+        self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{id}')
+        self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{string}')
+        # self.logger.write_to_log('F','DATA','ID','','Start a new trasaction')
         print(f'\n======*** Start working for ID {id} ***======')
 
-        storage.ID = id
-        storage.STRING = string
+        # 初始化一个全局变量ID
+
+        storage._ID = id
+        storage._STR = string
+        storage._RPL = 'no'
         self._storage()
-        
-        vplx.ID = id
-        vplx.STRING = string
+
+        vplx._ID = id
+        vplx._STR = string
+        vplx._RPL = 'no'
         self._vplx_drbd()
-        self._vplx_crm()
-        time.sleep(1.5)
-        
+
         host_initiator.ID = id
         self._host_test()
 
-    def replay(self, args):
-        if args.transactionid or args.date:
-            db = logdb.LogDB()
-            db.get_logdb()
-
-        if args.transactionid and args.date:
-            print('1')
-        elif args.transactionid:
-            # result = logdb.get_info_via_tid(args.transactionid)
-            # data = logdb.get_data_via_tid(args.transactionid)
-            # for info in result:
-            #     print(info[0])
-            # print('============ * data * ==============')
-            # for data_one in data:
-            #     print(data_one[0])
-            db.print_info_via_tid(args.transactionid)
-
-            # logdb.replay_via_tid(args.transactionid)
-
-
-        elif args.date:
-            # python3 vtel_client_main.py re -d '2020/06/16 16:08:00' '2020/06/16 16:08:10'
-            print('data')
-        else:
-            print('replay help')
-
-
-    @sundry.record_exception
+    # @sundry.record_exception
     def run(self):
         if sys.argv:
             path = sundry.get_path()
             cmd = ' '.join(sys.argv)
-            self.logger.write_to_log('T','DATA','input', 'user_input', '',cmd)
+            self.logger.write_to_log('T', 'DATA', 'input', 'user_input', '', cmd)
             # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
             # [time],[transaction_id],[s],[DATA],[input],[user_input],[cmd],[f{cmd}]
 
@@ -168,10 +147,28 @@ class HydraArgParse():
                 self.parser.print_help()
 
         elif args.replay:
-            self.replay(args)
+            if args.transactionid:
+                db = logdb.LogDB()
+                db.get_logdb()
+                _string, _id = db.get_string_id(args.transactionid)
+
+                vplx._RPL = 'yes'
+                print(f'\n======*** Start working for ID {id} ***======')
+                consts._init()  # 初始化一个全局变量：ID
+                consts.set_value('LOG_SWITCH', 'OFF')
+                print('LOG_SWITCH:', consts.get_value('LOG_SWITCH'))
+
+                vplx._TID = args.transactionid
+
+                vplx._ID = _id
+                vplx._STR = _string
+                self._vplx_drbd()
+                time.sleep(1.5)
+
+                # self.replay(args)
 
         else:
-            # self.logger.write_to_log('INFO','info','','print_help') 
+            # self.logger.write_to_log('INFO','info','','print_help')
             self.parser.print_help()
 
 

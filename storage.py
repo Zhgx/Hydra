@@ -2,8 +2,8 @@
 import connect
 import time
 
-global ID
-global STRING
+global _ID
+global _STR
 
 host = '10.203.1.231'
 port = 23
@@ -24,7 +24,7 @@ class Storage:
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.telnet_conn = connect.ConnTelnet(host, port, username, password, timeout,logger)
         # print('Connect to storage NetApp')
-        self.lun_name = f'{STRING}_{ID}'
+        self.lun_name = f'{_STR}_{_ID}'
 
 
     def lun_create(self):
@@ -48,9 +48,9 @@ class Storage:
         '''
         Map lun of specified lun_id to initiator group
         '''
-        info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {ID}'
+        info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {_ID}'
         # self.logger.write_to_log('INFO','info','',f'start to map lun {self.lun_name}')
-        lm_cmd = f'lun map /vol/esxi/{self.lun_name} hydra {ID}'
+        lm_cmd = f'lun map /vol/esxi/{self.lun_name} hydra {_ID}'
         print(f'  Start to {info_msg}')
         self.logger.write_to_log('T','INFO','info','start','',f'  Start to {info_msg}')
         self.telnet_conn.execute_command(lm_cmd)
