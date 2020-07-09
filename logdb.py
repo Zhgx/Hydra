@@ -163,4 +163,5 @@ class LogDB():
 if __name__ == '__main__':
     db = LogDB()
     db.get_logdb()
-    print(db.find_oprt_id_via_string('1594201691','usnkegs'))
+    print(db.find_oprt_id_via_string('1594278689','jMPFwXy2'))
+    print(db.get_cmd_result('4155851927'))

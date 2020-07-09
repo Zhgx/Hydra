@@ -47,7 +47,7 @@ class ConnSSH(object):
 
 
 
-    def execute_command(self, command, oprt_id):
+    def execute_command(self, command):
         # oprt_id = s.get_oprt_id()
         # self.logger.write_to_log('T','OPRT','cmd','ssh',oprt_id,command)
         stdin, stdout, stderr = self.SSHConnection.exec_command(command)
@@ -65,7 +65,7 @@ class ConnSSH(object):
             return output
         if data == b'':
             output = {'sts': 1, 'rst': data}
-            self.logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, output)
+            # self.logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, output)
             return output
 
 
@@ -110,7 +110,7 @@ class ConnTelnet(object):
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
         oprt_id = s.get_oprt_id()
-        self.logger.write_to_log('T','OPRT','cmd','telnet',oprt_id,cmd)
+        # self.logger.write_to_log('T','OPRT','cmd','telnet',oprt_id,cmd)
         self.telnet.write(cmd.encode().strip() + b'\r')
         time.sleep(0.25)
         rely = self.telnet.read_very_eager().decode()# ?

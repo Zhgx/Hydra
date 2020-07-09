@@ -80,9 +80,9 @@ class HydraArgParse():
         '''
         drbd = vplx.VplxDrbd(self.logger)
         # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
-        # drbd.prepare_config_file() # 创建配置文件
+        drbd.prepare_config_file() # 创建配置文件
         drbd.drbd_cfg()  # run
-        # drbd.drbd_status_verify() # 验证有没有启动（UptoDate）
+        drbd.drbd_status_verify() # 验证有没有启动（UptoDate）
 
     def _vplx_crm(self):
         '''
@@ -109,18 +109,19 @@ class HydraArgParse():
         print(f'\n======*** Start working for ID {id} ***======')
 
         # 初始化一个全局变量ID
-
+        storage._RPL = 'no'
         storage._ID = id
         storage._STR = string
-        storage._RPL = 'no'
         self._storage()
 
         vplx._ID = id
         vplx._STR = string
         vplx._RPL = 'no'
         self._vplx_drbd()
+        self._vplx_crm()
 
-        host_initiator.ID = id
+        host_initiator._RPL = 'no'
+        host_initiator._ID = id
         self._host_test()
 
     # @sundry.record_exception
@@ -153,16 +154,23 @@ class HydraArgParse():
                 _string, _id = db.get_string_id(args.transactionid)
 
                 vplx._RPL = 'yes'
+                storage._RPL = 'yes'
                 print(f'\n======*** Start working for ID {id} ***======')
                 consts._init()  # 初始化一个全局变量：ID
                 consts.set_value('LOG_SWITCH', 'OFF')
                 print('LOG_SWITCH:', consts.get_value('LOG_SWITCH'))
 
                 vplx._TID = args.transactionid
+                storage._TID = args.transactionid
+
+                storage._ID = _id
+                storage._STR = _string
+                self._storage()
 
                 vplx._ID = _id
                 vplx._STR = _string
                 self._vplx_drbd()
+                self._vplx_crm()
                 time.sleep(1.5)
 
                 # self.replay(args)

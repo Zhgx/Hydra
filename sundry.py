@@ -2,6 +2,7 @@
 #  coding: utf-8
 import sundry
 import consts
+import logdb
 
 import sys
 import re
@@ -11,6 +12,7 @@ import getpass
 import traceback
 import socket
 from random import shuffle
+
 
 
 def pwe(logger,print_str):
@@ -85,4 +87,7 @@ def get_path():
     return os.getcwd()
 
 def change_pointer(new_id):
-    consts.set_value('ID',new_id)
+    consts.set_value('ID', new_id)
+
+
+
