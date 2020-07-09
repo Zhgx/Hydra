@@ -113,19 +113,12 @@ class Storage:
             return s.re_getshow(self.logger, STRING, ID, re_string, show_result, 'storage')
         else:
             print(self.logger, 'storage LUNs does not exists,exit this program')
+            return False
 
-    # def stor_del(self):
-    #     '''
-    #     Call the function method to delete
-    #     '''
-    #     del_name = self.lun_getname()
-    #     for lun_name in del_name:
-    #         self.lun_unmap(lun_name)
-    #         self.lun_destroy(lun_name)
-    #         time.sleep(0.25)
+
 if __name__ == '__main__':
-    test_stor = Storage('31', 'luntest')
-    test_stor.lun_create()
-    test_stor.lun_map()
+    pass
+    # test_stor = Storage('31', 'luntest')
+    # test_stor.lun_create()
+    # test_stor.lun_map()
     # test_stor.telnet_conn.close()
-    # pass

@@ -32,6 +32,7 @@ def iscsi_about(re_string, result):
 
 
 def iscsi_login(logger, ip, login_result):
+    
     re_string = f'Login to.*portal: ({ip}).*successful'
     if iscsi_about(re_string, login_result):
         print(f'iscsi login to {ip} succeed')
@@ -46,15 +47,15 @@ def find_session(ip, session_result):
         return True
 
 
-def range_uid(logger, unique_str, unique_id, show_result, string, resource_name):
+def range_uid(logger, unique_str, ids, show_result, resource_name):
     '''
     Generate some names with a range of id values and determine whether these names exist。
         name is lun name /resource name
         list_name is used to return the list value
-        list_none is used to judge that none of these names exist
     '''
     list_name = []
-    for i in range(unique_id[0], unique_id[1]):
+    string = decide_string(resource_name)
+    for i in range(ids[0], ids[1]):
         name = f'{string}{unique_str}_{i}'
         if name in show_result:
             list_name.append(name)
@@ -64,6 +65,9 @@ def range_uid(logger, unique_str, unique_id, show_result, string, resource_name)
 
 
 def print_format(list_name):
+    '''
+    Data alignment and division every ten name rows
+    '''
     name = ''
     for i in range(len(list_name)):
         name = name.ljust(4)+list_name[i]+'  '
@@ -72,30 +76,45 @@ def print_format(list_name):
     return name
 
 
-def one_uid(logger, unique_str, unique_id, show_result, string, resource_name):
+def decide_string(resource_name):
+    '''
+    Determine name is resource name or lun name
+    '''
+    if resource_name == 'storage':
+        return ''
+    else:
+        return 'res_'
+
+
+def one_uid(logger, unique_str, unique_id, show_result, resource_name):
     '''
     Generate a name with a fixed id value and determine whether these names exist。
         name is lun name /resource name
     '''
+    string = decide_string(resource_name)
     name = f'{string}{unique_str}_{unique_id[0]}'
     if name in show_result:
+        name = [name]
         print(f'{resource_name}:')
-        print(name.rjust(len(name)+4))
-        return [name]
+        print(print_format(name))
+        return name
     else:
         print(logger, f'{name} not found')
 
 
-def re_getshow(logger, unique_str, list_id, re_string, show_result, resource_name, string=''):
+def re_getshow(logger, unique_str, list_id, re_string, show_result, resource_name):
+    '''
+    Determine the lun to be deleted according to regular matching
+    '''
     re_show = re.compile(re_string)
     re_result = re_show.findall(show_result)
     # print(re_result)
     if re_result:
         if list_id:
             if len(list_id) == 2:
-                return range_uid(logger, unique_str, list_id, re_result, string, resource_name)
+                return range_uid(logger, unique_str, list_id, re_result, resource_name)
             elif len(list_id) == 1:
-                return one_uid(logger, unique_str, list_id, re_result, string, resource_name)
+                return one_uid(logger, unique_str, list_id, re_result, resource_name)
             else:
                 pwe(logger, 'please enter a valid value')
         else:

@@ -37,6 +37,7 @@ class HydraArgParse():
         self.parser.add_argument(
             '-id',
             action="store",
+            default='',
             dest="id_range",
             help='ID or ID range(split with ",")')
 
@@ -74,8 +75,8 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config DRDB resource
         '''
-        drbd = vplx.VplxDrbd(self.logger)
         # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
+        drbd = vplx.VplxDrbd(self.logger)
         drbd.prepare_config_file()  # 创建配置文件
         drbd.drbd_cfg()  # run
         drbd.drbd_status_verify()  # 验证有没有启动（UptoDate）
@@ -96,43 +97,49 @@ class HydraArgParse():
         # host.ssh.execute_command('umount /mnt')
         host.start_test()
 
-    def _vplx_rescan(self):
-        v_rescan = vplx.VplxCrm(self.logger)
-        v_rescan.vplx_rescan()
-
-    def _host_rescan(self):
-        host_rescan = host_initiator.HostTest(self.logger)
-        host_rescan.initiator_rescan()
-
     def del_comfirm(self, uniq_str, list_id):
         '''
-        User determines whether to delete
+        User determines whether to delete and to delete
         '''
         storage.ID = list_id
         storage.STRING = uniq_str
         vplx.ID = list_id
         vplx.STRING = uniq_str
 
-        vplx_del = vplx.VplxCrm(self.logger)
-        crm_name = vplx_del.vplx_crm_show()
-        drbd_name = vplx_del.vplx_drbd_show()
-        stor_del = storage.Storage(self.logger)
-        stor_name = stor_del.storage_lun_show()
+        crm = vplx.VplxCrm(self.logger)
+        crm_name = crm.vplx_crm_show()
 
-        comfirm = input('Do you want to delete these lun (yes/no):')
-        if comfirm == 'yes':
-            for res_name in crm_name:
-                vplx_del.crm_del(res_name)
-            for res_name in drbd_name:
-                vplx_del.drbd_del(res_name)
-            for lun_name in stor_name:
-                stor_del.lun_unmap(lun_name)
-                stor_del.lun_destroy(lun_name)
-                time.sleep(0.25)
+        drbd = vplx.VplxDrbd(self.logger)
+        drbd_name = drbd.vplx_drbd_show()
+
+        stor = storage.Storage(self.logger)
+        stor_name = stor.storage_lun_show()
+
+        host_initiator.ID = id
+        host = host_initiator.HostTest(self.logger)
+
+        if crm_name or drbd_name or stor_name:
+            comfirm = input('Do you want to delete these lun (yes/no):')
+            if comfirm == 'yes':
+                if crm_name:
+                    for res_name in crm_name:
+                        crm.crm_del(res_name)
+                if drbd_name:
+                    for res_name in drbd_name:
+                        drbd.drbd_del(res_name)
+                if stor_name:
+                    for lun_name in stor_name:
+                        stor.lun_unmap(lun_name)
+                        stor.lun_destroy(lun_name)
+                        time.sleep(0.4)
+                crm.vplx_rescan()
+                host.initiator_rescan()
+            else:
+                sundry.pwe(self.logger, 'Cancel succeed')
         else:
-            sundry.pwe(self.logger, 'Cancel succeed')
+            sundry.pwe(self.logger, 'No lun need to deleted')
 
-    def execute(self, id, string):
+    def execute(self, string, id):
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
 
@@ -182,13 +189,13 @@ class HydraArgParse():
             ids[1]+1
         return ids
 
-    def create_lun(self, uniq_str, ids):
+    def start_create_lun(self, uniq_str, ids):
         if len(ids) == 1:
-            self.execute(int(ids[0]), uniq_str)
+            self.execute(uniq_str, int(ids[0]))
         elif len(ids) == 2:
             id_start, id_end = int(ids[0]), int(ids[1])
             for i in range(id_start, id_end):
-                self.execute(i, uniq_str)
+                self.execute(uniq_str, i)
         else:
             self.parser.print_help()
 
@@ -206,14 +213,13 @@ class HydraArgParse():
 
         # uniq_str: The unique string for this test, affects related naming
         if args.uniq_str:
+            ids = args.id_range
             if args.id_range:
                 ids = self.get_ids(args.id_range)
-            else:
-                ids = ''
             if args.delete:
                 self.del_comfirm(args.uniq_str, ids)
             else:
-                self.create_lun(args.uniq_str, ids)
+                self.start_create_lun(args.uniq_str, ids)
 
 
 if __name__ == '__main__':

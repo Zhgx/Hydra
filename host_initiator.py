@@ -28,7 +28,7 @@ def init_ssh(logger):
 
 
 def umount_mnt(logger):
-    print('  Umount "/mnt"')
+    # print('  Umount "/mnt"')
     SSH.execute_command('umount /mnt')
 
 
@@ -83,7 +83,7 @@ def find_session(logger):
         # self.logger.write_to_log('DATA', 'output', 're_result', re_result)
         if re_result:
             # self.logger.write_to_log('HostTest','return','find_session',True)
-            print('  iSCSI already login to VersaPLX')
+            # print('  iSCSI already login to VersaPLX')
             logger.write_to_log('T', 'INFO', 'info', 'finish',
                                 '', '    ISCSI already login to VersaPLX')
             return True
