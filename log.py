@@ -2,12 +2,14 @@
 import logging
 import logging.handlers
 import logging.config
+import consts
 from functools import wraps
 import traceback
 import sys
 import os
 import getpass
 import socket
+
 
 
 
@@ -26,12 +28,13 @@ class MyLoggerAdapter(logging.LoggerAdapter):
 
 class Log(object):
     # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
-    fmt = logging.Formatter("%(asctime)s [%(transaction_id)s] [%(display)s] [%(type_level1)s] [%(type_level2)s] [%(describe1)s] [%(describe2)s] [%(data)s]",datefmt = '[%Y/%m/%d %H:%M:%S]')
+    fmt = logging.Formatter("%(asctime)s [%(transaction_id)s] [%(display)s] [%(type_level1)s] [%(type_level2)s] [%(describe1)s] [%(describe2)s] [%(data)s]|",datefmt = '[%Y/%m/%d %H:%M:%S]')
     handler_input = logging.handlers.RotatingFileHandler(filename='Hydra_log.log',mode='a',maxBytes=10*1024*1024,backupCount=5)
     handler_input.setFormatter(fmt)
 
     def __init__(self,transaction_id):
         self.transaction_id = transaction_id
+        # self.log_switch = consts.get_value('LOG_SWITCH')
         # self.time = None
         # self.type1 = None
         # self.type2 = None
@@ -60,7 +63,11 @@ class Log(object):
     # write to log file
     def write_to_log(self,display,type1,type2,describe1,describe2,data):
         logger_hydra = self.logger_create()
-        # logger_hydra.logger.removeHandler(self.handler_input)
+
+        if consts.get_value('LOG_SWITCH') == 'OFF':
+            logger_hydra.logger.removeHandler(self.handler_input)
+
+
         logger_hydra.debug(
             '',
             extra={
