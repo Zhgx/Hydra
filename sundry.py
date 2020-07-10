@@ -32,7 +32,7 @@ def iscsi_about(re_string, result):
 
 
 def iscsi_login(logger, ip, login_result):
-    
+
     re_string = f'Login to.*portal: ({ip}).*successful'
     if iscsi_about(re_string, login_result):
         print(f'iscsi login to {ip} succeed')
@@ -98,8 +98,6 @@ def one_uid(logger, unique_str, unique_id, show_result, resource_name):
         print(f'{resource_name}:')
         print(print_format(name))
         return name
-    else:
-        print(logger, f'{name} not found')
 
 
 def re_getshow(logger, unique_str, list_id, re_string, show_result, resource_name):

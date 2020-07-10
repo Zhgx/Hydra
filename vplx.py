@@ -303,7 +303,7 @@ class VplxDrbd(object):
                                      drbd_show_result['rst'].decode('utf-8'), 'DRBD')
             return drbd_name
         else:
-            print(self.logger, 'drbd resource does not exists,exit this program')
+            print(self.logger, 'drbd resource does not exists')
             return False
 
     def drbd_del(self, res_name):
@@ -496,7 +496,7 @@ class VplxCrm(object):
         if res_show_result['sts']:
             return s.re_getshow(self.logger, STRING, ID, re_string, res_show_result['rst'].decode('utf-8'), 'crm')
         else:
-            print(self.logger, 'crm resource LUNs does not exists,exit this program')
+            print(self.logger, 'crm resource LUNs does not exists')
             return False
 
     def vplx_rescan(self):

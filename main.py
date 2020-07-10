@@ -99,7 +99,7 @@ class HydraArgParse():
 
     def del_comfirm(self, uniq_str, list_id):
         '''
-        User determines whether to delete and to delete
+        User determines whether to delete and execute delete method
         '''
         storage.ID = list_id
         storage.STRING = uniq_str

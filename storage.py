@@ -112,7 +112,7 @@ class Storage:
         if show_result:
             return s.re_getshow(self.logger, STRING, ID, re_string, show_result, 'storage')
         else:
-            print(self.logger, 'storage LUNs does not exists,exit this program')
+            print(self.logger, 'storage LUNs does not exists')
             return False
 
 
