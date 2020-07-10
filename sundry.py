@@ -90,4 +90,5 @@ def change_pointer(new_id):
     consts.set_value('ID', new_id)
 
 
-
+if __name__ == 'main':
+    get_disk_dev()

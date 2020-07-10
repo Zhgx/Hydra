@@ -155,7 +155,7 @@ class HydraArgParse():
 
                 vplx._RPL = 'yes'
                 storage._RPL = 'yes'
-                print(f'\n======*** Start working for ID {id} ***======')
+                print(f'\n======*** Start working for ID {_id} ***======')
                 consts._init()  # 初始化一个全局变量：ID
                 consts.set_value('LOG_SWITCH', 'OFF')
                 print('LOG_SWITCH:', consts.get_value('LOG_SWITCH'))
@@ -171,6 +171,11 @@ class HydraArgParse():
                 vplx._STR = _string
                 self._vplx_drbd()
                 self._vplx_crm()
+
+                host_initiator._RPL = 'no'
+                host_initiator._ID = _id
+                self._host_test()
+
                 time.sleep(1.5)
 
                 # self.replay(args)

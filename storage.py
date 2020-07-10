@@ -44,8 +44,7 @@ class Storage:
         elif _RPL == 'yes':
             db = logdb.LogDB()
             db.get_logdb()
-            ww = db.find_oprt_id_via_string(_TID, unique_str)
-            db_id, oprt_id = ww
+            db_id, oprt_id = db.find_oprt_id_via_string(_TID, unique_str)
             print('STORAGE:')
             print(f'  DB ID go to: {db_id}')
             print(f'  get opration ID: {oprt_id}')
