@@ -84,8 +84,6 @@ class Storage:
             if re_result:
                 print(f'{lun_name} unmap succeed')
                 return True
-            else:
-                print(f'{lun_name} unmap failed')
 
     def lun_destroy(self, lun_name):
         '''
@@ -107,12 +105,11 @@ class Storage:
         Get all luns through regular matching
         '''
         show_cmd = 'lun show'
-        re_string = f'{STRING}_[0-9]*'
+        re_string = f'/vol/esxi/({STRING}_[0-9]{{1,3}})'
         show_result = self.telnet_conn.execute_command(show_cmd)
         if show_result:
             return s.re_getshow(self.logger, STRING, ID, re_string, show_result, 'storage')
         else:
-            print(self.logger, 'storage LUNs does not exists')
             return False
 
 

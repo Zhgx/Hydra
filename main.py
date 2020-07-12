@@ -137,7 +137,8 @@ class HydraArgParse():
             else:
                 sundry.pwe(self.logger, 'Cancel succeed')
         else:
-            sundry.pwe(self.logger, 'No lun need to deleted')
+            sundry.pwe(
+                self.logger, 'The resource you want to delete does not exist. Please confirm the information you entered.\n')
 
     def execute(self, string, id):
         self.transaction_id = sundry.get_transaction_id()
@@ -220,6 +221,8 @@ class HydraArgParse():
                 self.del_comfirm(args.uniq_str, ids)
             else:
                 self.start_create_lun(args.uniq_str, ids)
+        else:
+            self.parser.print_help()
 
 
 if __name__ == '__main__':

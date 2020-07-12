@@ -297,13 +297,12 @@ class VplxDrbd(object):
         Get the DRBD resource name through regular matching and determine whether these  exist
         '''
         drbd_show_result = SSH.execute_command('drbdadm status')
-        re_string = f'res_{STRING}_\w*'
+        re_string = f'res_{STRING}_[0-9]{{1,3}}'
         if drbd_show_result['sts']:
             drbd_name = s.re_getshow(self.logger, STRING, ID, re_string,
                                      drbd_show_result['rst'].decode('utf-8'), 'DRBD')
             return drbd_name
         else:
-            print(self.logger, 'drbd resource does not exists')
             return False
 
     def drbd_del(self, res_name):
@@ -408,11 +407,13 @@ class VplxCrm(object):
         cmd_lu_start = f'crm res start {self.lu_name}'
         result_lu_start = SSH.execute_command(cmd_lu_start)
         if result_lu_start['sts']:
-            if self.crm_status(self.lu_name, 'running on: maxluntarget '):
+            if self.crm_status(self.lu_name, 'Started'):
                 print('  iSCSI LUN start successful')
                 self.logger.write_to_log(
                     'T', 'INFO', 'info', 'finish', '', '      ISCSI LUN start successful')
                 return True
+            else:
+                s.pwe(self.logger, 'crm started failed,exit the program...')
         else:
             s.pwe(self.logger, 'iscsi lun start failed')
 
@@ -427,14 +428,10 @@ class VplxCrm(object):
         Check the crm resource status
         '''
         verify_result = SSH.execute_command(f'crm res show {res_name}')
-        if verify_result:
-            re_show = re.compile(f'resource {res_name} is (.*)')
-            re_show_result = re_show.findall(
-                verify_result['rst'].decode('utf-8'))
-            if re_show_result:
-                return re_show_result[0]
-            else:
-                print('crm verify failed')
+        if verify_result['sts'] == 1:
+            return {'status': 'Started'}
+        if verify_result['sts'] == 0:
+            return {'status': 'Stopped'}
         else:
             s.pwe(self.logger, 'crm show failed')
 
@@ -446,11 +443,12 @@ class VplxCrm(object):
         while n < 10:
             n += 1
             crm_verify = self._crm_verify(res_name)
-            if crm_verify == status:
+            if crm_verify['status'] == status:
                 print(f'{res_name} is {status}')
                 return True
             else:
-                print(f'{res_name} is {crm_verify}, Wait a moment...')
+                print(
+                    f'{res_name} is {crm_verify["status"]}, Wait a moment...')
                 time.sleep(1.5)
         else:
             return False
@@ -461,9 +459,11 @@ class VplxCrm(object):
         '''
         crm_stop_cmd = (f'crm res stop {res_name}')
         crm_stop = SSH.execute_command(crm_stop_cmd)
-        if crm_stop['sts'] == 1:
-            if self.crm_status(res_name, 'NOT running'):
+        if crm_stop['sts']:
+            if self.crm_status(res_name, 'Stopped'):
                 return True
+            else:
+                s.pwe(self.logger, 'crm stop failed,exit the program...')
         else:
             s.pwe(self.logger, 'crm stop failed')
 
@@ -492,11 +492,10 @@ class VplxCrm(object):
         Get the crm resource name through regular matching and determine whether these  exist
         '''
         res_show_result = SSH.execute_command('crm res show')
-        re_string = f'res_{STRING}_\w*'
+        re_string = f'res_{STRING}_[0-9]{{1,3}}'
         if res_show_result['sts']:
             return s.re_getshow(self.logger, STRING, ID, re_string, res_show_result['rst'].decode('utf-8'), 'crm')
         else:
-            print(self.logger, 'crm resource LUNs does not exists')
             return False
 
     def vplx_rescan(self):

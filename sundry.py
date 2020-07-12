@@ -106,7 +106,6 @@ def re_getshow(logger, unique_str, list_id, re_string, show_result, resource_nam
     '''
     re_show = re.compile(re_string)
     re_result = re_show.findall(show_result)
-    # print(re_result)
     if re_result:
         if list_id:
             if len(list_id) == 2:

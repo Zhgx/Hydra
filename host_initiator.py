@@ -145,7 +145,7 @@ def start_rescan(logger):
         if blk_dev_name:
             return blk_dev_name
         else:
-            print('Did not find the new LUN from VersaPLX,program exit...')
+            print('Did not find the new LUN from VersaPLX,exit the program...')
             sys.exit()
 
 
