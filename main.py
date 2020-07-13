@@ -103,7 +103,7 @@ class HydraArgParse():
         host.start_test()
         print('------* host_test end *------')
 
-    def normal_execute(self,id,string):
+    def normal_execute(self, id, string):
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{id}')
@@ -111,9 +111,9 @@ class HydraArgParse():
         storage._RPL = 'no'
         vplx._RPL = 'no'
         host_initiator._RPL = 'no'
-        self.execute(id,string)
+        self.execute(id, string)
 
-    def replay_execute(self,tid):
+    def replay_execute(self, tid):
         db = logdb.LogDB()
         db.get_logdb()
         _string, _id = db.get_string_id(tid)
@@ -125,8 +125,7 @@ class HydraArgParse():
         host_initiator._TID = tid
         consts._init()  # 初始化一个全局变量：ID
         consts.set_value('LOG_SWITCH', 'OFF')
-        self.execute(_id,_string)
-
+        self.execute(_id, _string)
 
     def execute(self, id, string):
         # self.transaction_id = sundry.get_transaction_id()
@@ -175,11 +174,12 @@ class HydraArgParse():
 
             elif args.date:
                 db = logdb.LogDB()
-                list_tid = db.get_transaction_id_via_date(args.date[0],args.date[1])
+                list_tid = db.get_transaction_id_via_date(args.date[0], args.date[1])
                 for tid in list_tid:
                     self.replay_execute(tid)
             else:
                 print('replay help')
+
 
         else:
             # self.logger.write_to_log('INFO','info','','print_help')
