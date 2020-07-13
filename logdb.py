@@ -24,6 +24,7 @@ def get_target_file(filename):
     list_file.sort(reverse=True)
     return list_file
 
+
 class LogDB():
     create_table_sql = '''
     create table if not exists logtable(
@@ -54,15 +55,11 @@ class LogDB():
     values(?,?,?,?,?,?,?,?,?)
     '''
 
-
     drop_table_sql = "DROP TABLE if exists logtable "
 
     def __init__(self):
         self.con = sqlite3.connect("logDB.db", check_same_thread=False)
         self.cur = self.con.cursor()
-        self.drop_tb()
-        self.cur.execute(self.create_table_sql)
-        self.con.commit()
 
     def insert(self, data):
         self.cur.execute(self.insert_sql, data)
@@ -71,11 +68,21 @@ class LogDB():
         self.cur.execute(self.drop_table_sql)
         self.con.commit()
 
+    def select_all(self):
+        self.cur.execute("SELECT * FROM logtable")
+        return self.cur.fetchall()
+
     # 获取表单行数据的通用方法
     def sql_fetch_one(self, sql):
         self.cur.execute(sql)
-        date_set = self.cur.fetchone()
-        return date_set
+        data_set = self.cur.fetchone()
+        if data_set:
+            if len(data_set) == 1:
+                return data_set[0]
+            else:
+                return data_set
+        else:
+            return data_set
 
     # 获取表全部数据的通用方法
     def sql_fetch_all(self, sql):
@@ -85,22 +92,7 @@ class LogDB():
         return list(date_set)
 
     def get_cmd_result(self, oprt_id):
-        sql = "SELECT data FROM logtable WHERE type1 = 'DATA' and type2 = 'cmd' and describe2 = '%s'" % (oprt_id)
-        return self.sql_fetch_one(sql)
-
-    def get_all_via_tid(self, transaction_id):
-        sql = "SELECT type1,type2,describe1,describe2,data FROM logtable WHERE display = 'T' and transaction_id = '%s'" % transaction_id
-        return self.sql_fetch_all(sql)
-
-    # def print_info_via_tid(self,transaction_id):
-    #     all_data = self.get_all_via_tid(transaction_id)
-    #     for data in all_data:
-    #         if data[0] == 'INFO':
-    #             print(data[4])
-
-    def get_oprt_id(self, transaction_id, describe1):
-        sql = "SELECT data FROM logtable WHERE type1 = 'DATA' and type2 = 'oprt_id' and transaction_id= '%s' and describe1 = '%s'" % (
-        transaction_id, describe1)
+        sql = f"SELECT data FROM logtable WHERE type1 = 'DATA' and type2 = 'cmd' and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
     def get_id(self, transaction_id, data, id_now=0):
@@ -119,29 +111,43 @@ class LogDB():
     def get_string_id(self, transaction_id):
         sql = f"SELECT data FROM logtable WHERE describe1 = 'Start a new trasaction' and transaction_id = '{transaction_id}'"
         _id = self.sql_fetch_one(sql)
-        if _id:
-            _id = _id[0]
         sql = f"SELECT data FROM logtable WHERE describe1 = 'unique_str' and transaction_id = '{transaction_id}'"
         string = self.sql_fetch_one(sql)
-        if string:
-            string = string[0]
-
         return (string, _id)
         # re_ = re.compile(r'Start to create lun, name: (.*)_(.*)')
         # return re_.findall(result[0])
 
-    def get_data_via_id(self, id):
-        sql = f"SELECT data FROM logtable WHERE id = '{id}' and display = 'T' and type1 = 'INFO'"
+    def get_info_start(self, oprt_id):
+        # 通过oprt_id，获取到INFO start信息
+        sql = f"SELECT data FROM logtable WHERE type1 = 'INFO' and describe1 = 'start' and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
+    def get_info_finish(self, oprt_id):
+        # 通过oprt_id，获取到INFO finish信息
+        sql = f"SELECT data FROM logtable WHERE type1 = 'INFO' and describe1 = 'finish' and describe2 = '{oprt_id}'"
+        return self.sql_fetch_one(sql)
 
+    def get_transaction_id_via_date(self,date_start,date_end):
+        # 获取一个时间段内的全部事务id
+        sql = f"SELECT DISTINCT transaction_id FROM logtable WHERE time >= '{date_start}' and time <= '{date_end}'"
+        result = self.sql_fetch_all(sql)
+        list_result = []
+        if result:
+            for i in result:
+                list_result.append(i[0])
+            return list_result
+        return []
 
 
     def get_logdb(self):
+        self.drop_tb()
+        self.cur.execute(self.create_table_sql)
+        self.con.commit()
         log_path = "./Hydra_log.log"
         logfilename = 'Hydra_log.log'
         id = (None,)
-        re_ = re.compile(r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?\]?)\]', re.DOTALL)
+        re_ = re.compile(r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?\]?)\]\|',
+                         re.DOTALL)
         if not isFileExists(log_path):
             print('no file')
             return
@@ -158,10 +164,11 @@ class LogDB():
             f.close()
 
         self.con.commit()
+        # self.con.close()
 
 
 if __name__ == '__main__':
     db = LogDB()
     db.get_logdb()
-    print(db.find_oprt_id_via_string('1594278689','jMPFwXy2'))
-    print(db.get_cmd_result('4155851927'))
+    # print(db.find_oprt_id_via_string('1594365867', 'jMPFwXy2'))
+    res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')

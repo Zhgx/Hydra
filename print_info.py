@@ -23,7 +23,6 @@ def get_target_file(filename):
     return list_file
 
 
-
 def get_log():
     log_path = "./Hydra_log.log"
     logfilename = 'Hydra_log.log'
@@ -43,5 +42,6 @@ def get_log():
                 print(data_one[7])
 
         f.close()
+
 
 get_log()
