@@ -46,23 +46,35 @@ def find_session(ip, session_result):
     if iscsi_about(re_string, session_result):
         return True
 
-
-def range_uid(logger, unique_str, ids, show_result, resource_name):
+def get_list_name(logger, unique_str, ids, show_result, resource_name):
     '''
     Generate some names with a range of id values and determine whether these names exist。
         name is lun name /resource name
         list_name is used to return the list value
     '''
-    list_name = []
     string = decide_string(resource_name)
-    for i in range(ids[0], ids[1]):
-        name = f'{string}{unique_str}_{i}'
+    if len(ids)==2:
+        list_name = []
+        for i in range(ids[0], ids[1]):
+            name = f'{string}{unique_str}_{i}'
+            if name in show_result:
+                list_name.append(name)
+        return list_name
+    elif len(ids)==1:
+        name = f'{string}{unique_str}_{ids[0]}'
         if name in show_result:
-            list_name.append(name)
-    print(f'{resource_name}:')
-    print(print_format(list_name))
-    return list_name
+            return [name]
+    else:
+        pwe(logger, 'please enter a valid value')
 
+def decide_string(resource_name):
+    '''
+    Determine name is resource name or lun name
+    '''
+    if resource_name == 'storage':
+        return ''
+    else:
+        return 'res_'
 
 def print_format(list_name):
     '''
@@ -75,49 +87,20 @@ def print_format(list_name):
             name = name+'\n' + ''.ljust(4)
     return name
 
-
-def decide_string(resource_name):
-    '''
-    Determine name is resource name or lun name
-    '''
-    if resource_name == 'storage':
-        return ''
-    else:
-        return 'res_'
-
-
-def one_uid(logger, unique_str, unique_id, show_result, resource_name):
-    '''
-    Generate a name with a fixed id value and determine whether these names exist。
-        name is lun name /resource name
-    '''
-    string = decide_string(resource_name)
-    name = f'{string}{unique_str}_{unique_id[0]}'
-    if name in show_result:
-        name = [name]
-        print(f'{resource_name}:')
-        print(print_format(name))
-        return name
-
-
-def re_getshow(logger, unique_str, list_id, re_string, show_result, resource_name):
+def getshow(logger, unique_str, list_id, show_result, resource_name):
     '''
     Determine the lun to be deleted according to regular matching
     '''
-    re_show = re.compile(re_string)
-    re_result = re_show.findall(show_result)
-    if re_result:
-        if list_id:
-            if len(list_id) == 2:
-                return range_uid(logger, unique_str, list_id, re_result, resource_name)
-            elif len(list_id) == 1:
-                return one_uid(logger, unique_str, list_id, re_result, resource_name)
-            else:
-                pwe(logger, 'please enter a valid value')
-        else:
-            print(f'{resource_name}:')
-            print(print_format(re_result))
-            return re_result
+    if list_id:
+        list_name=get_list_name(logger,unique_str, list_id, show_result, resource_name)
+        if list_name:
+            print(f'{resource_name}')
+            print(print_format(list_name))
+        return list_name
+    else:
+        print(f'{resource_name}:')
+        print(print_format(show_result))
+        return show_result
 
 
 def get_disk_dev(lun_id, re_string, lsscsi_result, dev_label, logger):

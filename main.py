@@ -97,7 +97,7 @@ class HydraArgParse():
         # host.ssh.execute_command('umount /mnt')
         host.start_test()
 
-    def del_comfirm(self, uniq_str, list_id):
+    def delete_resource(self, uniq_str, list_id):
         '''
         User determines whether to delete and execute delete method
         '''
@@ -107,33 +107,23 @@ class HydraArgParse():
         vplx.STRING = uniq_str
 
         crm = vplx.VplxCrm(self.logger)
-        crm_name = crm.vplx_crm_show()
+        list_of_del_crm = crm.crm_show()
 
         drbd = vplx.VplxDrbd(self.logger)
-        drbd_name = drbd.vplx_drbd_show()
+        list_of_del_drbd = drbd.drbd_show()
 
         stor = storage.Storage(self.logger)
-        stor_name = stor.storage_lun_show()
+        list_of_del_stor = stor.lun_show()
 
-        host_initiator.ID = id
-        host = host_initiator.HostTest(self.logger)
 
-        if crm_name or drbd_name or stor_name:
+        if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
             comfirm = input('Do you want to delete these lun (yes/no):')
             if comfirm == 'yes':
-                if crm_name:
-                    for res_name in crm_name:
-                        crm.crm_del(res_name)
-                if drbd_name:
-                    for res_name in drbd_name:
-                        drbd.drbd_del(res_name)
-                if stor_name:
-                    for lun_name in stor_name:
-                        stor.lun_unmap(lun_name)
-                        stor.lun_destroy(lun_name)
-                        time.sleep(0.4)
-                crm.vplx_rescan()
-                host.initiator_rescan()
+                crm.start_crm_del(list_of_del_crm)
+                drbd.start_drbd_del(list_of_del_drbd)
+                stor.start_stor_del(list_of_del_stor)
+                vplx.vplx_rescan()
+                host_initiator.initiator_rescan()
             else:
                 sundry.pwe(self.logger, 'Cancel succeed')
         else:
@@ -187,10 +177,10 @@ class HydraArgParse():
     def get_ids(self, ids):
         ids = [int(i) for i in ids.split(',')]
         if len(ids) == 2:
-            ids[1]+1
+            ids[1]+=1
         return ids
 
-    def start_create_lun(self, uniq_str, ids):
+    def create_lun(self, uniq_str, ids):
         if len(ids) == 1:
             self.execute(uniq_str, int(ids[0]))
         elif len(ids) == 2:
@@ -218,9 +208,9 @@ class HydraArgParse():
             if args.id_range:
                 ids = self.get_ids(args.id_range)
             if args.delete:
-                self.del_comfirm(args.uniq_str, ids)
+                self.delete_resource(args.uniq_str, ids)
             else:
-                self.start_create_lun(args.uniq_str, ids)
+                self.create_lun(args.uniq_str, ids)
         else:
             self.parser.print_help()
 

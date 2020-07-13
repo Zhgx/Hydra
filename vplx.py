@@ -82,6 +82,12 @@ def start_rescan(logger):
             print('Did not find the new LUN from Netapp,program exit...')
             sys.exit()
 
+def vplx_rescan():
+        '''
+        vplx rescan after delete
+        '''
+        rescan_cmd = 'rescan-scsi-bus.sh -r'
+        SSH.execute_command(rescan_cmd)
 
 class VplxDrbd(object):
     '''
@@ -291,16 +297,22 @@ class VplxDrbd(object):
             return True
         else:
             s.pwe(self.logger, 'drbd remove config file fail')
-
-    def vplx_drbd_show(self):
+    
+    def _get_all_drbd(self):
+        drbd_show_cmd='drbdadm status'
+        drbd_show_result = SSH.execute_command(drbd_show_cmd)
+        if drbd_show_result['sts']:
+            re_drbd=re.compile(f'res_{STRING}_[0-9]{{1,3}}')
+            list_of_all_drbd=re_drbd.findall(drbd_show_result['rst'].decode('utf-8'))
+            return list_of_all_drbd
+            
+    def drbd_show(self):
         '''
         Get the DRBD resource name through regular matching and determine whether these  exist
         '''
-        drbd_show_result = SSH.execute_command('drbdadm status')
-        re_string = f'res_{STRING}_[0-9]{{1,3}}'
-        if drbd_show_result['sts']:
-            drbd_name = s.re_getshow(self.logger, STRING, ID, re_string,
-                                     drbd_show_result['rst'].decode('utf-8'), 'DRBD')
+        drbd_show_result=self._get_all_drbd()
+        if drbd_show_result:
+            drbd_name = s.getshow(self.logger, STRING, ID,drbd_show_result, 'DRBD')
             return drbd_name
         else:
             return False
@@ -309,6 +321,11 @@ class VplxDrbd(object):
         if self._drbd_down(res_name):
             if self._drbd_del_config(res_name):
                 return True
+
+    def start_drbd_del(self,drbd_show_result):
+        if drbd_show_result:
+            for res_name in drbd_show_result:
+                self.drbd_del(res_name)
 
     def vplx_login(self):
         '''
@@ -487,24 +504,31 @@ class VplxCrm(object):
             if self._crm_del(res_name):
                 return True
 
-    def vplx_crm_show(self):
+    def _get_all_crm(self):
+        res_show_cmd='crm res show'
+        res_show_result = SSH.execute_command(res_show_cmd)
+        if res_show_result['sts']:
+            re_show=re.compile(f'res_{STRING}_[0-9]{{1,3}}')
+            list_of_all_crm=re_show.findall(res_show_result['rst'].decode('utf-8'))
+            return list_of_all_crm
+
+
+    def crm_show(self):
         '''
         Get the crm resource name through regular matching and determine whether these  exist
         '''
-        res_show_result = SSH.execute_command('crm res show')
-        re_string = f'res_{STRING}_[0-9]{{1,3}}'
-        if res_show_result['sts']:
-            return s.re_getshow(self.logger, STRING, ID, re_string, res_show_result['rst'].decode('utf-8'), 'crm')
+        crm_show_result=self._get_all_crm()
+        if crm_show_result:
+            return s.getshow(self.logger, STRING, ID,crm_show_result,'crm')
         else:
             return False
+    
+    def start_crm_del(self,crm_show_result):
+        if crm_show_result:
+            for res_name in crm_show_result:
+                self.crm_del(res_name)
+        
 
-    def vplx_rescan(self):
-        '''
-        vplx rescan after delete
-        '''
-        rescan_cmd = 'rescan-scsi-bus.sh -r'
-        SSH.execute_command(rescan_cmd)
-        # SSH.execute_command('rescan-scsi-bus.sh -a')
 
 
 if __name__ == '__main__':
