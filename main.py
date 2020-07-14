@@ -23,6 +23,7 @@ class HydraArgParse():
         self.logger = log.Log(self.transaction_id)
         self.argparse_init()
         consts._init()  # 初始化一个全局变量：ID
+        self.list_tid = None
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
@@ -127,7 +128,7 @@ class HydraArgParse():
         consts.set_value('LOG_SWITCH', 'OFF')
         self.execute(_id, _string)
 
-    def execute(self, dict_args,list_tid = None):
+    def execute(self, dict_args):
         for id_one,str_one in dict_args.items():
             consts.set_value('id_one',id_one)
             consts.set_value('str_one',str_one)
@@ -135,7 +136,7 @@ class HydraArgParse():
             self.logger = log.Log(self.transaction_id)
             self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.get_id()}')
             self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{consts.get_str()}')
-            if list_tid:
+            if self.list_tid:
                 for tid in list_tid:
                     consts.set_value('tid',tid)
                     self._storage()
@@ -168,6 +169,8 @@ class HydraArgParse():
         # self._host_test()
 
     # @sundry.record_exception
+    def _()
+
     def run(self):
         if sys.argv:
             cmd = ' '.join(sys.argv)
@@ -183,26 +186,14 @@ class HydraArgParse():
             ids = args.id_range.split(',')
             if len(ids) == 1:
                 dict_id_str.update({ids[0]:args.uniq_str})
-                self.execute(dict_id_str)
+                
             elif len(ids) == 2:
                 id_start, id_end = int(ids[0]), int(ids[1])
                 for i in range(id_start, id_end):
                     dict_id_str.update({i: args.uniq_str})
-                self.execute(dict_id_str)
+  
             else:
                 self.parser.print_help()
-
-        # if args.uniq_str:
-        #     ids = args.id_range.split(',')
-        #     if len(ids) == 1:
-        #
-        #         self.normal_execute(int(ids[0]), args.uniq_str)
-        #     elif len(ids) == 2:
-        #         id_start, id_end = int(ids[0]), int(ids[1])
-        #         for i in range(id_start, id_end):
-        #             self.normal_execute(i, args.uniq_str)
-        #     else:
-        #         self.parser.print_help()
 
         elif args.replay:
             consts.set_value('RPL','yes')
@@ -214,20 +205,22 @@ class HydraArgParse():
                 consts.set_value('tid', args.transactionid)
                 print(consts.get_tid())
                 dict_id_str.update({id: string})
-                self.execute(dict_id_str)
+ 
                 # self.replay_execute(args.transactionid)
             elif args.date:
-                list_tid = db.get_transaction_id_via_date(args.date[0], args.date[1])
-                for tid in list_tid:
+                self.list_tid = db.get_transaction_id_via_date(args.date[0], args.date[1])
+                for tid in self.list_tid:
                     string, id = db.get_string_id(tid)
                     dict_id_str.update({id:string})
-                self.execute(dict_id_str,list_tid)
+
             else:
                 print('replay help')
+
 
         else:
             # self.logger.write_to_log('INFO','info','','print_help')
             self.parser.print_help()
+        self.execute(dict_id_str)
 
 
 if __name__ == '__main__':
