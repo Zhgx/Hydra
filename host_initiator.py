@@ -9,9 +9,10 @@ import consts
 import logdb
 
 SSH = None
-global _ID
-global _RPL
-global _TID
+
+# global _ID
+# global _RPL
+# global _TID
 
 vplx_ip = '10.203.1.199'
 host = '10.203.1.200'
@@ -63,6 +64,7 @@ def iscsi_login(logger):
 
 
 def get_ssh_cmd(logger, unique_str, cmd, oprt_id):
+    _RPL = consts.get_rpl()
     if _RPL == 'no':
         logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
         logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
@@ -74,7 +76,7 @@ def get_ssh_cmd(logger, unique_str, cmd, oprt_id):
             print('execute drbd init command failed')
     elif _RPL == 'yes':
         db = logdb.LogDB()
-        db_id, oprt_id = db.find_oprt_id_via_string(_TID, unique_str)
+        db_id, oprt_id = db.find_oprt_id_via_string(consts.get_tid(), unique_str)
         # now_id = consts.get_value('ID')
         # print(f'  DB ID go to: {db_id}')
         # print(f'  get opration ID: {oprt_id}')
@@ -167,10 +169,10 @@ def discover_new_lun(logger):
 
     result_lsscsi = list_disk()
     re_find_id_dev = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    blk_dev_name = s.get_disk_dev(str(_ID), re_find_id_dev, result_lsscsi, 'NetApp', logger)
-    print(f'    Find new device {blk_dev_name} for LUN id {_ID}')
+    blk_dev_name = s.get_disk_dev(consts.get_id(), re_find_id_dev, result_lsscsi, 'NetApp', logger)
+    print(f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
     # self.logger.write_to_log('INFO', 'info', '', f'Find device {blk_dev_name} for LUN id {ID}')
-    logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'    Find new device {blk_dev_name} for LUN id {_ID}')
+    logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
     return blk_dev_name
 
 
@@ -178,12 +180,12 @@ class HostTest(object):
     '''
     Format, write, and read iSCSI LUN
     '''
-
     def __init__(self, logger):
 
         self.logger = logger
         print('Start IO test on initiator host')
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
+        _RPL = consts.get_rpl()
         if _RPL == 'no':
             init_ssh(self.logger)
             umount_mnt(self.logger)
