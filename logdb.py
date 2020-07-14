@@ -22,6 +22,7 @@ def get_target_file(filename):
     list_file.sort(reverse=True)
     return list_file
 
+
 class LogDB():
     create_table_sql = '''
     create table if not exists logtable(
@@ -51,7 +52,6 @@ class LogDB():
         )
     values(?,?,?,?,?,?,?,?,?)
     '''
-
 
     drop_table_sql = "DROP TABLE if exists logtable "
 
@@ -115,7 +115,7 @@ class LogDB():
     #         elif i[1] != 'output' and i[2] != 'cmd':
     #             print(i[4])
 
-    def print_info_via_tid(self,transaction_id):
+    def print_info_via_tid(self, transaction_id):
         all_data = self.get_all_via_tid(transaction_id)
         for data in all_data:
             if data[0] == 'INFO':
@@ -125,7 +125,8 @@ class LogDB():
         log_path = "./Hydra_log.log"
         logfilename = 'Hydra_log.log'
         id = (None,)
-        re_ = re.compile(r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?\]?)\]', re.DOTALL)
+        re_ = re.compile(
+            r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?\]?)\]', re.DOTALL)
         if not isFileExists(log_path):
             print('no file')
             return
@@ -142,4 +143,3 @@ class LogDB():
             f.close()
 
         self.con.commit()
-
