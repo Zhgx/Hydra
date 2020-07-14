@@ -2,12 +2,14 @@
 import argparse
 import sys
 import time
-import storage
 import vplx
+import storage
 import host_initiator
 import sundry
 import log
 import logdb
+import consts
+
 
 
 class HydraArgParse():
@@ -20,6 +22,8 @@ class HydraArgParse():
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         self.argparse_init()
+        consts._init()  # 初始化一个全局变量：ID
+        self.list_tid = None
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
@@ -70,6 +74,7 @@ class HydraArgParse():
         netapp = storage.Storage(self.logger)
         netapp.lun_create()
         netapp.lun_map()
+        print('------* storage end *------')
 
     def _vplx_drbd(self):
         '''
@@ -87,6 +92,7 @@ class HydraArgParse():
         '''
         crm = vplx.VplxCrm(self.logger)
         crm.crm_cfg()
+        print('------* drbd end *------')
 
     def _host_test(self):
         '''
@@ -96,8 +102,9 @@ class HydraArgParse():
         host = host_initiator.HostTest(self.logger)
         # host.ssh.execute_command('umount /mnt')
         host.start_test()
+        print('------* host_test end *------')
 
-    def del_comfirm(self, uniq_str, list_id):
+    def delete_resource(self, uniq_str, list_id):
         '''
         User determines whether to delete and execute delete method
         '''
@@ -107,31 +114,23 @@ class HydraArgParse():
         vplx.STRING = uniq_str
 
         crm = vplx.VplxCrm(self.logger)
-        crm_name = crm.vplx_crm_show()
+        list_of_del_crm = crm.crm_show()
 
         drbd = vplx.VplxDrbd(self.logger)
-        drbd_name = drbd.vplx_drbd_show()
+        list_of_del_drbd = drbd.drbd_show()
 
         stor = storage.Storage(self.logger)
-        stor_name = stor.storage_lun_show()
+        list_of_del_stor = stor.lun_show()
 
         host_initiator.ID = id
         host = host_initiator.HostTest(self.logger)
 
-        if crm_name or drbd_name or stor_name:
+        if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
             comfirm = input('Do you want to delete these lun (yes/no):')
             if comfirm == 'yes':
-                if crm_name:
-                    for res_name in crm_name:
-                        crm.crm_del(res_name)
-                if drbd_name:
-                    for res_name in drbd_name:
-                        drbd.drbd_del(res_name)
-                if stor_name:
-                    for lun_name in stor_name:
-                        stor.lun_unmap(lun_name)
-                        stor.lun_destroy(lun_name)
-                        time.sleep(0.4)
+                crm.start_crm_del(list_of_del_crm)
+                drbd.start_drbd_del(list_of_del_drbd)
+                stor.start_stor_del(list_of_del_stor)
                 crm.vplx_rescan()
                 host.initiator_rescan()
             else:
@@ -143,86 +142,119 @@ class HydraArgParse():
     def execute(self, string, id):
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
+        self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{id}')
+        self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{string}')
+        storage._RPL = 'no'
+        vplx._RPL = 'no'
+        host_initiator._RPL = 'no'
+        self.execute(id, string)
 
-        print(f'\n======*** Start working for ID {id} ***======')
+    def replay_execute(self, tid):
+        db = logdb.LogDB()
+        db.get_logdb()
+        _string, _id = db.get_string_id(tid)
+        vplx._RPL = 'yes'
+        storage._RPL = 'yes'
+        host_initiator._RPL = 'yes'
+        vplx._TID = tid
+        storage._TID = tid
+        host_initiator._TID = tid
+        consts._init()  # 初始化一个全局变量：ID
+        consts.set_value('LOG_SWITCH', 'OFF')
+        self.execute(_id, _string)
 
-        storage.ID = id
-        storage.STRING = string
-        self._storage()
+    def execute(self, dict_args):
+        for id_one,str_one in dict_args.items():
+            consts.set_value('id_one',id_one)
+            consts.set_value('str_one',str_one)
+            self.transaction_id = sundry.get_transaction_id()
+            self.logger = log.Log(self.transaction_id)
+            self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.get_id()}')
+            self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{consts.get_str()}')
+            if self.list_tid:
+                for tid in list_tid:
+                    consts.set_value('tid',tid)
+                    self._storage()
+                    self._vplx_drbd()
+                    self._vplx_crm()
+                    self._host_test()
+                return
 
-        vplx.ID = id
-        vplx.STRING = string
-        self._vplx_drbd()
-        self._vplx_crm()
-        time.sleep(1.5)
+            self._storage()
+            self._vplx_drbd()
+            self._vplx_crm()
+            self._host_test()
 
-        host_initiator.ID = id
-        self._host_test()
 
-    def replay(self, args):
-        if args.transactionid or args.date:
-            db = logdb.LogDB()
-            db.get_logdb()
+        # print(f'\n======*** Start working for ID {id} ***======')
+        # self._storage()
+        #
+        #
+        # # 初始化一个全局变量ID
+        # storage._ID = id
+        # storage._STR = string
+        # self._storage()
+        #
+        # vplx._ID = id
+        # vplx._STR = string
+        # self._vplx_drbd()
+        # self._vplx_crm()
+        #
+        # host_initiator._ID = id
+        # self._host_test()
 
-        if args.transactionid and args.date:
-            print('1')
-        elif args.transactionid:
-            # result = logdb.get_info_via_tid(args.transactionid)
-            # data = logdb.get_data_via_tid(args.transactionid)
-            # for info in result:
-            #     print(info[0])
-            # print('============ * data * ==============')
-            # for data_one in data:
-            #     print(data_one[0])
-            db.print_info_via_tid(args.transactionid)
+    # @sundry.record_exception
 
-            # logdb.replay_via_tid(args.transactionid)
-
-        elif args.date:
-            # python3 vtel_client_main.py re -d '2020/06/16 16:08:00' '2020/06/16 16:08:10'
-            print('data')
-        else:
-            print('replay help')
-
-    def get_ids(self, ids):
-        ids = [int(i) for i in ids.split(',')]
-        if len(ids) == 2:
-            ids[1]+1
-        return ids
-
-    def start_create_lun(self, uniq_str, ids):
-        if len(ids) == 1:
-            self.execute(uniq_str, int(ids[0]))
-        elif len(ids) == 2:
-            id_start, id_end = int(ids[0]), int(ids[1])
-            for i in range(id_start, id_end):
-                self.execute(uniq_str, i)
-        else:
-            self.parser.print_help()
-
-    @sundry.record_exception
     def run(self):
         if sys.argv:
-            path = sundry.get_path()
             cmd = ' '.join(sys.argv)
-            self.logger.write_to_log(
-                'T', 'DATA', 'input', 'user_input', '', cmd)
-            # [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
-            # [time],[transaction_id],[s],[DATA],[input],[user_input],[cmd],[f{cmd}]
+            self.logger.write_to_log('T', 'DATA', 'input', 'user_input', '', cmd)
 
         args = self.parser.parse_args()
-
+        dict_id_str = {}
         # uniq_str: The unique string for this test, affects related naming
-        if args.uniq_str:
-            ids = args.id_range
-            if args.id_range:
-                ids = self.get_ids(args.id_range)
-            if args.delete:
-                self.del_comfirm(args.uniq_str, ids)
+
+        if args.uniq_str and args.id_range:
+            consts.set_value('RPL', 'no')
+            consts.set_value('LOG_SWITCH', 'ON')
+            ids = args.id_range.split(',')
+            if len(ids) == 1:
+                dict_id_str.update({ids[0]:args.uniq_str})
+                
+            elif len(ids) == 2:
+                id_start, id_end = int(ids[0]), int(ids[1])
+                for i in range(id_start, id_end):
+                    dict_id_str.update({i: args.uniq_str})
+  
             else:
-                self.start_create_lun(args.uniq_str, ids)
+                self.parser.print_help()
+
+        elif args.replay:
+            consts.set_value('RPL','yes')
+            consts.set_value('LOG_SWITCH','OFF')
+            db = logdb.LogDB()
+            db.get_logdb()
+            if args.transactionid:
+                string, id = db.get_string_id(args.transactionid)
+                consts.set_value('tid', args.transactionid)
+                print(consts.get_tid())
+                dict_id_str.update({id: string})
+ 
+                # self.replay_execute(args.transactionid)
+            elif args.date:
+                self.list_tid = db.get_transaction_id_via_date(args.date[0], args.date[1])
+                for tid in self.list_tid:
+                    string, id = db.get_string_id(tid)
+                    dict_id_str.update({id:string})
+
+            else:
+                print('replay help')
+
+
         else:
+            # self.logger.write_to_log('INFO','info','','print_help')
             self.parser.print_help()
+        self.execute(dict_id_str)
 
 
 if __name__ == '__main__':
