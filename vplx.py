@@ -12,10 +12,12 @@ import consts
 # global SSH
 SSH = None
 
-global _ID
-global _STR
-global _RPL
-global _TID
+
+
+# global _ID
+# global _STR
+# global _RPL
+# global _TID
 
 host = '10.203.1.199'
 port = 22
@@ -42,7 +44,7 @@ def discover_new_lun(logger, cmd_rescan):
     '''
     init_ssh(logger)
     oprt_id = s.get_oprt_id()
-    logger.write_to_log('T', 'INFO', 'info', 'start', '', f'  Discover_new_lun for id {_ID}')
+    logger.write_to_log('T', 'INFO', 'info', 'start', '', f'  Discover_new_lun for id {consts.get_id()}')
     # self.logger.write_to_log('INFO','info','',f'start to discover_new_lun for id {ID}')
     logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd_rescan)
     result_rescan = SSH.execute_command(cmd_rescan)
@@ -67,11 +69,11 @@ def discover_new_lun(logger, cmd_rescan):
         s.pwe(logger, f'Scan new LUN failed on NetApp')
     re_find_id_dev = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
     blk_dev_name = s.get_disk_dev(
-        str(_ID), re_find_id_dev, result_lsscsi, 'NetApp', logger)
+        str(consts.get_id()), re_find_id_dev, result_lsscsi, 'NetApp', logger)
 
-    print(f'  Find device {blk_dev_name} for LUN id {_ID}')
+    print(f'  Find device {blk_dev_name} for LUN id {consts.get_id()}')
     logger.write_to_log('T', 'INFO', 'info', 'finish', '',
-                        f'    Find device {blk_dev_name} for LUN _ {_ID}')
+                        f'    Find device {blk_dev_name} for LUN _ {consts.get_id()}')
     # self.logger.write_to_log('INFO', 'info', '', f'Find device {blk_dev_name} for LUN id {ID}')
     return blk_dev_name
 
@@ -92,6 +94,7 @@ def retry_rescan(logger):
 
 
 def get_ssh_cmd(logger, unique_str, cmd, oprt_id):
+    _RPL = consts.get_rpl()
     if _RPL == 'no':
         logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
         logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
@@ -103,7 +106,7 @@ def get_ssh_cmd(logger, unique_str, cmd, oprt_id):
             print('execute drbd init command failed')
     elif _RPL == 'yes':
         db = logdb.LogDB()
-        db_id, oprt_id = db.find_oprt_id_via_string(_TID, unique_str)
+        db_id, oprt_id = db.find_oprt_id_via_string(consts.get_tid(), unique_str)
         # now_id = consts.get_value('ID')
         # print(f'DB ID now is : {now_id}')
         # print(f'  DB ID go to: {db_id}')
@@ -134,12 +137,15 @@ class VplxDrbd(object):
 
     def __init__(self, logger):
         self.logger = logger
+        self._STR = consts.get_str()
+        self._ID = consts.get_id()
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  'Start to configure DRDB resource and crm resource on VersaPLX')
         print('Start to config DRBD resource...')
-        self.res_name = f'res_{_STR}_{_ID}'
+        self.res_name = f'res_{self._STR}_{self._ID}'
         global DRBD_DEV_NAME
-        DRBD_DEV_NAME = f'drbd{_ID}'
+        DRBD_DEV_NAME = f'drbd{self._ID}'
+        _RPL = consts.get_rpl()
         if _RPL == 'no':
             init_ssh(self.logger)
             self.blk_dev_name = retry_rescan(logger)
@@ -151,6 +157,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
+        _RPL = consts.get_rpl()
         if _RPL == 'yes':
             return
 
@@ -343,7 +350,10 @@ class VplxCrm(object):
     def __init__(self, logger):
         init_ssh(logger)
         self.logger = logger
-        self.lu_name = f'res_{_STR}_{_ID}'  # same as drbd resource name
+        self._ID = consts.get_id()
+        self._STR = consts.get_str()
+        self._RPL = consts.get_rpl()
+        self.lu_name = f'res_{self._STR}_{self._ID}'  # same as drbd resource name
         self.colocation_name = f'co_{self.lu_name}'
         self.order_name = f'or_{self.lu_name}'
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '', f'  Start to configure crm resource {self.lu_name}')
@@ -359,7 +369,7 @@ class VplxCrm(object):
                                  f'    Start to create iSCSILogicalUnit resource {self.lu_name}')
         cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{target_iqn}" \
-            implementation=lio-t lun={_ID} path="/dev/{DRBD_DEV_NAME}"\
+            implementation=lio-t lun={consts.get_id()} path="/dev/{DRBD_DEV_NAME}"\
             allowed_initiators="{initiator_iqn}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
         result = get_ssh_cmd(self.logger, unique_str, cmd, oprt_id)
         if result != None:

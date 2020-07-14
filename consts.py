@@ -16,3 +16,15 @@ def get_value(key, defValue=0):
         return _global_dict[key]
     except KeyError:
         return defValue
+
+def get_str():
+    return get_value('str_one')
+
+def get_id():
+    return get_value('id_one')
+
+def get_rpl():
+    return get_value('RPL')
+
+def get_tid():
+    return get_value('tid')

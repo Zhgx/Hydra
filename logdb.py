@@ -170,5 +170,5 @@ class LogDB():
 if __name__ == '__main__':
     db = LogDB()
     db.get_logdb()
-    # print(db.find_oprt_id_via_string('1594365867', 'jMPFwXy2'))
-    res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')
+    print(db.find_oprt_id_via_string('1594619507', 'jMPFwXy2'))
+    # res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')
