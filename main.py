@@ -104,25 +104,23 @@ class HydraArgParse():
         host.start_test()
         print('------* host_test end *------')
 
-    def delete_resource(self, uniq_str, list_id):
+    def delete_resource(self):
         '''
         User determines whether to delete and execute delete method
         '''
-        storage.ID = list_id
-        storage.STRING = uniq_str
-        vplx.ID = list_id
-        vplx.STRING = uniq_str
+        # _ID = consts.get_id
+        # _STR = consts.get_str
 
         crm = vplx.VplxCrm(self.logger)
         list_of_del_crm = crm.crm_show()
+
 
         drbd = vplx.VplxDrbd(self.logger)
         list_of_del_drbd = drbd.drbd_show()
 
         stor = storage.Storage(self.logger)
         list_of_del_stor = stor.lun_show()
-
-        host_initiator.ID = id
+        # print(list_of_del_stor)
         host = host_initiator.HostTest(self.logger)
 
         if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
@@ -139,15 +137,6 @@ class HydraArgParse():
             sundry.pwe(
                 self.logger, 'The resource you want to delete does not exist. Please confirm the information you entered.\n')
 
-    def execute(self, string, id):
-        self.transaction_id = sundry.get_transaction_id()
-        self.logger = log.Log(self.transaction_id)
-        self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{id}')
-        self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{string}')
-        storage._RPL = 'no'
-        vplx._RPL = 'no'
-        host_initiator._RPL = 'no'
-        self.execute(id, string)
 
     def replay_execute(self, tid):
         db = logdb.LogDB()
@@ -172,7 +161,7 @@ class HydraArgParse():
             self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.get_id()}')
             self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{consts.get_str()}')
             if self.list_tid:
-                for tid in list_tid:
+                for tid in self.list_tid:
                     consts.set_value('tid',tid)
                     self._storage()
                     self._vplx_drbd()
@@ -214,20 +203,30 @@ class HydraArgParse():
         dict_id_str = {}
         # uniq_str: The unique string for this test, affects related naming
 
-        if args.uniq_str and args.id_range:
-            consts.set_value('RPL', 'no')
-            consts.set_value('LOG_SWITCH', 'ON')
-            ids = args.id_range.split(',')
-            if len(ids) == 1:
-                dict_id_str.update({ids[0]:args.uniq_str})
+        # if args.uniq_str and args.id_range:
+        #     consts.set_value('RPL', 'no')
+        #     consts.set_value('LOG_SWITCH', 'ON')
+        #     ids = args.id_range.split(',')
+        #     if len(ids) == 1:
+        #         dict_id_str.update({ids[0]:args.uniq_str})
                 
-            elif len(ids) == 2:
-                id_start, id_end = int(ids[0]), int(ids[1])
-                for i in range(id_start, id_end):
-                    dict_id_str.update({i: args.uniq_str})
+        #     elif len(ids) == 2:
+        #         id_start, id_end = int(ids[0]), int(ids[1])
+        #         for i in range(id_start, id_end):
+        #             dict_id_str.update({i: args.uniq_str})     
+        #     else:
+        #         self.parser.print_help()
+        if args.uniq_str:
+            if args.delete:
+                consts.set_value('RPL', 'no')
+                if args.id_range:
+                    ids = [int(i) for i in args.id_range.split(',')]
+                else:
+                    ids=''
+                consts.set_value('str_one', args.uniq_str)
+                consts.set_value('id_one',ids)
+                self.delete_resource()  
   
-            else:
-                self.parser.print_help()
 
         elif args.replay:
             consts.set_value('RPL','yes')

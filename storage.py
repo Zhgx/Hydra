@@ -4,6 +4,7 @@ import time
 import sundry as s
 import logdb
 import consts
+import re
 
 # global _TID
 
@@ -24,6 +25,7 @@ class Storage:
 
 
     def __init__(self, logger):
+        print('--------')
 
         self.logger = logger
         print('Start to configure LUN on NetApp Storage')
@@ -127,7 +129,7 @@ class Storage:
         lun_show_cmd = 'lun show'
         show_result = self.telnet_conn.execute_command(lun_show_cmd)
         if show_result:
-            re_show = re.compile(f'/vol/esxi/({STRING}_[0-9]{{1,3}})')
+            re_show = re.compile(f'/vol/esxi/({self._STR}_[0-9]{{1,3}})')
             list_of_all_lun = re_show.findall(show_result)
             return list_of_all_lun
 
@@ -138,7 +140,7 @@ class Storage:
         stor_list_todel = self._get_all_lun()
         if stor_list_todel:
             list_of_show_lun = s.getshow(
-                self.logger, STRING, ID, stor_list_todel)
+                self.logger, self._STR, self._ID, stor_list_todel)
             if list_of_show_lun:
                 print('storage：')
                 print(s.print_format(list_of_show_lun))

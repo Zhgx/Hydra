@@ -96,7 +96,6 @@ def getshow(logger, unique_str, list_id, show_result):
         list_name = get_list_name(logger, unique_str, list_id, show_result)
         return list_name
     else:
-
         return show_result
 
 
