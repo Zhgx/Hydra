@@ -99,30 +99,34 @@ class Storage:
                 return True
             else:
                 print(f'{lun_name} destroy failed')
-    
+
     def _get_all_lun(self):
         lun_show_cmd = 'lun show'
         show_result = self.telnet_conn.execute_command(lun_show_cmd)
         if show_result:
-            re_show=re.compile(f'/vol/esxi/({STRING}_[0-9]{{1,3}})')
-            list_of_all_lun=re_show.findall(show_result)
+            re_show = re.compile(f'/vol/esxi/({STRING}_[0-9]{{1,3}})')
+            list_of_all_lun = re_show.findall(show_result)
             return list_of_all_lun
-           
 
     def lun_show(self):
         '''
         Get all luns through regular matching
         '''
-        stor_list_todel=self._get_all_lun()
+        stor_list_todel = self._get_all_lun()
         if stor_list_todel:
-            return s.getshow(self.logger, STRING, ID,stor_list_todel, 'storage')
+            list_of_show_lun = s.getshow(
+                self.logger, STRING, ID, stor_list_todel)
+            if list_of_show_lun:
+                print('storage：')
+                print(s.print_format(list_of_show_lun))
+            return list_of_show_lun
         else:
             return False
-    
-    def start_stor_del(self,stor_show_result):
+
+    def start_stor_del(self, stor_show_result):
         for lun_name in stor_show_result:
             self.lun_unmap(lun_name)
-            self.lun_destroy(lun_name)  
+            self.lun_destroy(lun_name)
 
 
 if __name__ == '__main__':

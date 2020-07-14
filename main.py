@@ -115,6 +115,8 @@ class HydraArgParse():
         stor = storage.Storage(self.logger)
         list_of_del_stor = stor.lun_show()
 
+        host_initiator.ID = id
+        host = host_initiator.HostTest(self.logger)
 
         if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
             comfirm = input('Do you want to delete these lun (yes/no):')
@@ -122,8 +124,8 @@ class HydraArgParse():
                 crm.start_crm_del(list_of_del_crm)
                 drbd.start_drbd_del(list_of_del_drbd)
                 stor.start_stor_del(list_of_del_stor)
-                vplx.vplx_rescan()
-                host_initiator.initiator_rescan()
+                crm.vplx_rescan()
+                host.initiator_rescan()
             else:
                 sundry.pwe(self.logger, 'Cancel succeed')
         else:
@@ -177,7 +179,7 @@ class HydraArgParse():
     def get_ids(self, ids):
         ids = [int(i) for i in ids.split(',')]
         if len(ids) == 2:
-            ids[1]+=1
+            ids[1] += 1
         return ids
 
     def create_lun(self, uniq_str, ids):

@@ -32,7 +32,6 @@ def iscsi_about(re_string, result):
 
 
 def iscsi_login(logger, ip, login_result):
-
     re_string = f'Login to.*portal: ({ip}).*successful'
     if iscsi_about(re_string, login_result):
         print(f'iscsi login to {ip} succeed')
@@ -46,35 +45,32 @@ def find_session(ip, session_result):
     if iscsi_about(re_string, session_result):
         return True
 
-def get_list_name(logger, unique_str, ids, show_result, resource_name):
+
+def compare(name, show_result):
+    if name in show_result:
+        return name
+    elif 'res_'+name in show_result:
+        return 'res_'+name
+
+
+def get_list_name(logger, unique_str, ids, show_result):
     '''
     Generate some names with a range of id values and determine whether these names exist。
         name is lun name /resource name
         list_name is used to return the list value
     '''
-    string = decide_string(resource_name)
-    if len(ids)==2:
+    if len(ids) == 2:
         list_name = []
         for i in range(ids[0], ids[1]):
-            name = f'{string}{unique_str}_{i}'
-            if name in show_result:
-                list_name.append(name)
+            name = f'{unique_str}_{i}'
+            list_name.append(compare(name, show_result))
         return list_name
-    elif len(ids)==1:
-        name = f'{string}{unique_str}_{ids[0]}'
-        if name in show_result:
-            return [name]
+    elif len(ids) == 1:
+        name = f'{unique_str}_{ids[0]}'
+        return [compare(name, show_result)]
     else:
         pwe(logger, 'please enter a valid value')
 
-def decide_string(resource_name):
-    '''
-    Determine name is resource name or lun name
-    '''
-    if resource_name == 'storage':
-        return ''
-    else:
-        return 'res_'
 
 def print_format(list_name):
     '''
@@ -82,24 +78,22 @@ def print_format(list_name):
     '''
     name = ''
     for i in range(len(list_name)):
-        name = name.ljust(4)+list_name[i]+'  '
+        if list_name[i]:
+            name = name.ljust(4)+list_name[i]+'  '
         if i % 10 == 9:
             name = name+'\n' + ''.ljust(4)
     return name
 
-def getshow(logger, unique_str, list_id, show_result, resource_name):
+
+def getshow(logger, unique_str, list_id, show_result):
     '''
     Determine the lun to be deleted according to regular matching
     '''
     if list_id:
-        list_name=get_list_name(logger,unique_str, list_id, show_result, resource_name)
-        if list_name:
-            print(f'{resource_name}')
-            print(print_format(list_name))
+        list_name = get_list_name(logger, unique_str, list_id, show_result)
         return list_name
     else:
-        print(f'{resource_name}:')
-        print(print_format(show_result))
+
         return show_result
 
 

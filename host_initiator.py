@@ -147,12 +147,7 @@ def start_rescan(logger):
         else:
             print('Did not find the new LUN from VersaPLX,exit the program...')
             sys.exit()
-def initiator_rescan():
-    '''
-    initiator rescan after delete
-    '''
-    rescan_cmd = 'rescan-scsi-bus.sh -r'
-    SSH.execute_command(rescan_cmd)
+
 
 class HostTest(object):
     '''
@@ -279,7 +274,12 @@ class HostTest(object):
         else:
             s.pwe(self.logger, f'Device {dev_name} mount failed')
 
-    
+    def initiator_rescan(self):
+        '''
+        initiator rescan after delete
+        '''
+        rescan_cmd = 'rescan-scsi-bus.sh -r'
+        SSH.execute_command(rescan_cmd)
 
 
 if __name__ == "__main__":
