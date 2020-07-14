@@ -95,10 +95,66 @@ class Storage:
     def lun_map_verify(self):
         pass
 
+    def lun_unmap(self, lun_name):
+        '''
+        Unmap LUN and determine its succeed
+        '''
+        unmap = f'lun unmap /vol/esxi/{lun_name} hydra'
+        unmap_result = self.telnet_conn.execute_command(unmap)
+        if unmap_result:
+            unmap_re = re.compile(r'unmapped from initiator group hydra')
+            re_result = unmap_re.findall(unmap_result)
+            if re_result:
+                print(f'{lun_name} unmap succeed')
+                return True
+
+    def lun_destroy(self, lun_name):
+        '''
+        delete LUN and determine its succeed
+        '''
+        destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
+        destroy_result = self.telnet_conn.execute_command(destroy_cmd)
+        if destroy_result:
+            destroy_re = re.compile(r'destroyed')
+            re_result = destroy_re.findall(destroy_result)
+            if re_result:
+                print(f'{lun_name} destroy succeed')
+                return True
+            else:
+                print(f'{lun_name} destroy failed')
+
+    def _get_all_lun(self):
+        lun_show_cmd = 'lun show'
+        show_result = self.telnet_conn.execute_command(lun_show_cmd)
+        if show_result:
+            re_show = re.compile(f'/vol/esxi/({STRING}_[0-9]{{1,3}})')
+            list_of_all_lun = re_show.findall(show_result)
+            return list_of_all_lun
+
+    def lun_show(self):
+        '''
+        Get all luns through regular matching
+        '''
+        stor_list_todel = self._get_all_lun()
+        if stor_list_todel:
+            list_of_show_lun = s.getshow(
+                self.logger, STRING, ID, stor_list_todel)
+            if list_of_show_lun:
+                print('storage：')
+                print(s.print_format(list_of_show_lun))
+            return list_of_show_lun
+        else:
+            return False
+
+    def start_stor_del(self, stor_show_result):
+        for lun_name in stor_show_result:
+            self.lun_unmap(lun_name)
+            self.lun_destroy(lun_name)
+
 
 if __name__ == '__main__':
-    test_stor = Storage('18', 'luntest')
-    test_stor.lun_create()
-    test_stor.lun_map()
-    # test_stor.telnet_conn.close()
     pass
+    # test_stor = Storage('31', 'luntest')
+    # test_stor.lun_create()
+    # test_stor.lun_map()
+    # test_stor.telnet_conn.close()

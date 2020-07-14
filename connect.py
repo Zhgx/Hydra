@@ -66,6 +66,11 @@ class ConnSSH(object):
             # self.logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, output)
             return output
 
+    def ssh_connect(self):
+        self._connect()
+        if not self.SSHConnection:
+            self._connect()
+
     def close(self):
         self.SSHConnection.close()
         self.logger.write_to_log('T', 'INFO', 'info', 'finish', '', 'Close SSH connection')
@@ -84,7 +89,7 @@ class ConnTelnet(object):
         self._password = password
         self._timeout = timeout
         self.telnet = telnetlib.Telnet()
-        self._connect()
+        self.telnet_connect()
 
     def _connect(self):
         try:
@@ -105,10 +110,24 @@ class ConnTelnet(object):
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
         oprt_id = s.get_oprt_id()
-        # self.logger.write_to_log('T','OPRT','cmd','telnet',oprt_id,cmd)
+        self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
+
+        # self.logger.write_to_log('DATA','input','cmd',cmd.encode().strip() + b'\r')
+        # [time],[transaction_id],[s],[OPRT],[cmd],[telnet],[oprt_id],[lc_cmd]
+        self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
-        time.sleep(0.25)
-        rely = self.telnet.read_very_eager().decode()  # ?
+        rely = self.telnet.read_until(b'fas270>').decode()
+        self.telnet.write(b'\r')
+        # 命令的结果的记录？
+        # self.logger.write_to_log('Telnet','telnet_ex_cmd','','time_sleep:0.25')
+        return rely
+        # [time],[transaction_id],[s],[DATA],[cmd],[telnet],[oprt_id],[telnet_output]
+        # self.logger.write_to_log('Telnet',)
+
+    def telnet_connect(self):
+        self._connect()
+        if not self.telnet:
+            self._connect()
 
     def close(self):
         self.telnet.close()
@@ -117,26 +136,19 @@ class ConnTelnet(object):
 
 if __name__ == '__main__':
     # telnet
-    host = '10.203.1.231'
-    port = '22'
-    username = 'root'
-    password = 'Feixi@123'
-    timeout = 5
-    ssh = ConnSSH(host, port, username, password, timeout)
-    strout = ssh.execute_command('?')
-    w = strout.decode('utf-8')
-    print(type(w))
-    print(w.split('\n'))
-    pprint.pprint(w)
-    time.sleep(2)
-    strout = ssh.execute_command('lun show -m')
-    pprint.pprint(strout)
-
-    # telnet
-    # host='10.203.1.231'
-    # Port='23'
-    # username='root'
-    # password='Feixi@123'
-    # timeout=10
+    # host = '10.203.1.231'
+    # port = '22'
+    # username = 'root'
+    # password = 'Feixi@123'
+    # timeout = 5
+    # ssh = ConnSSH(host, port, username, password, timeout)
+    # strout = ssh.execute_command('?')
+    # w = strout.decode('utf-8')
+    # print(type(w))
+    # print(w.split('\n'))
+    # pprint.pprint(w)
+    # time.sleep(2)
+    # strout = ssh.execute_command('lun show -m')
+    # pprint.pprint(strout)
 
     pass

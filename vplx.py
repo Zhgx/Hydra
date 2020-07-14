@@ -1,5 +1,4 @@
 #  coding: utf-8
-
 import connect
 import sundry as s
 import time
@@ -25,6 +24,7 @@ user = 'root'
 password = 'password'
 timeout = 3
 
+Netapp_ip = '10.203.1.231'
 target_iqn = "iqn.2020-06.com.example:test-max-lun"
 initiator_iqn = "iqn.1993-08.org.debian:01:885240c2d86c"
 target_name = 't_test'
@@ -333,7 +333,8 @@ class VplxDrbd(object):
             self.logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, result)
             if re_result:
                 status = re_result[0]
-                self.logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, status)
+                self.logger.write_to_log(
+                    'F', 'DATA', 'regular', 'findall', oprt_id, status)
                 if status == 'UpToDate':
                     print(f'    {self.res_name} DRBD check successfully')
                     self.logger.write_to_log('T', 'INFO', 'info', 'finish', '',
@@ -441,9 +442,108 @@ class VplxCrm(object):
                 if self._crm_start():
                     return True
 
-    def crm_verify(self):
-        pass
+    def _crm_verify(self, res_name):
+        '''
+        Check the crm resource status
+        '''
+        verify_result = SSH.execute_command(f'crm res show {res_name}')
+        if verify_result['sts'] == 1:
+            return {'status': 'Started'}
+        if verify_result['sts'] == 0:
+            return {'status': 'Stopped'}
+        else:
+            s.pwe(self.logger, 'crm show failed')
 
-# if __name__ == '__main__':
+    def crm_status(self, res_name, status):
+        '''
+        Determine crm resource status is started/stopped
+        '''
+        n = 0
+        while n < 10:
+            n += 1
+            crm_verify = self._crm_verify(res_name)
+            if crm_verify['status'] == status:
+                print(f'{res_name} is {status}')
+                return True
+            else:
+                print(
+                    f'{res_name} is {crm_verify["status"]}, Wait a moment...')
+                time.sleep(1.5)
+        else:
+            return False
+
+    def _crm_stop(self, res_name):
+        '''
+        stop the iSCSILogicalUnit resource
+        '''
+        crm_stop_cmd = (f'crm res stop {res_name}')
+        crm_stop = SSH.execute_command(crm_stop_cmd)
+        if crm_stop['sts']:
+            if self.crm_status(res_name, 'Stopped'):
+                return True
+            else:
+                s.pwe(self.logger, 'crm stop failed,exit the program...')
+        else:
+            s.pwe(self.logger, 'crm stop failed')
+
+    def _crm_del(self, res_name):
+        '''
+        Delete the iSCSILogicalUnit resource
+        '''
+        crm_del_cmd = f'crm cof delete {res_name}'
+        del_result = SSH.execute_command(crm_del_cmd)
+        if del_result['sts']:
+            re_delstr = re.compile('deleted')
+            re_result = re_delstr.findall(
+                str(del_result['rst'], encoding='utf-8'))
+            if len(re_result) == 2:
+                return True
+            else:
+                s.pwe(self.logger, 'crm cof delete failed')
+
+    def crm_del(self, res_name):
+        if self._crm_stop(res_name):
+            if self._crm_del(res_name):
+                return True
+
+    def _get_all_crm(self):
+        res_show_cmd = 'crm res show'
+        res_show_result = SSH.execute_command(res_show_cmd)
+        if res_show_result['sts']:
+            re_show = re.compile(f'res_{STRING}_[0-9]{{1,3}}')
+            list_of_all_crm = re_show.findall(
+                res_show_result['rst'].decode('utf-8'))
+            return list_of_all_crm
+
+    def crm_show(self):
+        '''
+        Get the crm resource name through regular matching and determine whether these  exist
+        '''
+        crm_show_result = self._get_all_crm()
+        if crm_show_result:
+            list_of_show_crm = s.getshow(
+                self.logger, STRING, ID, crm_show_result)
+            if list_of_show_crm:
+                print('crm：')
+                print(s.print_format(list_of_show_crm))
+            return list_of_show_crm
+        else:
+            return False
+
+    def start_crm_del(self, crm_show_result):
+        if crm_show_result:
+            for res_name in crm_show_result:
+                self.crm_del(res_name)
+
+    def vplx_rescan(self):
+        '''
+        vplx rescan after delete
+        '''
+        rescan_cmd = 'rescan-scsi-bus.sh -r'
+        SSH.execute_command(rescan_cmd)
+
+if __name__ == '__main__':
+
 #     test_crm = VplxCrm('72', 'luntest')
 #     test_crm.discover_new_lun()
+    pass

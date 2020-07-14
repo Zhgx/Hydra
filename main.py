@@ -2,7 +2,6 @@
 import argparse
 import sys
 import time
-
 import vplx
 import storage
 import host_initiator
@@ -10,6 +9,7 @@ import sundry
 import log
 import logdb
 import consts
+
 
 
 class HydraArgParse():
@@ -28,12 +28,11 @@ class HydraArgParse():
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
                                               description='Test max lun number of VersaRAID-SDS')
-        # self.parser.add_argument(
-        #     '-r',
-        #     '--run',
-        #     action="store_true",
-        #     dest="run_test",
-        #     help="run auto max lun test")
+        self.parser.add_argument(
+            '-d',
+            action="store_true",
+            dest="delete",
+            help="to confirm delete lun")
         self.parser.add_argument(
             '-s',
             action="store",
@@ -42,6 +41,7 @@ class HydraArgParse():
         self.parser.add_argument(
             '-id',
             action="store",
+            default='',
             dest="id_range",
             help='ID or ID range(split with ",")')
 
@@ -80,8 +80,8 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config DRDB resource
         '''
-        drbd = vplx.VplxDrbd(self.logger)
         # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
+        drbd = vplx.VplxDrbd(self.logger)
         drbd.prepare_config_file()  # 创建配置文件
         drbd.drbd_cfg()  # run
         drbd.drbd_status_verify()  # 验证有没有启动（UptoDate）
@@ -104,7 +104,42 @@ class HydraArgParse():
         host.start_test()
         print('------* host_test end *------')
 
-    def normal_execute(self, id, string):
+    def delete_resource(self, uniq_str, list_id):
+        '''
+        User determines whether to delete and execute delete method
+        '''
+        storage.ID = list_id
+        storage.STRING = uniq_str
+        vplx.ID = list_id
+        vplx.STRING = uniq_str
+
+        crm = vplx.VplxCrm(self.logger)
+        list_of_del_crm = crm.crm_show()
+
+        drbd = vplx.VplxDrbd(self.logger)
+        list_of_del_drbd = drbd.drbd_show()
+
+        stor = storage.Storage(self.logger)
+        list_of_del_stor = stor.lun_show()
+
+        host_initiator.ID = id
+        host = host_initiator.HostTest(self.logger)
+
+        if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
+            comfirm = input('Do you want to delete these lun (yes/no):')
+            if comfirm == 'yes':
+                crm.start_crm_del(list_of_del_crm)
+                drbd.start_drbd_del(list_of_del_drbd)
+                stor.start_stor_del(list_of_del_stor)
+                crm.vplx_rescan()
+                host.initiator_rescan()
+            else:
+                sundry.pwe(self.logger, 'Cancel succeed')
+        else:
+            sundry.pwe(
+                self.logger, 'The resource you want to delete does not exist. Please confirm the information you entered.\n')
+
+    def execute(self, string, id):
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{id}')
@@ -169,7 +204,6 @@ class HydraArgParse():
         # self._host_test()
 
     # @sundry.record_exception
-    def _()
 
     def run(self):
         if sys.argv:
@@ -225,4 +259,6 @@ class HydraArgParse():
 
 if __name__ == '__main__':
     w = HydraArgParse()
+    # w._host_rescan('1')
+    # w._vplx_rescan('1','2')
     w.run()

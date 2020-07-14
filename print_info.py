@@ -27,7 +27,8 @@ def get_log():
     log_path = "./Hydra_log.log"
     logfilename = 'Hydra_log.log'
     id = (None,)
-    re_ = re.compile(r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?\]?)\]', re.DOTALL)
+    re_ = re.compile(
+        r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?\]?)\]', re.DOTALL)
     if not isFileExists(log_path):
         print('no file')
         return

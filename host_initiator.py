@@ -33,7 +33,7 @@ def init_ssh(logger):
 
 
 def umount_mnt(logger):
-    print('  Umount "/mnt"')
+    # print('  Umount "/mnt"')
     SSH.execute_command('umount /mnt')
 
 
@@ -129,7 +129,7 @@ def find_session(logger):
                                 '  ISCSI not login to VersaPLX, Try to login')
 
 
-def discover_new_lun(logger):
+def discover_new_lun(logger, cmd_rescan):
     '''
     Scan and find the disk from NetApp
     '''
@@ -281,7 +281,8 @@ class HostTest(object):
         time.sleep(0.25)
         read_perf = self._get_dd_perf(cmd_dd_read, unique_str='hsjG0miU')
         print(f'    Read  Speed: {read_perf}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
         # self.logger.write_to_log('INFO', 'info', '', (f'read speed: {read_perf}'))
 
     def start_test(self):
@@ -296,11 +297,19 @@ class HostTest(object):
         else:
             s.pwe(self.logger, f'Device {dev_name} mount failed')
 
+    def initiator_rescan(self):
+        '''
+        initiator rescan after delete
+        '''
+        rescan_cmd = 'rescan-scsi-bus.sh -r'
+        SSH.execute_command(rescan_cmd)
+
 
 if __name__ == "__main__":
     test = HostTest(21)
-    command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
-    [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda 
-    [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb 
-    [33:0:0:21]  disk    LIO-ORG  res_luntest_21   4.0   /dev/sdc '''
-    print(command_result)
+
+    # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
+    # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda
+    # [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb
+    # [33:0:0:21]  disk    LIO-ORG  res_luntest_21   4.0   /dev/sdc '''
+    # print(command_result)
