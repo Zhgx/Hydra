@@ -9,10 +9,7 @@ import consts
 import logdb
 
 SSH = None
-
-# global _ID
-# global _RPL
-# global _TID
+RPL = consts.get_rpl()
 
 vplx_ip = '10.203.1.199'
 host = '10.203.1.200'
@@ -20,9 +17,7 @@ port = '22'
 user = 'root'
 password = 'password'
 timeout = 3
-
 mount_point = '/mnt'
-
 
 def init_ssh(logger):
     global SSH
@@ -34,12 +29,43 @@ def init_ssh(logger):
 
 def umount_mnt(logger):
     # print('  Umount "/mnt"')
-    SSH.execute_command('umount /mnt')
+    SSH.execute_command(f'umount {mount_point}')
 
+def get_ssh_cmd(logger, unique_str, cmd, oprt_id):
+    _RPL = consts.get_rpl()
+    if _RPL == 'no':
+        logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
+        logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
+        result_cmd = SSH.execute_command(cmd)
+        logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
+        return result_cmd
+    elif _RPL == 'yes':
+        db = logdb.LogDB()
+        db_id, oprt_id = db.find_oprt_id_via_string(consts.get_tid(), unique_str)
+        # now_id = consts.get_value('ID')
+        # print(f'  DB ID go to: {db_id}')
+        # print(f'  get opration ID: {oprt_id}')
+        info_start = db.get_info_start(oprt_id)
+        if info_start:
+            print(info_start)
+        result_cmd = db.get_cmd_result(oprt_id)
+        if result_cmd:
+            result_cmd = eval(result_cmd)
+            if result_cmd['sts'] == None:
+                result = result_cmd['rst'].decode('utf-8')
+            else:
+                result = None
+                print('execute drbd init command failed')
+        info_end = db.get_info_finish(oprt_id)
+        if info_end:
+            print(info_end)
+        s.change_pointer(db_id)
+        # print(f'  Change DB ID to: {db_id}')
+        return result
 
 def iscsi_login(logger):
     '''
-    Discover iSCSI and login to session
+    Discover iSCSI login session, if no, login to vplx
     '''
     logger.write_to_log('T', 'INFO', 'info', 'start', '', f'  Discover iSCSI and login to {vplx_ip}')
     cmd = f'iscsiadm -m discovery -t st -p {vplx_ip} -l'
@@ -62,61 +88,24 @@ def iscsi_login(logger):
         else:
             s.pwe(logger, f'  iSCSI login to {vplx_ip} failed')
 
-
-def get_ssh_cmd(logger, unique_str, cmd, oprt_id):
-    _RPL = consts.get_rpl()
-    if _RPL == 'no':
-        logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
-        logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
-        result_cmd = SSH.execute_command(cmd)
-        logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
-        if result_cmd['sts'] != None:  # 执行读写速度测试的时候，sts为0，需要解决？
-            return result_cmd['rst'].decode('utf-8')
-        else:
-            print('execute drbd init command failed')
-    elif _RPL == 'yes':
-        db = logdb.LogDB()
-        db_id, oprt_id = db.find_oprt_id_via_string(consts.get_tid(), unique_str)
-        # now_id = consts.get_value('ID')
-        # print(f'  DB ID go to: {db_id}')
-        # print(f'  get opration ID: {oprt_id}')
-        info_start = db.get_info_start(oprt_id)
-        if info_start:
-            print(info_start)
-        result_cmd = db.get_cmd_result(oprt_id)
-        if result_cmd:
-            result_cmd = eval(result_cmd)
-            if result_cmd['sts'] != None:
-                result = result_cmd['rst'].decode('utf-8')
-            else:
-                result = None
-                print('execute drbd init command failed')
-        info_end = db.get_info_finish(oprt_id)
-        if info_end:
-            print(info_end)
-        s.change_pointer(db_id)
-        # print(f'  Change DB ID to: {db_id}')
-        return result
-
-
 def find_session(logger):
     '''
     Execute the command and check up the status of session
     '''
     # self.logger.write_to_log('INFO', 'info', '', 'start to execute the command and check up the status of session')
     unique_str = '4aXALx0R'
-    oprt_id_one = s.get_oprt_id()
-    oprt_id_two = s.get_oprt_id()
+    oprt_id_cmd = s.get_oprt_id()
+    oprt_id_re = s.get_oprt_id()
     cmd = 'iscsiadm -m session'
 
-    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id_one,
+    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id_cmd,
                         '    Execute the command and check up the status of session')
-    result_session = get_ssh_cmd(logger, unique_str, cmd, oprt_id_one)
-    if result_session:
+    result_session = get_ssh_cmd(logger, unique_str, cmd, oprt_id_cmd)
+    if result_session['sts']:
         re_session = re.compile(f'tcp:.*({vplx_ip}):.*')
-        re_result = re_session.findall(result_session)
-        logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id_two, {result_session: result_session})
-        logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id_two, re_result)
+        re_result = re_session.findall(result_session['rst'].decode(utf-8))
+        logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id_re, {result_session: result_session})
+        logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id_re, re_result)
         # self.logger.write_to_log('DATA', 'output', 're_result', re_result)
         if re_result:
             # self.logger.write_to_log('HostTest','return','find_session',True)
@@ -128,52 +117,60 @@ def find_session(logger):
             logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id_one,
                                 '  ISCSI not login to VersaPLX, Try to login')
 
+def _scsi_rescan(logger, unique_str, oprt_id, cmd_rescan):
+    print('    Start to scan SCSI device from VersaPLX')
+    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to scan SCSI device from VersaPLX')
+    result_rescan = get_ssh_cmd(logger, unique_str, cmd_rescan, oprt_id)
+    if result_rescan['sts']:
+        return True
+    else:
+        print('  Scan SCSI device failed')
+        logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id, '  Scan SCSI device failed')
 
-def discover_new_lun(logger, cmd_rescan):
-    '''
-    Scan and find the disk from NetApp
-    '''
-    def scan_disk():
-        unique_str = 'zWuZsV8e'
-        oprt_id = s.get_oprt_id()
-        print('    Start to scan SCSI device from VersaPLX')
-        logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to scan SCSI device from VersaPLX')
-        cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
-        result_rescan = get_ssh_cmd(logger, unique_str, cmd_rescan, oprt_id)
-        if result_rescan != None:
-            return result_rescan
-        else:
-            print('  Scan SCSI device failed')
-            logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id, '  Scan SCSI device failed')
+def _list_disk():
+    unique_str = 'JRQb18mg'
+    oprt_id = s.get_oprt_id()
 
-    def list_disk():
-        unique_str = 'JRQb18mg'
-        oprt_id = s.get_oprt_id()
+    print('    Start to list all SCSI device')
+    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to list all SCSI device')
+    cmd_lsscsi = 'lsscsi'
+    # result_lsscsi = SSH.execute_command(cmd_lsscsi)
+    result_lsscsi = get_ssh_cmd(logger, unique_str, cmd_lsscsi, oprt_id)
+    if result_lsscsi['sts']:
+        return result_lsscsi['rst']
+    else:
+        print(f'  Command {cmd_lsscsi} execute failed')
+        logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
+                            f'  Command "{cmd_lsscsi}" execute failed')
 
-        result_rescan = scan_disk()
-        if result_rescan:
-            print('    Start to list all SCSI device')
-            logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to list all SCSI device')
-            cmd_lsscsi = 'lsscsi'
-            # result_lsscsi = SSH.execute_command(cmd_lsscsi)
-            result_lsscsi = get_ssh_cmd(logger, unique_str, cmd_lsscsi, oprt_id)
-            if result_lsscsi != None:
-                return result_lsscsi
-            else:
-                print(f'  Command {cmd_lsscsi} execute failed')
-                logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
-                                    f'  Command "{cmd_lsscsi}" execute failed')
-
-        # if SSH.execute_command('/usr/bin/rescan-scsi-bus.sh'):#新的返回值有状态和数值,以状态判断,记录数值
-        #     result_lsscsi = SSH.execute_command('lsscsi')
-
-    result_lsscsi = list_disk()
+def _find_new_lun():
     re_find_id_dev = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    blk_dev_name = s.get_disk_dev(consts.get_id(), re_find_id_dev, result_lsscsi, 'NetApp', logger)
-    print(f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
+    str_lsscsi = _list_disk9()
+    return s.get_disk_dev(consts.get_id(), re_find_id_dev, str_lsscsi, 'NetApp', logger)
+
+def discover_new_lun():
+    uni_str_resacan = 'JR2b1ejg'
+    oprt_id_resacan = s.get_oprt_id()
+    uni_str_resacan_retry = '3Riemejl'
+    oprt_id_resacan_retry = s.get_oprt_id()
+    cmd_rescan = '/usr/bin/rescan-scsi-bus.sh'
+    cmd_rescan_retry = '/usr/bin/rescan-scsi-bus.sh -a'
+
+    _scsi_rescan(uni_str_resacan, oprt_id_resacan, cmd_rescan)
+    new_disk_dev = _find_new_lun()
+    if new_disk_dev:
+        print(f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
     # self.logger.write_to_log('INFO', 'info', '', f'Find device {blk_dev_name} for LUN id {ID}')
-    logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
-    return blk_dev_name
+        logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
+        return new_disk_dev
+    else:
+        _scsi_rescan(uni_str_resacan_retry, oprt_id_resacan_retry, cmd_rescan_retry)
+        new_disk_dev = _find_new_lun()
+            if new_disk_dev:
+                print(f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
+            # self.logger.write_to_log('INFO', 'info', '', f'Find device {blk_dev_name} for LUN id {ID}')
+                logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
+                return new_disk_dev
 
 
 class HostTest(object):
@@ -185,7 +182,10 @@ class HostTest(object):
         self.logger = logger
         print('Start IO test on initiator host')
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
-        _RPL = consts.get_rpl()
+        self._prepare()
+        
+
+    def _prepare(self):
         if _RPL == 'no':
             init_ssh(self.logger)
             umount_mnt(self.logger)
@@ -193,6 +193,7 @@ class HostTest(object):
                 iscsi_login(logger)
         if _RPL == 'yes':
             find_session(self.logger)
+
 
     def _judge_format(self, string):
         '''
@@ -238,8 +239,8 @@ class HostTest(object):
         print(f'    Start to format {dev_name}')
         self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'    Start to format {dev_name}')
         result_format = get_ssh_cmd(self.logger, unique_str, cmd_format, oprt_id)
-        if result_format != None:
-            if self._judge_format(result_format):
+        if result_format['sts']:
+            if self._judge_format(result_format['rst'].decode('utf-8')):
                 return True
             else:
                 s.pwe(self.logger, f'  Format {dev_name} failed')

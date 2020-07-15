@@ -17,14 +17,26 @@ def get_value(key, defValue=0):
     except KeyError:
         return defValue
 
-def get_str():
+def set_glo_str(value):
+    set_value('STR_ONE', value)
+
+def set_glo_id(value):
+    set_value('ID', value)
+
+def set_glo_rpl(value):
+    set_value('RPL', value)
+
+def set_glo_tid(value):
+    set_value('TID', value)
+
+def glo_str():
     return get_value('str_one')
 
-def get_id():
+def glo_id():
     return get_value('id_one')
 
-def get_rpl():
+def glo_rpl():
     return get_value('RPL')
 
-def get_tid():
+def glo_tid():
     return get_value('tid')
