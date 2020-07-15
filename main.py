@@ -161,7 +161,6 @@ class HydraArgParse():
                 self._vplx_crm(i, args.uniq_str)
                 time.sleep(1.5)
                 self._host_test(i)
-
         elif args.replay:
             self.replay(args)
 
