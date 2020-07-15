@@ -23,7 +23,6 @@ class Storage:
     Create LUN and map to VersaPLX
     '''
 
-
     def __init__(self, logger):
         print('--------')
 

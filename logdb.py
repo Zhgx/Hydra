@@ -3,11 +3,14 @@ import os
 import subprocess
 import sqlite3
 import pprint
-
 import consts
 
 list_cmd = []
 
+def prepare_db():
+    w = LogDB()
+    w.get_logdb()
+    consts.set_glo_db(w)
 
 def isFileExists(strfile):
     # 检查文件是否存在
@@ -60,6 +63,7 @@ class LogDB():
     def __init__(self):
         self.con = sqlite3.connect("logDB.db", check_same_thread=False)
         self.cur = self.con.cursor()
+
 
     def insert(self, data):
         self.cur.execute(self.insert_sql, data)
