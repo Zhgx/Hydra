@@ -14,6 +14,33 @@ from random import shuffle
 import log
 
 
+def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
+    gloabl RPL
+    RPL = consts._rpl()
+    if RPL == 'no':
+        logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
+        logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
+        result_cmd = ssh_obj.execute_command(cmd)
+        logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
+        return result_cmd
+    elif RPL == 'yes':
+
+        db_id, oprt_id = DB.find_oprt_id_via_string(consts.get_tid(), unique_str)
+        info_start = DB.get_info_start(oprt_id)
+        if info_start:
+            print(info_start)
+        result_cmd = DB.get_cmd_result(oprt_id)
+        if result_cmd:
+            result = eval(result_cmd)
+        else:# 数据库取不到数据
+            result = None
+        info_end = db.get_info_finish(oprt_id)
+        if info_end:
+            print(info_end)
+        s.change_pointer(db_id)
+        # print(f'  Change DB ID to: {db_id}')
+        return result
+
 def pwe(logger, print_str):
     """
     print, write to log and exit.
@@ -170,7 +197,7 @@ def get_path():
 
 
 def change_pointer(new_id):
-    consts.set_value('ID', new_id)
+    consts.set_value('LID', new_id)
 
 
 if __name__ == 'main':

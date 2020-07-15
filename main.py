@@ -138,36 +138,18 @@ class HydraArgParse():
                 self.logger, 'The resource you want to delete does not exist. Please confirm the information you entered.\n')
 
 
-    def replay_execute(self, tid):
-        db = logdb.LogDB()
-        db.get_logdb()
-        _string, _id = db.get_string_id(tid)
-        vplx._RPL = 'yes'
-        storage._RPL = 'yes'
-        host_initiator._RPL = 'yes'
-        vplx._TID = tid
-        storage._TID = tid
-        host_initiator._TID = tid
-        consts._init()  # 初始化一个全局变量：ID
-        consts.set_value('LOG_SWITCH', 'OFF')
-        self.execute(_id, _string)
-
     def execute(self, dict_args):
         for id_one,str_one in dict_args.items():
-            consts.set_value('id_one',id_one)
-            consts.set_value('str_one',str_one)
+            consts.set_value('LUN_ID',id_one)
+            consts.set_value('STR',str_one)
             self.transaction_id = sundry.get_transaction_id()
             self.logger = log.Log(self.transaction_id)
             self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.get_id()}')
             self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{consts.get_str()}')
             if self.list_tid:
-                for tid in self.list_tid:
-                    consts.set_value('tid',tid)
-                    self._storage()
-                    self._vplx_drbd()
-                    self._vplx_crm()
-                    self._host_test()
-                return
+                tid = self.list_tid[0]
+                self.list_tid.remove(tid)
+                consts.set_value('TID', tid)
 
             self._storage()
             self._vplx_drbd()
@@ -175,22 +157,6 @@ class HydraArgParse():
             self._host_test()
 
 
-        # print(f'\n======*** Start working for ID {id} ***======')
-        # self._storage()
-        #
-        #
-        # # 初始化一个全局变量ID
-        # storage._ID = id
-        # storage._STR = string
-        # self._storage()
-        #
-        # vplx._ID = id
-        # vplx._STR = string
-        # self._vplx_drbd()
-        # self._vplx_crm()
-        #
-        # host_initiator._ID = id
-        # self._host_test()
 
     # @sundry.record_exception
 
@@ -203,19 +169,19 @@ class HydraArgParse():
         dict_id_str = {}
         # uniq_str: The unique string for this test, affects related naming
 
-        # if args.uniq_str and args.id_range:
-        #     consts.set_value('RPL', 'no')
-        #     consts.set_value('LOG_SWITCH', 'ON')
-        #     ids = args.id_range.split(',')
-        #     if len(ids) == 1:
-        #         dict_id_str.update({ids[0]:args.uniq_str})
+        if args.uniq_str and args.id_range:
+            consts.set_value('RPL', 'no')
+            consts.set_value('LOG', 'yes')
+            ids = args.id_range.split(',')
+            if len(ids) == 1:
+                dict_id_str.update({ids[0]:args.uniq_str})
                 
-        #     elif len(ids) == 2:
-        #         id_start, id_end = int(ids[0]), int(ids[1])
-        #         for i in range(id_start, id_end):
-        #             dict_id_str.update({i: args.uniq_str})     
-        #     else:
-        #         self.parser.print_help()
+            elif len(ids) == 2:
+                id_start, id_end = int(ids[0]), int(ids[1])
+                for i in range(id_start, id_end):
+                    dict_id_str.update({i: args.uniq_str})
+            else:
+                self.parser.print_help()
         if args.uniq_str:
             if args.delete:
                 consts.set_value('RPL', 'no')
@@ -223,20 +189,18 @@ class HydraArgParse():
                     ids = [int(i) for i in args.id_range.split(',')]
                 else:
                     ids=''
-                consts.set_value('str_one', args.uniq_str)
-                consts.set_value('id_one',ids)
+                consts.set_value('STR', args.uniq_str)
+                consts.set_value('ID',ids)
                 self.delete_resource()  
-  
 
         elif args.replay:
             consts.set_value('RPL','yes')
-            consts.set_value('LOG_SWITCH','OFF')
+            consts.set_value('LOG','no')
             db = logdb.LogDB()
             db.get_logdb()
             if args.transactionid:
                 string, id = db.get_string_id(args.transactionid)
-                consts.set_value('tid', args.transactionid)
-                print(consts.get_tid())
+                consts.set_value('TID', args.transactionid)
                 dict_id_str.update({id: string})
  
                 # self.replay_execute(args.transactionid)

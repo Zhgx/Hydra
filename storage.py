@@ -46,7 +46,6 @@ class Storage:
             self.telnet_conn.execute_command(cmd)
         elif self._RPL == 'yes':
             db = logdb.LogDB()
-            print(self._TID, unique_str)
             db_id, oprt_id = db.find_oprt_id_via_string(self._TID, unique_str)
             info_start = db.get_info_start(oprt_id)
             if info_start:
