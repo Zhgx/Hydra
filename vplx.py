@@ -146,9 +146,9 @@ class VplxDrbd(object):
         global DRBD_DEV_NAME
         DRBD_DEV_NAME = f'drbd{self._ID}'
         _RPL = consts.get_rpl()
-        if _RPL == 'no':
-            init_ssh(self.logger)
-            self.blk_dev_name = retry_rescan(logger)
+        # if _RPL == 'no':
+        #     init_ssh(self.logger)
+        #     self.blk_dev_name = retry_rescan(logger)
 
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  f'    Start to configure DRBD resource {self.res_name}')
@@ -157,9 +157,10 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
-        _RPL = consts.get_rpl()
-        if _RPL == 'yes':
-            return
+        # _RPL = consts.get_rpl()
+        # if _RPL == 'yes':
+        #     return
+        self.blk_dev_name = retry_rescan(self.logger)
 
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  f'      Start prepare config fiel for resource {self.res_name}')
@@ -346,6 +347,62 @@ class VplxDrbd(object):
             else:
                 s.pwe(self.logger, f'{self.res_name} DRBD does not exist')
 
+    def _drbd_down(self, res_name):
+        '''
+        Stop the DRBD resource
+        '''
+        drbd_down_cmd = f'drbdadm down {res_name}'
+        down_result = SSH.execute_command(drbd_down_cmd)
+        if down_result['sts']:
+            return True
+        else:
+            s.pwe(self.logger, 'drbd down failed')
+
+    def _drbd_del_config(self, res_name):
+        '''
+        remove the DRBD config file
+        '''
+        drbd_del_cmd = f'rm /etc/drbd.d/{res_name}.res'
+        del_result = SSH.execute_command(drbd_del_cmd)
+        if del_result['sts']:
+            return True
+        else:
+            s.pwe(self.logger, 'drbd remove config file fail')
+
+    def _get_all_drbd(self):
+        drbd_show_cmd = 'drbdadm status'
+        drbd_show_result = SSH.execute_command(drbd_show_cmd)
+        if drbd_show_result['sts']:
+            re_drbd = re.compile(f'res_{self._STR}_[0-9]{{1,3}}')
+            list_of_all_drbd = re_drbd.findall(
+                drbd_show_result['rst'].decode('utf-8'))
+            return list_of_all_drbd
+
+    def drbd_show(self):
+        '''
+        Get the DRBD resource name through regular matching and determine whether these  exist
+        '''
+        drbd_show_result = self._get_all_drbd()
+        if drbd_show_result:
+            list_of_show_drbd = s.getshow(
+                self.logger, self._STR, self._ID, drbd_show_result)
+            if list_of_show_drbd:
+                print('DRBD：')
+                print(s.print_format(list_of_show_drbd))
+            return list_of_show_drbd
+        else:
+            return False
+
+    def drbd_del(self, res_name):
+        if self._drbd_down(res_name):
+            if self._drbd_del_config(res_name):
+                return True
+
+    def start_drbd_del(self, drbd_show_result):
+        if drbd_show_result:
+            for res_name in drbd_show_result:
+                self.drbd_del(res_name)
+
 
 class VplxCrm(object):
     def __init__(self, logger):
@@ -510,7 +567,7 @@ class VplxCrm(object):
         res_show_cmd = 'crm res show'
         res_show_result = SSH.execute_command(res_show_cmd)
         if res_show_result['sts']:
-            re_show = re.compile(f'res_{STRING}_[0-9]{{1,3}}')
+            re_show = re.compile(f'res_{self._STR}_[0-9]{{1,3}}')
             list_of_all_crm = re_show.findall(
                 res_show_result['rst'].decode('utf-8'))
             return list_of_all_crm
@@ -522,7 +579,7 @@ class VplxCrm(object):
         crm_show_result = self._get_all_crm()
         if crm_show_result:
             list_of_show_crm = s.getshow(
-                self.logger, STRING, ID, crm_show_result)
+                self.logger, self._STR, self._ID, crm_show_result)
             if list_of_show_crm:
                 print('crm：')
                 print(s.print_format(list_of_show_crm))
