@@ -14,6 +14,92 @@ from random import shuffle
 import log
 
 
+def scsi_rescan(ssh, mode):
+    if mode == 'n':
+        cmd = 'scsi-busxxxx'
+        logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to scan SCSI device normal')
+    elif mode == 'r':
+        cmd = 'scsi-busxxxx -r'
+        logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to scan SCSI device with remove')
+    elif mode == 'n':
+        cmd = 'scsi-busxxxx -a'
+        logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to scan SCSI device deeply')
+    result = get_ssh_cmd(ssh, cmd, 'asdfasdfasfd', get_oprt_id())
+    if result['sts']:
+        return True
+    else:
+        print('  Scan SCSI device failed')
+        logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id, '  Scan SCSI device failed')
+    
+
+def get_lsscsi(ssh, func_str, oprt_id):
+    print('    Start to list all SCSI device')
+    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to list all SCSI device')
+    cmd_lsscsi = 'lsscsi'
+    # result_lsscsi = SSH.execute_command(cmd_lsscsi)
+    result_lsscsi = get_ssh_cmd(ssh, cmd_lsscsi, 'asdadsf',  oprt_id)
+    if result_lsscsi['sts']:
+        return result_lsscsi['rst'].decode('utf-8')
+    else:
+        print(f'  Command {cmd_lsscsi} execute failed')
+        logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
+                            f'  Command "{cmd_lsscsi}" execute failed')
+
+def get_all_scsi_disk(re_string, lsscsi_result):
+    # re_find_id_dev = 
+    return re_findall(re_find_id_dev, lsscsi_result)
+
+def get_the_disk_with_lun_id(all_disk):
+    lun_id = consts.glo_id()
+    dict_id_disk = dict(re_result)
+        if lun_id in dict_id_disk.keys():
+            blk_dev_name = dict_id_disk[lun_id]
+            return blk_dev_name
+        else:
+            print(f'no disk device with SCSI ID {lun_id} found')
+            logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'no disk device with SCSI ID {lun_id} found')
+
+
+def _find_new_lun():
+    
+    return get_disk_dev(consts.get_id(), re_find_id_dev, str_lsscsi, 'NetApp', logger)
+
+def discover_new_lun():
+    new_disk_dev = _find_new_lun()
+    if new_disk_dev:
+        print(f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
+    # self.logger.write_to_log('INFO', 'info', '', f'Find device {blk_dev_name} for LUN id {ID}')
+        logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'    Find new device {blk_dev_name} for LUN id {consts.get_id()}')
+        return new_disk_dev
+
+
+def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
+    gloabl RPL
+    RPL = consts._rpl()
+    if RPL == 'no':
+        logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
+        logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
+        result_cmd = ssh_obj.execute_command(cmd)
+        logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
+        return result_cmd
+    elif RPL == 'yes':
+
+        db_id, oprt_id = DB.find_oprt_id_via_string(consts.get_tid(), unique_str)
+        info_start = DB.get_info_start(oprt_id)
+        if info_start:
+            print(info_start)
+        result_cmd = DB.get_cmd_result(oprt_id)
+        if result_cmd:
+            result = eval(result_cmd)
+        else:# 数据库取不到数据
+            result = None
+        info_end = db.get_info_finish(oprt_id)
+        if info_end:
+            print(info_end)
+        s.change_pointer(db_id)
+        # print(f'  Change DB ID to: {db_id}')
+        return result
+
 def pwe(logger, print_str):
     """
     print, write to log and exit.
@@ -25,28 +111,6 @@ def pwe(logger, print_str):
     sys.exit()
 
 
-def iscsi_about(re_string, result):
-    if result:
-        result = result.decode('utf-8')
-        re_str = re.compile(re_string)
-        re_result = re_str.findall(result)
-        if re_result:
-            return True
-
-
-def iscsi_login(logger, ip, login_result):
-    re_string = f'Login to.*portal: ({ip}).*successful'
-    if iscsi_about(re_string, login_result):
-        print(f'iscsi login to {ip} succeed')
-        return True
-    else:
-        pwe(logger, f'iscsi login to {ip} failed')
-
-
-def find_session(ip, session_result):
-    re_string = f'tcp:.*({ip}):.*'
-    if iscsi_about(re_string, session_result):
-        return True
 
 
 def compare(name, show_result):
@@ -99,31 +163,31 @@ def getshow(logger, unique_str, list_id, show_result):
         return show_result
 
 
-def get_disk_dev(lun_id, re_string, lsscsi_result, dev_label, logger):
-    '''
-    Use re to get the blk_dev_name through lun_id
-    '''
-    # print(lsscsi_result)
-    # self.logger.write_to_log('GetDiskPath','host','find_device',self.logger.host)
-    re_find_path_via_id = re.compile(re_string)
-    # self.logger.write_to_log('GetDiskPath','regular_before','find_device',lsscsi_result)
-    re_result = re_find_path_via_id.findall(lsscsi_result)
-    oprt_id = sundry.get_oprt_id()
-    logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {re_string: lsscsi_result})
-    logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
-    if re_result:
-        dict_id_disk = dict(re_result)
-        if lun_id in dict_id_disk.keys():
-            blk_dev_name = dict_id_disk[lun_id]
-            return blk_dev_name
-        else:
-            print(f'no disk device with SCSI ID {lun_id} found')
-            logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'no disk device with SCSI ID {lun_id} found')
+# def get_disk_dev(lun_id, re_string, lsscsi_result, dev_label, logger):
+#     '''
+#     Use re to get the blk_dev_name through lun_id
+#     '''
+#     # print(lsscsi_result)
+#     # self.logger.write_to_log('GetDiskPath','host','find_device',self.logger.host)
+#     re_find_path_via_id = re.compile(re_string)
+#     # self.logger.write_to_log('GetDiskPath','regular_before','find_device',lsscsi_result)
+#     re_result = re_find_path_via_id.findall(lsscsi_result)
+#     oprt_id = sundry.get_oprt_id()
+#     logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {re_string: lsscsi_result})
+#     logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
+#     if re_result:
+#         dict_id_disk = dict(re_result)
+#         if lun_id in dict_id_disk.keys():
+#             blk_dev_name = dict_id_disk[lun_id]
+#             return blk_dev_name
+#         else:
+#             print(f'no disk device with SCSI ID {lun_id} found')
+#             logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'no disk device with SCSI ID {lun_id} found')
 
-    else:
-        print(f'no equal {dev_label} disk device found')
-        logger.write_to_log('T', 'INFO', 'warning', 'failed',
-                            '', f'no equal {dev_label} disk device found')
+#     else:
+#         print(f'no equal {dev_label} disk device found')
+#         logger.write_to_log('T', 'INFO', 'warning', 'failed',
+#                             '', f'no equal {dev_label} disk device found')
 
 
 def record_exception(func):
@@ -172,6 +236,56 @@ def get_path():
 def change_pointer(new_id):
     consts.set_value('LID', new_id)
 
+def re_findall(re_string, tgt_string):
+    re_login = re.compile(re_string)
+    re_result = re_login.findall(tgt_string)
+    oprt_id = s.get_oprt_id()
+    logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {re_string: tgt_string})
+    logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
+    return re_result
+
+def iscsi_login(tgt_ip, ssh, func_str, oprt_id):
+    '''
+    Discover iSCSI login session, if no, login to vplx
+    '''
+    cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
+    result_iscsi_login = get_ssh_cmd_result(ssh, cmd, func_str, oprt_id)
+    if result_iscsi_login['sts']:
+        result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
+        re_string = f'Login to.*portal: ({tgt_ip}).*successful'
+        if re_findall(re_string, result_iscsi_login):
+            print(f'  iSCSI login to {tgt_ip} successful')
+            logger.write_to_log('T', 'INFO', 'info', 'finish', '', f'  iSCSI login to {tgt_ip} successful')
+            return True
+        else:
+            s.pwe(logger, f'  iSCSI login to {tgt_ip} failed')
+
+def find_session(tgt_ip, ssh, func_str, oprt_id):
+    '''
+    Execute the command and check up the status of session
+    '''
+    # self.logger.write_to_log('INFO', 'info', '', 'start to execute the command and check up the status of session')
+    cmd = 'iscsiadm -m session'
+    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
+                        '    Execute the command and check up the status of session')
+    result_session = get_ssh_cmd(ssh, cmd, func_str, oprt_id)
+    if result_session['sts']:
+        result_session = result_session['rst'].decode('utf-8')
+        re_session = re.compile(f'tcp:.*({vplx_ip}):.*')
+        if re_findall(re_session, result_session):
+            print('    iSCSI already login to VersaPLX')
+            logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id_one, '    ISCSI already login to VersaPLX')
+            return True
+        else:
+            print('  iSCSI not login to VersaPLX, Try to login')
+            logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id_one,
+                                '  ISCSI not login to VersaPLX, Try to login')
+
+
+
 
 if __name__ == 'main':
     get_disk_dev()
+
+
+

@@ -17,29 +17,44 @@ def get_value(key, defValue=0):
     except KeyError:
         return defValue
 
-def get_str():
+def set_glo_log(value):
+    set_value('LOG', value)
+
+def set_glo_db(value):
+    set_value('DB', value)
+
+def set_glo_str(value):
+    set_value('STR', value)
+
+def set_glo_id(value):
+    set_value('ID', value)
+
+def set_glo_rpl(value):
+    set_value('RPL', value)
+
+def set_glo_tsc_id(value):
+    set_value('TSC_ID', value)
+
+def set_glo_log_id(value):
+    set_value('LOG_ID', value)
+
+def glo_log(value):
+    return get_value('LOG')
+
+def glo_db(value):
+    return get_value('DB')
+
+def glo_str(value):
     return get_value('STR')
 
-def get_id():
-    return get_value('LUN_ID')
+def glo_id(value):
+    return get_value('ID')
 
-def get_rpl():
+def glo_rpl(value):
     return get_value('RPL')
 
-def get_tid():
-    return get_value('TID')
+def glo_tsc_id(value):
+    return get_value('TSC_ID')
 
-def set_str(value):
-    set_value('STR',value)
-
-def set_id(value):
-    set_value('LUN_ID',value)
-
-def set_rpl(value):
-    set_value('RPL',value)
-
-def set_tid(value):
-    set_value('TID',value)
-
-
-
+def glo_log_id(value):
+    return get_value('LOG_ID')

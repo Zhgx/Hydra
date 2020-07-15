@@ -1,4 +1,6 @@
 #  coding: utf-8
+
+import consts
 import argparse
 import sys
 import time
@@ -8,7 +10,7 @@ import host_initiator
 import sundry
 import log
 import logdb
-import consts
+
 
 
 
@@ -22,8 +24,9 @@ class HydraArgParse():
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         self.argparse_init()
-        consts._init()  # 初始化一个全局变量：ID
+          # 初始化一个全局变量：ID
         self.list_tid = None
+        consts._init()
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
@@ -169,7 +172,19 @@ class HydraArgParse():
         dict_id_str = {}
         # uniq_str: The unique string for this test, affects related naming
 
-        if args.uniq_str and args.id_range:
+        if args.delete:
+            if args.uniq_str:
+                consts.set_value('RPL', 'no')
+                if args.id_range:
+                    ids = [int(i) for i in args.id_range.split(',')]
+                else:
+                    ids = ''
+                consts.set_value('STR', args.uniq_str)
+                consts.set_value('ID', ids)
+                self.delete_resource()
+
+
+        elif args.uniq_str and args.id_range:
             consts.set_value('RPL', 'no')
             consts.set_value('LOG', 'yes')
             ids = args.id_range.split(',')
@@ -182,22 +197,22 @@ class HydraArgParse():
                     dict_id_str.update({i: args.uniq_str})
             else:
                 self.parser.print_help()
-        if args.uniq_str:
-            if args.delete:
-                consts.set_value('RPL', 'no')
-                if args.id_range:
-                    ids = [int(i) for i in args.id_range.split(',')]
-                else:
-                    ids=''
-                consts.set_value('STR', args.uniq_str)
-                consts.set_value('ID',ids)
-                self.delete_resource()  
+        # if args.uniq_str:
+        #     if args.delete:
+        #         consts.set_value('RPL', 'no')
+        #         if args.id_range:
+        #             ids = [int(i) for i in args.id_range.split(',')]
+        #         else:
+        #             ids=''
+        #         consts.set_value('STR', args.uniq_str)
+        #         consts.set_value('ID',ids)
+        #         self.delete_resource()
 
         elif args.replay:
             consts.set_value('RPL','yes')
             consts.set_value('LOG','no')
-            db = logdb.LogDB()
-            db.get_logdb()
+            logdb.prepare_db()
+            db = consts.glo_db()
             if args.transactionid:
                 string, id = db.get_string_id(args.transactionid)
                 consts.set_value('TID', args.transactionid)
