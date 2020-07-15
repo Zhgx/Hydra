@@ -2,7 +2,7 @@
 
 def _init():  # 初始化
     global _global_dict
-    _global_dict = {'ID': 0}
+    _global_dict = {'LOG_ID': 0}
 
 
 def set_value(key, value):
@@ -18,13 +18,28 @@ def get_value(key, defValue=0):
         return defValue
 
 def get_str():
-    return get_value('str_one')
+    return get_value('STR')
 
 def get_id():
-    return get_value('id_one')
+    return get_value('LUN_ID')
 
 def get_rpl():
     return get_value('RPL')
 
 def get_tid():
-    return get_value('tid')
+    return get_value('TID')
+
+def set_str(value):
+    set_value('STR',value)
+
+def set_id(value):
+    set_value('LUN_ID',value)
+
+def set_rpl(value):
+    set_value('RPL',value)
+
+def set_tid(value):
+    set_value('TID',value)
+
+
+

@@ -170,7 +170,7 @@ def get_path():
 
 
 def change_pointer(new_id):
-    consts.set_value('ID', new_id)
+    consts.set_value('LID', new_id)
 
 
 if __name__ == 'main':
