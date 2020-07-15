@@ -1,4 +1,6 @@
 #  coding: utf-8
+
+import consts
 import argparse
 import sys
 import time
@@ -8,7 +10,7 @@ import host_initiator
 import sundry
 import log
 import logdb
-import consts
+
 
 
 
@@ -22,8 +24,9 @@ class HydraArgParse():
         self.transaction_id = sundry.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         self.argparse_init()
-        consts._init()  # 初始化一个全局变量：ID
+          # 初始化一个全局变量：ID
         self.list_tid = None
+        consts._init()
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
@@ -208,8 +211,8 @@ class HydraArgParse():
         elif args.replay:
             consts.set_value('RPL','yes')
             consts.set_value('LOG','no')
-            db = logdb.LogDB()
-            db.get_logdb()
+            logdb.prepare_db()
+            db = consts.glo_db()
             if args.transactionid:
                 string, id = db.get_string_id(args.transactionid)
                 consts.set_value('TID', args.transactionid)
