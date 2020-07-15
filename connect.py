@@ -52,23 +52,20 @@ class ConnSSH(object):
         data = stdout.read()
         if len(data) > 0:
             output = {'sts': 1, 'rst': data}
-            # self.logger.write_to_log('F','DATA','cmd','ssh',oprt_id,output)
             return output
-
         err = stderr.read()
         if len(err) > 0:
             output = {'sts': 0, 'rst': err}
             self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'  Command "{command}" execute failed')
-            # self.logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, output)
             return output
         if data == b'':
             output = {'sts': 1, 'rst': data}
-            # self.logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, output)
             return output
 
     def ssh_connect(self):
         self._connect()
         if not self.SSHConnection:
+            self.logger.write_to_log('T', 'INFO', 'info', 'start', '', '  Retry connect to VersaPLX via SSH')
             self._connect()
 
     def close(self):
@@ -109,20 +106,14 @@ class ConnTelnet(object):
 
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
+        'executr command only on FAS270'
         oprt_id = s.get_oprt_id()
         self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
-
-        # self.logger.write_to_log('DATA','input','cmd',cmd.encode().strip() + b'\r')
-        # [time],[transaction_id],[s],[OPRT],[cmd],[telnet],[oprt_id],[lc_cmd]
         self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
         rely = self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(b'\r')
-        # 命令的结果的记录？
-        # self.logger.write_to_log('Telnet','telnet_ex_cmd','','time_sleep:0.25')
         return rely
-        # [time],[transaction_id],[s],[DATA],[cmd],[telnet],[oprt_id],[telnet_output]
-        # self.logger.write_to_log('Telnet',)
 
     def telnet_connect(self):
         self._connect()

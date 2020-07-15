@@ -2,7 +2,7 @@
 
 def _init():  # 初始化
     global _global_dict
-    _global_dict = {'ID': 0}
+    _global_dict = {'LOG_ID': 0}
 
 
 def set_value(key, value):
@@ -17,14 +17,44 @@ def get_value(key, defValue=0):
     except KeyError:
         return defValue
 
-def get_str():
-    return get_value('str_one')
+def set_glo_log(value):
+    set_value('LOG', value)
 
-def get_id():
-    return get_value('id_one')
+def set_glo_db(value):
+    set_value('DB', value)
 
-def get_rpl():
+def set_glo_str(value):
+    set_value('STR', value)
+
+def set_glo_id(value):
+    set_value('ID', value)
+
+def set_glo_rpl(value):
+    set_value('RPL', value)
+
+def set_glo_tsc_id(value):
+    set_value('TSC_ID', value)
+
+def set_glo_log_id(value):
+    set_value('LOG_ID', value)
+
+def glo_log(value):
+    return get_value('LOG')
+
+def glo_db(value):
+    return get_value('DB')
+
+def glo_str(value):
+    return get_value('STR')
+
+def glo_id(value):
+    return get_value('ID')
+
+def glo_rpl(value):
     return get_value('RPL')
 
-def get_tid():
-    return get_value('tid')
+def glo_tsc_id(value):
+    return get_value('TSC_ID')
+
+def glo_log_id(value):
+    return get_value('LOG_ID')
