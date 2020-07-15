@@ -169,7 +169,19 @@ class HydraArgParse():
         dict_id_str = {}
         # uniq_str: The unique string for this test, affects related naming
 
-        if args.uniq_str and args.id_range:
+        if args.delete:
+            if args.uniq_str:
+                consts.set_value('RPL', 'no')
+                if args.id_range:
+                    ids = [int(i) for i in args.id_range.split(',')]
+                else:
+                    ids = ''
+                consts.set_value('STR', args.uniq_str)
+                consts.set_value('ID', ids)
+                self.delete_resource()
+
+
+        elif args.uniq_str and args.id_range:
             consts.set_value('RPL', 'no')
             consts.set_value('LOG', 'yes')
             ids = args.id_range.split(',')
@@ -182,16 +194,16 @@ class HydraArgParse():
                     dict_id_str.update({i: args.uniq_str})
             else:
                 self.parser.print_help()
-        if args.uniq_str:
-            if args.delete:
-                consts.set_value('RPL', 'no')
-                if args.id_range:
-                    ids = [int(i) for i in args.id_range.split(',')]
-                else:
-                    ids=''
-                consts.set_value('STR', args.uniq_str)
-                consts.set_value('ID',ids)
-                self.delete_resource()  
+        # if args.uniq_str:
+        #     if args.delete:
+        #         consts.set_value('RPL', 'no')
+        #         if args.id_range:
+        #             ids = [int(i) for i in args.id_range.split(',')]
+        #         else:
+        #             ids=''
+        #         consts.set_value('STR', args.uniq_str)
+        #         consts.set_value('ID',ids)
+        #         self.delete_resource()
 
         elif args.replay:
             consts.set_value('RPL','yes')
