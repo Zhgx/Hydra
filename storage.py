@@ -26,23 +26,27 @@ class Storage:
     def __init__(self):
         self.logger = consts.glo_log()
         print('Start to configure LUN on NetApp Storage')
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.ID = consts.glo_id()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         self.TID = consts.glo_tsc_id()
         self.lun_name = f'{self.STR}_{self.ID}'
         if self.rpl == 'no':
-            self.telnet_conn = connect.ConnTelnet(host, port, username, password, timeout)
+            self.telnet_conn = connect.ConnTelnet(
+                host, port, username, password, timeout)
         # print('Connect to storage NetApp')
 
     def ex_telnet_cmd(self, unique_str, cmd, oprt_id):
         if self.rpl == 'no':
-            self.logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
-            self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
+            self.logger.write_to_log(
+                'F', 'DATA', 'STR', unique_str, '', oprt_id)
+            self.logger.write_to_log(
+                'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
             self.telnet_conn.execute_command(cmd)
         elif self.rpl == 'yes':
-            db = logdb.LogDB()
+            db = consts.glo_db()
             db_id, oprt_id = db.find_oprt_id_via_string(self.TID, unique_str)
             info_start = db.get_info_start(oprt_id)
             if info_start:
@@ -68,10 +72,12 @@ class Storage:
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
         info_msg = f'create lun, name: {self.lun_name}'
         print(f'  Start to {info_msg}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         print(f'  Create LUN {self.lun_name} successful')
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id, f'  Create LUN {self.lun_name} successful')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', oprt_id, f'  Create LUN {self.lun_name} successful')
 
     def lun_map(self):
         '''
@@ -82,10 +88,12 @@ class Storage:
         info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
         print(f'  Start to {info_msg}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         print(f'  Finish with {info_msg}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
 
     def lun_create_verify(self):
         pass
@@ -138,7 +146,6 @@ class Storage:
             list_of_show_lun = s.getshow(
                 self.logger, self.STR, self.ID, stor_list_todel)
             if list_of_show_lun:
-                print('storage：')
                 print(s.print_format(list_of_show_lun))
             return list_of_show_lun
         else:
