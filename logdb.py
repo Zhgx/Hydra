@@ -7,10 +7,12 @@ import consts
 
 list_cmd = []
 
+
 def prepare_db():
     w = LogDB()
     w.get_logdb()
     consts.set_glo_db(w)
+
 
 def isFileExists(strfile):
     # 检查文件是否存在
@@ -63,7 +65,6 @@ class LogDB():
     def __init__(self):
         self.con = sqlite3.connect("logDB.db", check_same_thread=False)
         self.cur = self.con.cursor()
-
 
     def insert(self, data):
         self.cur.execute(self.insert_sql, data)
@@ -131,7 +132,7 @@ class LogDB():
         sql = f"SELECT data FROM logtable WHERE type1 = 'INFO' and describe1 = 'finish' and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
-    def get_transaction_id_via_date(self,date_start,date_end):
+    def get_transaction_id_via_date(self, date_start, date_end):
         # 获取一个时间段内的全部事务id
         sql = f"SELECT DISTINCT transaction_id FROM logtable WHERE time >= '{date_start}' and time <= '{date_end}'"
         result = self.sql_fetch_all(sql)
@@ -141,7 +142,6 @@ class LogDB():
                 list_result.append(i[0])
             return list_result
         return []
-
 
     def get_logdb(self):
         self.drop_tb()
