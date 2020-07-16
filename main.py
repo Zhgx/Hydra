@@ -27,6 +27,8 @@ class HydraArgParse():
           # 初始化一个全局变量：ID
         self.list_tid = None
         consts._init()
+        consts.set_glo_log(self.logger)
+        self.logger = consts.glo_log()
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='max_lun',
@@ -74,7 +76,7 @@ class HydraArgParse():
         '''
         Connect to NetApp Storage, Create LUN and Map to VersaPLX
         '''
-        netapp = storage.Storage(self.logger)
+        netapp = storage.Storage()
         netapp.lun_create()
         netapp.lun_map()
         print('------* storage end *------')
@@ -84,7 +86,7 @@ class HydraArgParse():
         Connect to VersaPLX, Config DRDB resource
         '''
         # drbd.discover_new_lun() # 查询新的lun有没有map过来，返回path
-        drbd = vplx.VplxDrbd(self.logger)
+        drbd = vplx.VplxDrbd()
         drbd.prepare_config_file()  # 创建配置文件
         drbd.drbd_cfg()  # run
         drbd.drbd_status_verify()  # 验证有没有启动（UptoDate）
@@ -93,7 +95,7 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config iSCSI Target
         '''
-        crm = vplx.VplxCrm(self.logger)
+        crm = vplx.VplxCrm()
         crm.crm_cfg()
         print('------* drbd end *------')
 
@@ -102,7 +104,7 @@ class HydraArgParse():
         Connect to host
         Umount and start to format, write, and read iSCSI LUN
         '''
-        host = host_initiator.HostTest(self.logger)
+        host = host_initiator.HostTest()
         # host.ssh.execute_command('umount /mnt')
         host.start_test()
         print('------* host_test end *------')
@@ -113,46 +115,46 @@ class HydraArgParse():
         '''
         # _ID = consts.get_id
         # _STR = consts.get_str
-
-        crm = vplx.VplxCrm(self.logger)
-        list_of_del_crm = crm.crm_show()
-
-
-        drbd = vplx.VplxDrbd(self.logger)
-        list_of_del_drbd = drbd.drbd_show()
-
-        stor = storage.Storage(self.logger)
-        list_of_del_stor = stor.lun_show()
-        # print(list_of_del_stor)
-        host = host_initiator.HostTest(self.logger)
-
-        if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
-            comfirm = input('Do you want to delete these lun (yes/no):')
-            if comfirm == 'yes':
-                crm.start_crm_del(list_of_del_crm)
-                drbd.start_drbd_del(list_of_del_drbd)
-                stor.start_stor_del(list_of_del_stor)
-                crm.vplx_rescan()
-                host.initiator_rescan()
-            else:
-                sundry.pwe(self.logger, 'Cancel succeed')
-        else:
-            sundry.pwe(
-                self.logger, 'The resource you want to delete does not exist. Please confirm the information you entered.\n')
+        pass
+        #
+        # crm = vplx.VplxCrm()
+        # list_of_del_crm = crm.crm_show()
+        #
+        #
+        # drbd = vplx.VplxDrbd()
+        # list_of_del_drbd = drbd.drbd_show()
+        #
+        # stor = storage.Storage()
+        # list_of_del_stor = stor.lun_show()
+        # # print(list_of_del_stor)
+        # host = host_initiator.HostTest()
+        #
+        # if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
+        #     comfirm = input('Do you want to delete these lun (yes/no):')
+        #     if comfirm == 'yes':
+        #         crm.start_crm_del(list_of_del_crm)
+        #         drbd.start_drbd_del(list_of_del_drbd)
+        #         stor.start_stor_del(list_of_del_stor)
+        #         crm.vplx_rescan()
+        #         host.initiator_rescan()
+        #     else:
+        #         sundry.pwe('Cancel succeed')
+        # else:
+        #     sundry.pwe('The resource you want to delete does not exist. Please confirm the information you entered.\n')
 
 
     def execute(self, dict_args):
         for id_one,str_one in dict_args.items():
-            consts.set_value('LUN_ID',id_one)
+            consts.set_value('ID',id_one)
             consts.set_value('STR',str_one)
             self.transaction_id = sundry.get_transaction_id()
             self.logger = log.Log(self.transaction_id)
-            self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.get_id()}')
-            self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{consts.get_str()}')
+            self.logger.write_to_log('F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.glo_id()}')
+            self.logger.write_to_log('F', 'DATA', 'STR', 'unique_str', '', f'{consts.glo_str()}')
             if self.list_tid:
                 tid = self.list_tid[0]
                 self.list_tid.remove(tid)
-                consts.set_value('TID', tid)
+                consts.set_value('TSC_ID', tid)
 
             self._storage()
             self._vplx_drbd()
@@ -186,7 +188,7 @@ class HydraArgParse():
 
         elif args.uniq_str and args.id_range:
             consts.set_value('RPL', 'no')
-            consts.set_value('LOG', 'yes')
+            consts.set_value('LOG_SWITCH', 'yes')
             ids = args.id_range.split(',')
             if len(ids) == 1:
                 dict_id_str.update({ids[0]:args.uniq_str})
@@ -210,12 +212,12 @@ class HydraArgParse():
 
         elif args.replay:
             consts.set_value('RPL','yes')
-            consts.set_value('LOG','no')
+            consts.set_value('LOG_SWITCH','no')
             logdb.prepare_db()
             db = consts.glo_db()
             if args.transactionid:
                 string, id = db.get_string_id(args.transactionid)
-                consts.set_value('TID', args.transactionid)
+                consts.set_value('TSC_ID', args.transactionid)
                 dict_id_str.update({id: string})
  
                 # self.replay_execute(args.transactionid)

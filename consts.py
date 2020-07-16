@@ -10,7 +10,7 @@ def set_value(key, value):
     _global_dict[key] = value
 
 
-def get_value(key, defValue=0):
+def get_value(key, defValue=None):
     """ 获得一个全局变量,不存在则返回默认值 """
     try:
         return _global_dict[key]
@@ -38,23 +38,30 @@ def set_glo_tsc_id(value):
 def set_glo_log_id(value):
     set_value('LOG_ID', value)
 
-def glo_log(value):
+def set_glo_log_switch(value):
+    set_value('LOG_SWITCH',value)
+
+
+def glo_log():
     return get_value('LOG')
 
-def glo_db(value):
+def glo_db():
     return get_value('DB')
 
-def glo_str(value):
+def glo_str():
     return get_value('STR')
 
-def glo_id(value):
+def glo_id():
     return get_value('ID')
 
-def glo_rpl(value):
+def glo_rpl():
     return get_value('RPL')
 
-def glo_tsc_id(value):
+def glo_tsc_id():
     return get_value('TSC_ID')
 
-def glo_log_id(value):
+def glo_log_id():
     return get_value('LOG_ID')
+
+def glo_log_switch():
+    return get_value('LOG_SWITCH')

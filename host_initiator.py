@@ -2,14 +2,12 @@
 
 import connect
 import re
-import sys
 import time
 import sundry as s
 import consts
-import logdb
 
 SSH = None
-RPL = consts.get_rpl()
+# RPL = consts.get_rpl()
 
 vplx_ip = '10.203.1.199'
 host = '10.203.1.200'
@@ -19,21 +17,21 @@ password = 'password'
 timeout = 3
 mount_point = '/mnt'
 
-def init_ssh(logger):
+def init_ssh():
     global SSH
     if not SSH:
-        SSH = connect.ConnSSH(host, port, user, password, timeout, logger)
+        SSH = connect.ConnSSH(host, port, user, password, timeout)
     else:
         pass
 
-def umount_mnt(logger):
+def umount_mnt():
     SSH.execute_command(f'umount {mount_point}')
 
 def _find_new_disk():
-    result_lsscsi = s.list_disk(SSH, 'asdfadsf', s.get_oprt_id())
+    result_lsscsi = s.get_lsscsi(SSH, 's9mf7aYb', s.get_oprt_id())
     re_string = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
     all_disk = s.get_all_scsi_disk(re_string, result_lsscsi)
-    the_disk = s.get_the_disk_with_lun_id(ID)
+    disk_dev = s.get_the_disk_with_lun_id(all_disk)
     if disk_dev:
         return disk_dev
 
@@ -48,7 +46,7 @@ def get_disk_dev():
         if disk_dev:
             return disk_dev
         else:
-            s.pwe('xxx')
+            s.pwe('xxx:no new device')
 
 
 class HostTest(object):
@@ -57,18 +55,19 @@ class HostTest(object):
     '''
     def __init__(self):
         print('Start IO test on initiator host')
+        self.logger = consts.glo_log()
+        self.rpl = consts.glo_rpl()
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
         self._prepare()
-        self.rpl = consts.glo_rpl()
         
     def _create_iscsi_session(self):
-        logger.write_to_log(f'T', 'INFO', 'info', 'start', '', f'  Discover iSCSI session for {vplx_ip}')
-        if not s.find_session(vplx_ip, SSH, 'asdfasfas', get_oprt_id()):
-            logger.write_to_log(f'T', 'INFO', 'info', 'start', '', f'  Login to {vplx_ip}')
-            if iscsi_login(vplx_ip, SSH, 'asdfasfas', get_oprt_id()):
+        self.logger.write_to_log(f'T', 'INFO', 'info', 'start', '', f'  Discover iSCSI session for {vplx_ip}')
+        if not s.find_session(vplx_ip, SSH, 'V9jGOP2v', s.get_oprt_id()):
+            self.logger.write_to_log(f'T', 'INFO', 'info', 'start', '', f'  Login to {vplx_ip}')
+            if s.iscsi_login(vplx_ip, SSH, 'rgjfYl5K', s.get_oprt_id()):
                 pass
             else:
-                s.pwe('can not login to {vplx_ip}')
+                s.pwe(f'can not login to {vplx_ip}')
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -76,24 +75,24 @@ class HostTest(object):
             umount_mnt()
             self._create_iscsi_session()
         if self.rpl == 'yes':
-            find_session()
+            s.find_session(vplx_ip, SSH, 'odEvZtfr', s.get_oprt_id())
 
     def _mount(self, dev_name):
         '''
         Mount disk
         '''
         oprt_id = s.get_oprt_id()
-        unique_str2 = '6CJ5opVX'
-        cmd_mount = f'mount {dev_name} {mount_point}'
+        unique_str = '6CJ5opVX'
+        cmd = f'mount {dev_name} {mount_point}'
         self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'    Try mount {dev_name} to "/mnt"')
-        result_mount = s.get_ssh_cmd(SSH, unique_str, cmd_rescan, oprt_id)
+        result_mount = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_mount['sts']:
             print(f'    Disk {dev_name} mounted to "/mnt"')
             self.logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id, f'    Disk {dev_name} mounted to "/mnt"')
             return True
         else:
             print(f'    Disk {dev_name} mount to "/mnt" failed')
-            s.pwe(self.logger, f"mount {dev_name} to {mount_point} failed")
+            s.pwe(f"mount {dev_name} to {mount_point} failed")
 
     def _judge_format(self, string):
         '''
@@ -111,21 +110,21 @@ class HostTest(object):
         Format disk and mount disk
         '''
         # self.logger.write_to_log('INFO','info','',f'start to format disk {dev_name} and mount disk {dev_name}')
-        cmd_format = f'mkfs.ext4 {dev_name} -F'
-
+        cmd = f'mkfs.ext4 {dev_name} -F'
+        oprt_id = s.get_oprt_id()
         print(f'    Start to format {dev_name}')
         self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'    Start to format {dev_name}')
-        result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd_format, s.get_oprt_id())
+        result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd, oprt_id)
         if result_format['sts']:
             result_format = result_format['rst'].decode('utf-8')
             if self._judge_format(result_format):
                 return True
             else:
-                s.pwe(self.logger, f'  Format {dev_name} failed')
+                s.pwe(f'  Format {dev_name} failed')
         else:
-            print(f'  Format command {cmd_format} execute failed')
+            print(f'  Format command {cmd} execute failed')
             self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
-                                     f'  Format command "{cmd_format}" execute failed')
+                                     f'  Format command "{cmd}" execute failed')
 
     def _get_dd_perf(self, cmd_dd, unique_str):
         '''
@@ -142,7 +141,7 @@ class HostTest(object):
             self.logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
             return dd_perf
         else:
-            s.pwe(self.logger, '  Can not get test result')
+            s.pwe('  Can not get test result')
 
     def get_test_perf(self):
         '''
@@ -166,14 +165,14 @@ class HostTest(object):
 
     def start_test(self):
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
-        dev_name = get_disk_dev(self.logger)
+        dev_name = get_disk_dev()
         if self.format(dev_name):
-            if self.mount(dev_name):
+            if self._mount(dev_name):
                 self.get_test_perf()
             else:
-                s.pwe(self.logger, f'Device {dev_name} mount failed')
+                s.pwe(f'Device {dev_name} mount failed')
         else:
-            s.pwe(self.logger, f'Device {dev_name} format failed')
+            s.pwe(f'Device {dev_name} format failed')
 
 if __name__ == "__main__":
     test = HostTest(21)

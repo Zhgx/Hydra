@@ -23,29 +23,27 @@ class Storage:
     Create LUN and map to VersaPLX
     '''
 
-    def __init__(self, logger):
-        print('--------')
-
-        self.logger = logger
+    def __init__(self):
+        self.logger = consts.glo_log()
         print('Start to configure LUN on NetApp Storage')
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
-        self._ID = consts.get_id()
-        self._STR = consts.get_str()
-        self._RPL = consts.get_rpl()
-        self._TID = consts.get_tid()
-        self.lun_name = f'{self._STR}_{self._ID}'
-        if self._RPL == 'no':
-            self.telnet_conn = connect.ConnTelnet(host, port, username, password, timeout, logger)
+        self.ID = consts.glo_id()
+        self.STR = consts.glo_str()
+        self.rpl = consts.glo_rpl()
+        self.TID = consts.glo_tsc_id()
+        self.lun_name = f'{self.STR}_{self.ID}'
+        if self.rpl == 'no':
+            self.telnet_conn = connect.ConnTelnet(host, port, username, password, timeout)
         # print('Connect to storage NetApp')
 
     def ex_telnet_cmd(self, unique_str, cmd, oprt_id):
-        if self._RPL == 'no':
+        if self.rpl == 'no':
             self.logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
             self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
             self.telnet_conn.execute_command(cmd)
-        elif self._RPL == 'yes':
+        elif self.rpl == 'yes':
             db = logdb.LogDB()
-            db_id, oprt_id = db.find_oprt_id_via_string(self._TID, unique_str)
+            db_id, oprt_id = db.find_oprt_id_via_string(self.TID, unique_str)
             info_start = db.get_info_start(oprt_id)
             if info_start:
                 print(info_start)
@@ -81,8 +79,8 @@ class Storage:
         '''
         oprt_id = s.get_oprt_id()
         unique_str = '1lvpO6N5'
-        info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {self._ID}'
-        cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self._ID}'
+        info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
+        cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
         print(f'  Start to {info_msg}')
         self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
@@ -127,7 +125,7 @@ class Storage:
         lun_show_cmd = 'lun show'
         show_result = self.telnet_conn.execute_command(lun_show_cmd)
         if show_result:
-            re_show = re.compile(f'/vol/esxi/({self._STR}_[0-9]{{1,3}})')
+            re_show = re.compile(f'/vol/esxi/({self.STR}_[0-9]{{1,3}})')
             list_of_all_lun = re_show.findall(show_result)
             return list_of_all_lun
 
@@ -138,7 +136,7 @@ class Storage:
         stor_list_todel = self._get_all_lun()
         if stor_list_todel:
             list_of_show_lun = s.getshow(
-                self.logger, self._STR, self._ID, stor_list_todel)
+                self.logger, self.STR, self.ID, stor_list_todel)
             if list_of_show_lun:
                 print('storage：')
                 print(s.print_format(list_of_show_lun))
