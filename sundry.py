@@ -139,11 +139,6 @@ def get_list_name(logger, unique_str, ids, show_result):
         name is lun name /resource name
         list_name is used to return the list value
     '''
-    id = 'id_one'
-    name = f'{unique_str}_{id}'
-
-
-
     if len(ids) == 2:
         list_name = []
         for i in range(ids[0], ids[1]):
@@ -154,7 +149,7 @@ def get_list_name(logger, unique_str, ids, show_result):
         name = f'{unique_str}_{ids[0]}'
         return [compare(name, show_result)]
     else:
-        pwe(logger, 'please enter a valid value')
+        pwe('please enter a valid value')
 
 
 def print_format(list_name):
@@ -254,6 +249,7 @@ def get_path():
 
 def change_pointer(new_id):
     consts.set_glo_log_id(new_id)
+
 
 
 def re_findall(re_string, tgt_string):
