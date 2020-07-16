@@ -73,7 +73,7 @@ class VplxDrbd(object):
         self.logger = consts.glo_log()
         self.STR = consts.glo_str()
         self.ID = consts.glo_id()
-        self.LIST_ID = consts.glo_list_id()
+        self.LIST_ID = consts.glo_id_list()
         self.rpl = consts.glo_rpl()
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  'Start to configure DRDB resource and crm resource on VersaPLX')
@@ -310,7 +310,7 @@ class VplxCrm(object):
     def __init__(self):
         self.logger = consts.glo_log()
         self.ID = consts.glo_id()
-        self.LIST_ID = consts.glo_list_id()
+        self.LIST_ID = consts.glo_id_list()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         # same as drbd resource name

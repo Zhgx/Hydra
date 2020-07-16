@@ -30,7 +30,7 @@ class Storage:
             'T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.ID = consts.glo_id()
         self.STR = consts.glo_str()
-        self.LIST_ID = consts.glo_list_id()
+        self.LIST_ID = consts.glo_id_list()
         self.rpl = consts.glo_rpl()
         self.TID = consts.glo_tsc_id()
         self.lun_name = f'{self.STR}_{self.ID}'

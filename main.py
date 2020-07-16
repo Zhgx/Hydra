@@ -175,7 +175,7 @@ class HydraArgParse():
         if args.delete and args.unique_str:
             consts.set_glo_rpl('no')
             consts.set_glo_str(args.uniq_str)
-            consts.set_glo_list_id(ids)
+            consts.set_glo_id_list(ids)
             self.delete_resource()
 
         elif args.uniq_str and args.id_range:
