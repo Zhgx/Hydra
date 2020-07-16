@@ -30,6 +30,7 @@ class Storage:
             'T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.ID = consts.glo_id()
         self.STR = consts.glo_str()
+        self.ID_LIST = consts.glo_id_list()
         self.rpl = consts.glo_rpl()
         self.TID = consts.glo_tsc_id()
         self.lun_name = f'{self.STR}_{self.ID}'
@@ -148,7 +149,7 @@ class Storage:
         stor_list_todel = self._get_all_lun()
         if stor_list_todel:
             list_of_show_lun = s.getshow(
-                self.logger, self.STR, self.ID, stor_list_todel)
+                self.logger, self.STR, self.ID_LIST, stor_list_todel)
             if list_of_show_lun:
                 print(s.print_format(list_of_show_lun))
             return list_of_show_lun

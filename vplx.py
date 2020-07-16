@@ -71,15 +71,16 @@ class VplxDrbd(object):
 
     def __init__(self):
         self.logger = consts.glo_log()
-        self._STR = consts.glo_str()
-        self._ID = consts.glo_id()
+        self.STR = consts.glo_str()
+        self.ID = consts.glo_id()
+        self.ID_LIST = consts.glo_id_list()
         self.rpl = consts.glo_rpl()
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  'Start to configure DRDB resource and crm resource on VersaPLX')
 
-        self.res_name = f'res_{self._STR}_{self._ID}'
+        self.res_name = f'res_{self.STR}_{self.ID}'
         global DRBD_DEV_NAME
-        DRBD_DEV_NAME = f'drbd{self._ID}'
+        DRBD_DEV_NAME = f'drbd{self.ID}'
         global RPL
         RPL = consts.glo_rpl()
         self._prepare()
@@ -87,7 +88,7 @@ class VplxDrbd(object):
     def _create_iscsi_session(self):
         self.logger.write_to_log(
             f'T', 'INFO', 'info', 'start', '', f'  Discover iSCSI session for {Netapp_ip}')
-        if not s.find_session(Netapp_ip, SSH, 'V9jGOP1v', s.get_oprt_id()):
+        if not s.find_session(Netapp_ip, SSH, 'V9jGOP1i', s.get_oprt_id()):
             self.logger.write_to_log(
                 f'T', 'INFO', 'info', 'start', '', f'  Login to {Netapp_ip}')
             if s.iscsi_login(Netapp_ip, SSH, 'rgjfYl3K', s.get_oprt_id()):
@@ -274,7 +275,7 @@ class VplxDrbd(object):
         drbd_show_result = s.get_ssh_cmd(
             SSH, unique_str, drbd_show_cmd, oprt_id)
         if drbd_show_result['sts']:
-            re_drbd = f'res_{self._STR}_[0-9]{{1,3}}'
+            re_drbd = f'res_{self.STR}_[0-9]{{1,3}}'
             list_of_all_drbd = s.re_findall(
                 re_drbd, drbd_show_result['rst'].decode('utf-8'))
             return list_of_all_drbd
@@ -286,7 +287,7 @@ class VplxDrbd(object):
         drbd_show_result = self._get_all_drbd()
         if drbd_show_result:
             list_of_show_drbd = s.getshow(
-                self.logger, self._STR, self._ID, drbd_show_result)
+                self.logger, self.STR, self.ID_LIST, drbd_show_result)
             if list_of_show_drbd:
                 print('DRBD：')
                 print(s.print_format(list_of_show_drbd))
@@ -309,6 +310,7 @@ class VplxCrm(object):
     def __init__(self):
         self.logger = consts.glo_log()
         self.ID = consts.glo_id()
+        self.ID_LIST = consts.glo_id_list()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         # same as drbd resource name
@@ -497,7 +499,7 @@ class VplxCrm(object):
         crm_show_result = self._get_all_crm()
         if crm_show_result:
             list_of_show_crm = s.getshow(
-                self.logger, self.STR, self.ID, crm_show_result)
+                self.logger, self.STR, self.ID_LIST, crm_show_result)
             if list_of_show_crm:
                 print('crm：')
                 print(s.print_format(list_of_show_crm))
