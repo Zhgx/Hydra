@@ -113,32 +113,30 @@ class HydraArgParse():
         '''
         # _ID = consts.get_id
         # _STR = consts.get_str
-        pass
-        #
-        # crm = vplx.VplxCrm()
-        # list_of_del_crm = crm.crm_show()
-        #
-        #
-        # drbd = vplx.VplxDrbd()
-        # list_of_del_drbd = drbd.drbd_show()
-        #
-        # stor = storage.Storage()
-        # list_of_del_stor = stor.lun_show()
-        # # print(list_of_del_stor)
-        # host = host_initiator.HostTest()
-        #
-        # if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
-        #     comfirm = input('Do you want to delete these lun (yes/no):')
-        #     if comfirm == 'yes':
-        #         crm.start_crm_del(list_of_del_crm)
-        #         drbd.start_drbd_del(list_of_del_drbd)
-        #         stor.start_stor_del(list_of_del_stor)
-        #         crm.vplx_rescan()
-        #         host.initiator_rescan()
-        #     else:
-        #         sundry.pwe('Cancel succeed')
-        # else:
-        #     sundry.pwe('The resource you want to delete does not exist. Please confirm the information you entered.\n')
+        crm = vplx.VplxCrm()
+        list_of_del_crm = crm.crm_show()
+
+
+        drbd = vplx.VplxDrbd()
+        list_of_del_drbd = drbd.drbd_show()
+
+        stor = storage.Storage()
+        list_of_del_stor = stor.lun_show()
+        # print(list_of_del_stor)
+        host = host_initiator.HostTest()
+
+        if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
+            comfirm = input('Do you want to delete these lun (yes/no):')
+            if comfirm == 'yes':
+                crm.start_crm_del(list_of_del_crm)
+                drbd.start_drbd_del(list_of_del_drbd)
+                stor.start_stor_del(list_of_del_stor)
+                crm.vplx_rescan()
+                host.initiator_rescan()
+            else:
+                sundry.pwe('Cancel succeed')
+        else:
+            sundry.pwe('The resource you want to delete does not exist. Please confirm the information you entered.\n')
 
     def execute(self, dict_args):
         for id_one, str_one in dict_args.items():
@@ -179,13 +177,13 @@ class HydraArgParse():
                     ids = [int(i) for i in args.id_range.split(',')]
                 else:
                     ids = ''
-                consts.set_value('STR', args.uniq_str)
-                consts.set_value('ID', ids)
+                consts.set_glo_str(args.uniq_str)
+                consts.set_glo_id(ids)
                 self.delete_resource()
 
         elif args.uniq_str and args.id_range:
-            consts.set_value('RPL', 'no')
-            consts.set_value('LOG_SWITCH', 'yes')
+            consts.set_glo_rpl('no')
+            consts.set_glo_log_switch('yes')
             ids = args.id_range.split(',')
             if len(ids) == 1:
                 dict_id_str.update({ids[0]: args.uniq_str})
@@ -196,6 +194,7 @@ class HydraArgParse():
                     dict_id_str.update({i: args.uniq_str})
             else:
                 self.parser.print_help()
+
         # if args.uniq_str:
         #     if args.delete:
         #         consts.set_value('RPL', 'no')
@@ -208,8 +207,8 @@ class HydraArgParse():
         #         self.delete_resource()
 
         elif args.replay:
-            consts.set_value('RPL', 'yes')
-            consts.set_value('LOG_SWITCH', 'no')
+            consts.set_glo_rpl('yes')
+            consts.set_glo_log_switch('no')
             logdb.prepare_db()
             db = consts.glo_db()
             if args.transactionid:
