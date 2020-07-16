@@ -50,6 +50,10 @@ def set_glo_log_switch(value):
     set_value('LOG_SWITCH', value)
 
 
+def set_glo_id_list(value):
+    set_value('ID_LIST', value)
+
+
 def glo_log():
     return get_value('LOG')
 
@@ -80,3 +84,7 @@ def glo_log_id():
 
 def glo_log_switch():
     return get_value('LOG_SWITCH')
+
+
+def glo_id_list():
+    return get_value('ID_LIST')

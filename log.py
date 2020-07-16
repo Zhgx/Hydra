@@ -64,7 +64,7 @@ class Log(object):
     def write_to_log(self, display, type1, type2, describe1, describe2, data):
         logger_hydra = self.logger_create()
 
-        if consts.get_value('') == 'no':
+        if consts.glo_log_switch() == 'no':
             logger_hydra.logger.removeHandler(self.handler_input)
 
         logger_hydra.debug(

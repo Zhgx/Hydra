@@ -143,8 +143,8 @@ class HostTest(object):
         '''
         result_dd = s.get_ssh_cmd(SSH, unique_str, cmd_dd, s.get_oprt_id())
         result_dd = result_dd['rst'].decode('utf-8')
-        re_performance = re.compile(r'.*s, ([0-9.]* [A-Z]B/s)')
-        re_result = re_performance.findall(result_dd)
+        re_performance = r'.*s, ([0-9.]* [A-Z]B/s)'
+        re_result = s.re_findall(re_performance, result_dd)
         oprt_id = s.get_oprt_id()
         self.logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {
                                  re_performance: result_dd})
@@ -189,9 +189,12 @@ class HostTest(object):
         else:
             s.pwe(f'Device {dev_name} format failed')
 
+    def host_rescan(self):
+        s.scsi_rescan(SSH, 'r')
+
 
 if __name__ == "__main__":
-    test = HostTest(21)
+    # test = HostTest(21)
     pass
     # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
     # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda
