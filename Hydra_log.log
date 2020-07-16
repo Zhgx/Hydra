@@ -1,0 +1,44 @@
+[2020/07/16 21:22:45] [1594905765] [T] [DATA] [input] [user_input] [] [main.py]|
+[2020/07/16 21:23:12] [1594905792] [T] [DATA] [input] [user_input] [] [main.py -d]|
+[2020/07/16 21:23:12] [1594905792] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_None_None]|
+[2020/07/16 21:23:12] [1594905792] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 21:23:12] [1594905792] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 21:23:12] [1594905792] [F] [DATA] [STR] [IpJhGfVc4] [] [5997019425]|
+[2020/07/16 21:23:12] [1594905792] [T] [OPRT] [cmd] [ssh] [5997019425] [crm res show]|
+[2020/07/16 21:23:13] [1594905792] [F] [DATA] [cmd] [ssh] [5997019425] [{'sts': 1, 'rst': b' t_test\t(ocf::heartbeat:iSCSITarget):\tStarted\n res_hosttest_15\t(ocf::heartbeat:iSCSILogicalUnit):\tStopped\n res_luntest_9\t(ocf::heartbeat:iSCSILogicalUnit):\tStarted\n'}]|
+[2020/07/16 21:23:13] [1594905792] [T] [OPRT] [regular] [findall] [5534970919] [{'res_None_[0-9]{1,3}': ' t_test\t(ocf::heartbeat:iSCSITarget):\tStarted\n res_hosttest_15\t(ocf::heartbeat:iSCSILogicalUnit):\tStopped\n res_luntest_9\t(ocf::heartbeat:iSCSILogicalUnit):\tStarted\n'}]|
+[2020/07/16 21:23:13] [1594905792] [F] [DATA] [regular] [findall] [5534970919] [[]]|
+[2020/07/16 21:23:13] [1594905792] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 21:23:13] [1594905792] [T] [INFO] [info] [start] [] [  Discover iSCSI session for 10.203.1.231]|
+[2020/07/16 21:23:13] [1594905792] [T] [INFO] [info] [start] [5139590947] [    Execute the command and check up the status of session]|
+[2020/07/16 21:23:13] [1594905792] [F] [DATA] [STR] [V9jGOP1i] [] [5139590947]|
+[2020/07/16 21:23:13] [1594905792] [T] [OPRT] [cmd] [ssh] [5139590947] [iscsiadm -m session]|
+[2020/07/16 21:23:14] [1594905792] [F] [DATA] [cmd] [ssh] [5139590947] [{'sts': 1, 'rst': b'tcp: [1] 10.203.1.231:3260,1000 iqn.1992-08.com.netapp:sn.84305553 (non-flash)\n'}]|
+[2020/07/16 21:23:14] [1594905792] [T] [OPRT] [regular] [findall] [0599419574] [{re.compile('tcp:.*(10.203.1.231):.*'): 'tcp: [1] 10.203.1.231:3260,1000 iqn.1992-08.com.netapp:sn.84305553 (non-flash)\n'}]|
+[2020/07/16 21:23:14] [1594905792] [F] [DATA] [regular] [findall] [0599419574] [['10.203.1.231']]|
+[2020/07/16 21:23:14] [1594905792] [T] [INFO] [info] [finish] [5139590947] [    ISCSI already login to VersaPLX]|
+[2020/07/16 21:23:14] [1594905792] [F] [DATA] [STR] [UikYgtM1] [] [5995017944]|
+[2020/07/16 21:23:14] [1594905792] [T] [OPRT] [cmd] [ssh] [5995017944] [drbdadm status]|
+[2020/07/16 21:23:14] [1594905792] [F] [DATA] [cmd] [ssh] [5995017944] [{'sts': 1, 'rst': b'res_luntest_9 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 21:23:14] [1594905792] [T] [OPRT] [regular] [findall] [5957149049] [{'res_None_[0-9]{1,3}': 'res_luntest_9 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 21:23:14] [1594905792] [F] [DATA] [regular] [findall] [5957149049] [[]]|
+[2020/07/16 21:23:14] [1594905792] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 21:23:14] [1594905792] [T] [INFO] [info] [start] [] [  Start to connect NetApp via telnet]|
+[2020/07/16 21:23:14] [1594905792] [F] [DATA] [value] [dict] [data for telnet connect] [{'host': '10.203.1.231', 'port': 23, 'username': 'root', 'password': 'Feixi@123'}]|
+[2020/07/16 21:23:15] [1594905792] [F] [DATA] [STR] [2lYpiKm3] [] [1957954059]|
+[2020/07/16 21:23:15] [1594905792] [T] [OPRT] [cmd] [telnet] [1957954059] [lun show]|
+[2020/07/16 21:23:15] [1594905792] [T] [OPRT] [cmd] [telnet] [9499051755] [lun show]|
+[2020/07/16 21:23:15] [1594905792] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 21:23:15] [1594905792] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 21:23:15] [1594905792] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.200', 'port': '22', 'username': 'root', 'password': 'password'}]|
+[2020/07/16 21:23:16] [1594905792] [T] [INFO] [warning] [failed] [] [  Command "umount /mnt" execute failed]|
+[2020/07/16 21:23:16] [1594905792] [T] [INFO] [info] [start] [] [  Discover iSCSI session for 10.203.1.199]|
+[2020/07/16 21:23:16] [1594905792] [T] [INFO] [info] [start] [5659197940] [    Execute the command and check up the status of session]|
+[2020/07/16 21:23:16] [1594905792] [F] [DATA] [STR] [V9jGOP2v] [] [5659197940]|
+[2020/07/16 21:23:16] [1594905792] [T] [OPRT] [cmd] [ssh] [5659197940] [iscsiadm -m session]|
+[2020/07/16 21:23:16] [1594905792] [F] [DATA] [cmd] [ssh] [5659197940] [{'sts': 1, 'rst': b'tcp: [1] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 21:23:16] [1594905792] [T] [OPRT] [regular] [findall] [1549670995] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [1] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 21:23:16] [1594905792] [F] [DATA] [regular] [findall] [1549670995] [['10.203.1.199']]|
+[2020/07/16 21:23:16] [1594905792] [T] [INFO] [info] [finish] [5659197940] [    ISCSI already login to VersaPLX]|
+[2020/07/16 21:23:16] [1594905792] [T] [INFO] [error] [exit] [] [The resource you want to delete does not exist. Please confirm the information you entered.
+]|

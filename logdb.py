@@ -9,9 +9,9 @@ list_cmd = []
 
 
 def prepare_db():
-    w = LogDB()
-    w.get_logdb()
-    consts.set_glo_db(w)
+    db = LogDB()
+    db.get_logdb()
+    consts.set_glo_db(db)
 
 
 def isFileExists(strfile):

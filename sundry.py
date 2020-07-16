@@ -13,6 +13,19 @@ import socket
 from random import shuffle
 import log
 
+def change_id_str_to_list(id_str):
+    id_list = []
+    id_range_list = [int(i) for i in id_str.split(',')]
+    if len(id_range_list) not in [1,2]:
+        pwe('please verify id format')
+    elif len(id_range_list) == 1:
+        id_ = id_range_list[0]
+        id_list = [id_]
+    elif len(id_range_list) == 2:
+        for id_ in range(id_list[0], id_list[1]):
+            id_list.append(id_)
+    return id_list
+
 
 def scsi_rescan(ssh, mode):
     logger = consts.glo_log()
@@ -134,33 +147,42 @@ def pwce(print_str):
     logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to file /var/log/{log_file}')
     sys.exit()
 
-def compare(name, show_result):
-    if name in show_result:
+def _compare(name, name_list):
+    if name in name_list:
         return name
-    elif 'res_'+name in show_result:
+    elif 'res_'+name in name_list:
         return 'res_'+name
 
-
-def get_list_name(logger, unique_str, ids, show_result):
+def get_to_del_list(name_list):
     '''
     Generate some names with a range of id values and determine whether these names exist。
         name is lun name /resource name
         list_name is used to return the list value
+        ???????????
     '''
-    if len(ids) == 2:
-        list_name = []
-        for i in range(ids[0], ids[1]):
-            str_ = f'{unique_str}_{i}'
-            name = compare(name, show_result)
+    uni_str = consts.glo_str()
+    id_list = consts.glo_id_list()
+    to_del_list = []
+
+    if uni_str and id_list:
+        for id_ in id_list:
+            str_ = f'{uni_str}_{id_}'
+            name = compare(str_, name_list)
             if name:
                 list_name.append(name)
-        return list_name
-    elif len(ids) == 1:
-        name = f'{unique_str}_{ids[0]}'
-        return [compare(name, show_result)]
+    elif uni_str:
+        for name in name_list:
+            if uni_str in name:
+                to_del_list.append(name)
+    elif id_list:
+        for id_ in id_list:
+            str_ = f'_{id_}'
+            for name in name_list:
+                if str_ in name:
+                    to_del_list.append(name)
     else:
-        pwe('please enter a valid value')
-
+        to_del_list = name_list
+    return to_del_list
 
 def print_format(list_name):
     '''
@@ -175,15 +197,15 @@ def print_format(list_name):
     return name
 
 
-def getshow(logger, unique_str, list_id, show_result):
-    '''
-    Determine the lun to be deleted according to regular matching
-    '''
-    if list_id:
-        list_name = get_list_name(logger, unique_str, list_id, show_result)
-        return list_name
-    else:
-        return show_result
+# def getshow(unique_str, id_list, name_list):
+#     '''
+#     Determine the lun to be deleted according to regular matching
+#     '''
+#     if id_list:
+#         list_name = get_list_name(logger, unique_str, id_list, name_list)
+#         return list_name
+#     else:
+#         return name_list
 
 
 def record_exception(func):
