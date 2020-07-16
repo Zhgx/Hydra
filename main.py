@@ -191,7 +191,7 @@ class HydraArgParse():
             else:
                 self.parser.print_help()
 
-               elif args.replay:
+        elif args.replay:
             consts.set_glo_rpl('yes')
             consts.set_glo_log_switch('no')
             logdb.prepare_db()
