@@ -26,20 +26,24 @@ class Storage:
     def __init__(self):
         self.logger = consts.glo_log()
         print('Start to configure LUN on NetApp Storage')
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.ID = consts.glo_id()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         self.TID = consts.glo_tsc_id()
         self.lun_name = f'{self.STR}_{self.ID}'
         if self.rpl == 'no':
-            self.telnet_conn = connect.ConnTelnet(host, port, username, password, timeout)
+            self.telnet_conn = connect.ConnTelnet(
+                host, port, username, password, timeout)
         # print('Connect to storage NetApp')
 
     def ex_telnet_cmd(self, unique_str, cmd, oprt_id):
         if self.rpl == 'no':
-            self.logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
-            self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
+            self.logger.write_to_log(
+                'F', 'DATA', 'STR', unique_str, '', oprt_id)
+            self.logger.write_to_log(
+                'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
             self.telnet_conn.execute_command(cmd)
         elif self.rpl == 'yes':
             db = logdb.LogDB()
@@ -68,10 +72,12 @@ class Storage:
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
         info_msg = f'create lun, name: {self.lun_name}'
         print(f'  Start to {info_msg}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         print(f'  Create LUN {self.lun_name} successful')
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id, f'  Create LUN {self.lun_name} successful')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', oprt_id, f'  Create LUN {self.lun_name} successful')
 
     def lun_map(self):
         '''
@@ -82,10 +88,12 @@ class Storage:
         info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
         print(f'  Start to {info_msg}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         print(f'  Finish with {info_msg}')
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
 
     def lun_create_verify(self):
         pass
@@ -97,11 +105,13 @@ class Storage:
         '''
         Unmap LUN and determine its succeed
         '''
+        unique_str = '2ltpi6N5'
+        oprt_id = s.get_oprt_id()
         unmap = f'lun unmap /vol/esxi/{lun_name} hydra'
-        unmap_result = self.telnet_conn.execute_command(unmap)
+        unmap_result = self.ex_telnet_cmd(unique_str, unmap, oprt_id)
         if unmap_result:
-            unmap_re = re.compile(r'unmapped from initiator group hydra')
-            re_result = unmap_re.findall(unmap_result)
+            unmap_re = r'unmapped from initiator group hydra'
+            re_result = s.re_findall(unmap_re, unmap_result)
             if re_result:
                 print(f'{lun_name} unmap succeed')
                 return True
@@ -110,23 +120,25 @@ class Storage:
         '''
         delete LUN and determine its succeed
         '''
+        unique_str = '2ltpi6N3'
+        oprt_id = s.get_oprt_id()
         destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
-        destroy_result = self.telnet_conn.execute_command(destroy_cmd)
+        destroy_result = self.ex_telnet_cmd(unique_str, destroy_cmd, oprt_id)
         if destroy_result:
-            destroy_re = re.compile(r'destroyed')
-            re_result = destroy_re.findall(destroy_result)
+            destroy_re = r'destroyed'
+            re_result = s.re_findall(destroy_re, destroy_result)
             if re_result:
                 print(f'{lun_name} destroy succeed')
                 return True
-            else:
-                print(f'{lun_name} destroy failed')
 
     def _get_all_lun(self):
+        unique_str = '2lYpiKm3'
+        oprt_id = s.get_oprt_id()
         lun_show_cmd = 'lun show'
-        show_result = self.telnet_conn.execute_command(lun_show_cmd)
+        show_result = self.ex_telnet_cmd(unique_str, lun_show_cmd, oprt_id)
         if show_result:
-            re_show = re.compile(f'/vol/esxi/({self.STR}_[0-9]{{1,3}})')
-            list_of_all_lun = re_show.findall(show_result)
+            re_show = f'/vol/esxi/({self.STR}_[0-9]{{1,3}})'
+            list_of_all_lun = s.re_findall(re_show, show_result)
             return list_of_all_lun
 
     def lun_show(self):
