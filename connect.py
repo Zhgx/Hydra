@@ -9,7 +9,6 @@ import traceback
 import consts
 
 
-
 class ConnSSH(object):
     '''
     ssh connect to VersaPLX
@@ -27,7 +26,8 @@ class ConnSSH(object):
         self._connect()
 
     def _connect(self):
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', '', '  Start to connect VersaPLX via SSH')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'start', '', '  Start to connect VersaPLX via SSH')
         self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for SSH connect',
                                  {'host': self._host, 'port': self._port, 'username': self._username,
                                   'password': self._password})
@@ -42,7 +42,8 @@ class ConnSSH(object):
             # 连接成功log记录？
             self.SSHConnection = objSSHClient
         except Exception as e:
-            self.logger.write_to_log('F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
+            self.logger.write_to_log(
+                'F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
             s.pwe(f'  Connect to {self._host} failed with error: {e}')
 
     def execute_command(self, command):
@@ -56,7 +57,8 @@ class ConnSSH(object):
         err = stderr.read()
         if len(err) > 0:
             output = {'sts': 0, 'rst': err}
-            self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'  Command "{command}" execute failed')
+            self.logger.write_to_log(
+                'T', 'INFO', 'warning', 'failed', '', f'  Command "{command}" execute failed')
             return output
         if data == b'':
             output = {'sts': 1, 'rst': data}
@@ -65,12 +67,14 @@ class ConnSSH(object):
     def ssh_connect(self):
         self._connect()
         if not self.SSHConnection:
-            self.logger.write_to_log('T', 'INFO', 'info', 'start', '', '  Retry connect to VersaPLX via SSH')
+            self.logger.write_to_log(
+                'T', 'INFO', 'info', 'start', '', '  Retry connect to VersaPLX via SSH')
             self._connect()
 
     def close(self):
         self.SSHConnection.close()
-        self.logger.write_to_log('T', 'INFO', 'info', 'finish', '', 'Close SSH connection')
+        self.logger.write_to_log(
+            'T', 'INFO', 'info', 'finish', '', 'Close SSH connection')
 
 
 class ConnTelnet(object):
@@ -90,7 +94,8 @@ class ConnTelnet(object):
 
     def _connect(self):
         try:
-            self.logger.write_to_log('T', 'INFO', 'info', 'start', '', '  Start to connect NetApp via telnet')
+            self.logger.write_to_log(
+                'T', 'INFO', 'info', 'start', '', '  Start to connect NetApp via telnet')
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',
                                      {'host': self._host, 'port': self._port, 'username': self._username,
                                       'password': self._password})
@@ -101,7 +106,8 @@ class ConnTelnet(object):
             self.telnet.write(self._password.encode() + b'\n')
 
         except Exception as e:
-            self.logger.write_to_log('F', 'DATA', 'debug', 'exception', 'telnet connect', str(traceback.format_exc()))
+            self.logger.write_to_log(
+                'F', 'DATA', 'debug', 'exception', 'telnet connect', str(traceback.format_exc()))
             s.pwe(f'  Connect to {self._host} failed with error: {e}')
 
     # 定义exctCMD函数,用于执行命令
@@ -122,7 +128,8 @@ class ConnTelnet(object):
 
     def close(self):
         self.telnet.close()
-        self.logger.write_to_log('INFO', 'info', '', 'Close Telnet connection.')
+        self.logger.write_to_log(
+            'INFO', 'info', '', 'Close Telnet connection.')
 
 
 if __name__ == '__main__':

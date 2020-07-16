@@ -7,10 +7,12 @@ import consts
 
 list_cmd = []
 
+
 def prepare_db():
     w = LogDB()
     w.get_logdb()
     consts.set_glo_db(w)
+
 
 def isFileExists(strfile):
     # 检查文件是否存在
@@ -64,7 +66,6 @@ class LogDB():
         self.con = sqlite3.connect("logDB.db", check_same_thread=False)
         self.cur = self.con.cursor()
 
-
     def insert(self, data):
         self.cur.execute(self.insert_sql, data)
 
@@ -104,8 +105,8 @@ class LogDB():
         return self.sql_fetch_one(sql)
 
     def find_oprt_id_via_string(self, transaction_id, string):
-        # id_now = consts.get_value('ID')
-        id_now = 20
+        id_now = consts.glo_log_id()
+        # id_now = 1
         sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id > {id_now} and transaction_id = '{transaction_id}'"
         id_and_oprt_id = self.sql_fetch_one(sql)
         # sql = f"SELECT describe2 FROM logtable WHERE id = '{db_id}' "
@@ -131,7 +132,7 @@ class LogDB():
         sql = f"SELECT data FROM logtable WHERE type1 = 'INFO' and describe1 = 'finish' and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
-    def get_transaction_id_via_date(self,date_start,date_end):
+    def get_transaction_id_via_date(self, date_start, date_end):
         # 获取一个时间段内的全部事务id
         sql = f"SELECT DISTINCT transaction_id FROM logtable WHERE time >= '{date_start}' and time <= '{date_end}'"
         result = self.sql_fetch_all(sql)
@@ -142,6 +143,9 @@ class LogDB():
             return list_result
         return []
 
+    def get_cmd_via_tid(self, transaction_id):
+        sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}'"
+        return self.sql_fetch_one(sql)
 
     def get_logdb(self):
         self.drop_tb()
@@ -174,5 +178,6 @@ class LogDB():
 if __name__ == '__main__':
     db = LogDB()
     db.get_logdb()
-    print(db.find_oprt_id_via_string('1594795343', 'odEvZtfr'))
+    print(db.find_oprt_id_via_string('1594877888', 'odEvZtfr'))
+    print(db.get_cmd_via_tid('1594879092'))
     # res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')
