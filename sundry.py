@@ -40,7 +40,7 @@ def get_lsscsi(ssh, func_str, oprt_id):
     logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id, '    Start to list all SCSI device')
     cmd_lsscsi = 'lsscsi'
     # result_lsscsi = SSH.execute_command(cmd_lsscsi)
-    result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi,oprt_id)
+    result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi, oprt_id)
     if result_lsscsi['sts']:
         return result_lsscsi['rst'].decode('utf-8')
     else:
@@ -62,12 +62,6 @@ def get_the_disk_with_lun_id(all_disk):
         print(f'no disk device with SCSI ID {lun_id} found')
         logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'no disk device with SCSI ID {lun_id} found')
 
-
-# # 是个啥啊？
-# def _find_new_lun():
-#     return get_disk_dev(consts.glo_id(), re_find_id_dev, str_lsscsi, 'NetApp')
-
-
 def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
     """
     Execute command on ssh connected host.If it is replay mode, get relevant data from the log.
@@ -87,6 +81,7 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
         return result_cmd
     elif RPL == 'yes':
+        print(f'Replay process of executing command ... {cmd} ...')
         db = consts.glo_db()
         db_id, oprt_id = db.find_oprt_id_via_string(consts.glo_tsc_id(), unique_str)
         info_start = db.get_info_start(oprt_id)
@@ -115,8 +110,19 @@ def pwe(print_str):
     logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
     sys.exit()
 
-
-
+def pwce(print_str):
+    """
+    print, write to log and exit.
+    :param logger: Logger object for logging
+    :param print_str: Strings to be printed and recorded
+    :param print_str: Strings to be printed and recorded
+    """
+    logger = consts.glo_log()
+    print(print_str)
+    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
+    log_file = clct_env(consts.glo_tid())
+    logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to file /var/log/{log_file}')
+    sys.exit()
 
 def compare(name, show_result):
     if name in show_result:
@@ -134,8 +140,10 @@ def get_list_name(logger, unique_str, ids, show_result):
     if len(ids) == 2:
         list_name = []
         for i in range(ids[0], ids[1]):
-            name = f'{unique_str}_{i}'
-            list_name.append(compare(name, show_result))
+            str_ = f'{unique_str}_{i}'
+            name = compare(name, show_result)
+            if name:
+                list_name.append(name)
         return list_name
     elif len(ids) == 1:
         name = f'{unique_str}_{ids[0]}'
@@ -166,33 +174,6 @@ def getshow(logger, unique_str, list_id, show_result):
         return list_name
     else:
         return show_result
-
-
-# def get_disk_dev(lun_id, re_string, lsscsi_result, dev_label, logger):
-#     '''
-#     Use re to get the blk_dev_name through lun_id
-#     '''
-#     # print(lsscsi_result)
-#     # self.logger.write_to_log('GetDiskPath','host','find_device',self.logger.host)
-#     re_find_path_via_id = re.compile(re_string)
-#     # self.logger.write_to_log('GetDiskPath','regular_before','find_device',lsscsi_result)
-#     re_result = re_find_path_via_id.findall(lsscsi_result)
-#     oprt_id = sundry.get_oprt_id()
-#     logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {re_string: lsscsi_result})
-#     logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
-#     if re_result:
-#         dict_id_disk = dict(re_result)
-#         if lun_id in dict_id_disk.keys():
-#             blk_dev_name = dict_id_disk[lun_id]
-#             return blk_dev_name
-#         else:
-#             print(f'no disk device with SCSI ID {lun_id} found')
-#             logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'no disk device with SCSI ID {lun_id} found')
-
-#     else:
-#         print(f'no equal {dev_label} disk device found')
-#         logger.write_to_log('T', 'INFO', 'warning', 'failed',
-#                             '', f'no equal {dev_label} disk device found')
 
 
 def record_exception(func):
