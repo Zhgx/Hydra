@@ -251,6 +251,7 @@ def change_pointer(new_id):
     consts.set_glo_log_id(new_id)
 
 
+
 def re_findall(re_string, tgt_string):
     logger = consts.glo_log()
     re_login = re.compile(re_string)
