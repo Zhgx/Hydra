@@ -217,6 +217,10 @@ class HydraArgParse():
             db = consts.glo_db()
             if args.transactionid:
                 string, id = db.get_string_id(args.transactionid)
+                if not all([string,id]):
+                    cmd = db.get_cmd_via_tid(args.transactionid)
+                    print(f'事务:{args.transactionid} 不满足replay条件，所执行的命令为：python3 {cmd}')
+                    return
                 consts.set_value('TSC_ID', args.transactionid)
                 dict_id_str.update({id: string})
  
@@ -225,15 +229,22 @@ class HydraArgParse():
                 self.list_tid = db.get_transaction_id_via_date(args.date[0], args.date[1])
                 for tid in self.list_tid:
                     string, id = db.get_string_id(tid)
-                    dict_id_str.update({id:string})
+                    if string and id:
+                        dict_id_str.update({id:string})
+                    else:
+                        cmd = db.get_cmd_via_tid(tid)
+                        print(f'事务:{tid} 不满足replay条件，所执行的命令为：python3 {cmd}')
 
             else:
                 print('replay help')
+                return
 
 
         else:
             # self.logger.write_to_log('INFO','info','','print_help')
             self.parser.print_help()
+            return
+
         self.execute(dict_id_str)
 
 

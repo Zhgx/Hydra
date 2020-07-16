@@ -75,7 +75,7 @@ class HostTest(object):
             umount_mnt()
             self._create_iscsi_session()
         if self.rpl == 'yes':
-            s.find_session(vplx_ip, SSH, 'odEvZtfr', s.get_oprt_id())
+            s.find_session(vplx_ip, SSH, 'V9jGOP2v', s.get_oprt_id())
 
     def _mount(self, dev_name):
         '''
