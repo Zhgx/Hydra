@@ -73,7 +73,7 @@ class VplxDrbd(object):
         self.logger = consts.glo_log()
         self.STR = consts.glo_str()
         self.ID = consts.glo_id()
-        self.LIST_ID = consts.glo_id_list()
+        self.ID_LIST = consts.glo_id_list()
         self.rpl = consts.glo_rpl()
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  'Start to configure DRDB resource and crm resource on VersaPLX')
@@ -287,7 +287,7 @@ class VplxDrbd(object):
         drbd_show_result = self._get_all_drbd()
         if drbd_show_result:
             list_of_show_drbd = s.getshow(
-                self.logger, self.STR, self.LIST_ID, drbd_show_result)
+                self.logger, self.STR, self.ID_LIST, drbd_show_result)
             if list_of_show_drbd:
                 print('DRBD：')
                 print(s.print_format(list_of_show_drbd))
@@ -310,7 +310,7 @@ class VplxCrm(object):
     def __init__(self):
         self.logger = consts.glo_log()
         self.ID = consts.glo_id()
-        self.LIST_ID = consts.glo_id_list()
+        self.ID_LIST = consts.glo_id_list()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         # same as drbd resource name
@@ -499,7 +499,7 @@ class VplxCrm(object):
         crm_show_result = self._get_all_crm()
         if crm_show_result:
             list_of_show_crm = s.getshow(
-                self.logger, self.STR, self.LIST_ID, crm_show_result)
+                self.logger, self.STR, self.ID_LIST, crm_show_result)
             if list_of_show_crm:
                 print('crm：')
                 print(s.print_format(list_of_show_crm))
