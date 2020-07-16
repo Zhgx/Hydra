@@ -6,8 +6,8 @@ import sys
 import sundry as s
 import pprint
 import traceback
+import consts
 
-global replay
 
 
 class ConnSSH(object):
@@ -15,8 +15,8 @@ class ConnSSH(object):
     ssh connect to VersaPLX
     '''
 
-    def __init__(self, host, port, username, password, timeout, logger):
-        self.logger = logger
+    def __init__(self, host, port, username, password, timeout):
+        self.logger = consts.glo_log()
         self.logger.d1 = host
         self._host = host
         self._port = port
@@ -43,7 +43,7 @@ class ConnSSH(object):
             self.SSHConnection = objSSHClient
         except Exception as e:
             self.logger.write_to_log('F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
-            s.pwe(self.logger, f'  Connect to {self._host} failed with error: {e}')
+            s.pwe(f'  Connect to {self._host} failed with error: {e}')
 
     def execute_command(self, command):
         # oprt_id = s.get_oprt_id()
@@ -78,8 +78,8 @@ class ConnTelnet(object):
     telnet connect to NetApp
     '''
 
-    def __init__(self, host, port, username, password, timeout, logger):
-        self.logger = logger
+    def __init__(self, host, port, username, password, timeout):
+        self.logger = consts.glo_log()
         self._host = host
         self._port = port
         self._username = username
@@ -102,7 +102,7 @@ class ConnTelnet(object):
 
         except Exception as e:
             self.logger.write_to_log('F', 'DATA', 'debug', 'exception', 'telnet connect', str(traceback.format_exc()))
-            s.pwe(self.logger, f'  Connect to {self._host} failed with error: {e}')
+            s.pwe(f'  Connect to {self._host} failed with error: {e}')
 
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
