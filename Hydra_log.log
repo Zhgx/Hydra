@@ -1,122 +1,954 @@
-[2020/07/16 13:38:08] [1594877888] [T] [DATA] [input] [user_input] [] [main.py -s log_test -id 174]|
-[2020/07/16 13:38:08] [1594877888] [F] [DATA] [STR] [Start a new trasaction] [] [174]|
-[2020/07/16 13:38:08] [1594877888] [F] [DATA] [STR] [unique_str] [] [log_test]|
-[2020/07/16 13:38:08] [1594877888] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
-[2020/07/16 13:38:08] [1594877888] [T] [INFO] [info] [start] [] [  Start to connect NetApp via telnet]|
-[2020/07/16 13:38:08] [1594877888] [F] [DATA] [value] [dict] [data for telnet connect] [{'host': '10.203.1.231', 'port': 23, 'username': 'root', 'password': 'Feixi@123'}]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [start] [9888741759] [  Start to create lun, name: log_test_174]|
-[2020/07/16 13:38:09] [1594877888] [F] [DATA] [STR] [jMPFwXy2] [] [9888741759]|
-[2020/07/16 13:38:09] [1594877888] [T] [OPRT] [cmd] [telnet] [9888741759] [lun create -s 10m -t linux /vol/esxi/log_test_174]|
-[2020/07/16 13:38:09] [1594877888] [T] [OPRT] [cmd] [telnet] [7898175894] [lun create -s 10m -t linux /vol/esxi/log_test_174]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [finish] [9888741759] [  Create LUN log_test_174 successful]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [start] [5987897481] [  Start to map LUN, LUN name: log_test_174, LUN ID: 174]|
-[2020/07/16 13:38:09] [1594877888] [F] [DATA] [STR] [1lvpO6N5] [] [5987897481]|
-[2020/07/16 13:38:09] [1594877888] [T] [OPRT] [cmd] [telnet] [5987897481] [lun map /vol/esxi/log_test_174 hydra 174]|
-[2020/07/16 13:38:09] [1594877888] [T] [OPRT] [cmd] [telnet] [8757814899] [lun map /vol/esxi/log_test_174 hydra 174]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [finish] [5987897481] [  Finish with map LUN, LUN name: log_test_174, LUN ID: 174]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
-[2020/07/16 13:38:09] [1594877888] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
-[2020/07/16 13:38:09] [1594877888] [T] [INFO] [info] [start] [5899877481] [    Start to scan SCSI device normal]|
-[2020/07/16 13:38:09] [1594877888] [F] [DATA] [STR] [N6YwGtRJ] [] [5899877481]|
-[2020/07/16 13:38:09] [1594877888] [T] [OPRT] [cmd] [ssh] [5899877481] [/usr/bin/rescan-scsi-bus.sh]|
-[2020/07/16 13:38:12] [1594877888] [F] [DATA] [cmd] [ssh] [5899877481] [{'sts': 1, 'rst': b'Scanning SCSI subsystem for new devices\nScanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 2 0 0 0 ...\r Calling udevadm settle (can take a while) \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D                                           \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D Scanning for device 2 0 0 0 ... \nOLD: Host: scsi2 Channel: 00 Id: 00 Lun: 00\n      Vendor: NECVMWar Model: VMware SATA CD00 Rev: 1.00\n      Type:   CD-ROM                           ANSI SCSI revision: 05\nScanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 7 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 8 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 9 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 10 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 11 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 12 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 13 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 14 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 15 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 16 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 17 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 18 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 19 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 20 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 21 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 22 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 23 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 24 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 25 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 26 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 27 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 28 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 29 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 30 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 31 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 32 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 32 0 0 0 ...\r Scanning for device 32 0 0 0 ... \nOLD: Host: scsi32 Channel: 00 Id: 00 Lun: 00\n      Vendor: VMware   Model: Virtual disk     Rev: 2.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 06\nScanning host 36 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 36 0 0 0 ...\r Scanning for device 36 0 0 0 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 00\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 15 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 15\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 165 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 165\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 166 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 166\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 167 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 167\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 171 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 171\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 172 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 172\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 173 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 173\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 174 ... \nOLD: \rNEW: Host: scsi36 Channel: 00 Id: 00 Lun: 174\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n1 new or changed device(s) found.          \n\t[36:0:0:174]\n0 remapped or resized device(s) found.\n0 device(s) removed.                 \n'}]|
-[2020/07/16 13:38:12] [1594877888] [T] [INFO] [info] [start] [8417799285] [    Start to list all SCSI device]|
-[2020/07/16 13:38:12] [1594877888] [F] [DATA] [STR] [D37nG6Yi] [] [8417799285]|
-[2020/07/16 13:38:12] [1594877888] [T] [OPRT] [cmd] [ssh] [8417799285] [lsscsi]|
-[2020/07/16 13:38:12] [1594877888] [F] [DATA] [cmd] [ssh] [8417799285] [{'sts': 1, 'rst': b'[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[36:0:0:0]   disk    NETAPP   LUN              7320  /dev/sdb \n[36:0:0:15]  disk    NETAPP   LUN              7320  /dev/sdj \n[36:0:0:165] disk    NETAPP   LUN              7320  /dev/sdd \n[36:0:0:166] disk    NETAPP   LUN              7320  /dev/sde \n[36:0:0:167] disk    NETAPP   LUN              7320  /dev/sdc \n[36:0:0:171] disk    NETAPP   LUN              7320  /dev/sdf \n[36:0:0:172] disk    NETAPP   LUN              7320  /dev/sdg \n[36:0:0:173] disk    NETAPP   LUN              7320  /dev/sdh \n[36:0:0:174] disk    NETAPP   LUN              7320  /dev/sdi \n'}]|
-[2020/07/16 13:38:12] [1594877888] [T] [OPRT] [regular] [findall] [7959728148] [{'\\:(\\d*)\\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[36:0:0:0]   disk    NETAPP   LUN              7320  /dev/sdb \n[36:0:0:15]  disk    NETAPP   LUN              7320  /dev/sdj \n[36:0:0:165] disk    NETAPP   LUN              7320  /dev/sdd \n[36:0:0:166] disk    NETAPP   LUN              7320  /dev/sde \n[36:0:0:167] disk    NETAPP   LUN              7320  /dev/sdc \n[36:0:0:171] disk    NETAPP   LUN              7320  /dev/sdf \n[36:0:0:172] disk    NETAPP   LUN              7320  /dev/sdg \n[36:0:0:173] disk    NETAPP   LUN              7320  /dev/sdh \n[36:0:0:174] disk    NETAPP   LUN              7320  /dev/sdi \n'}]|
-[2020/07/16 13:38:12] [1594877888] [F] [DATA] [regular] [findall] [7959728148] [[('0', '/dev/sdb'), ('15', '/dev/sdj'), ('165', '/dev/sdd'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('171', '/dev/sdf'), ('172', '/dev/sdg'), ('173', '/dev/sdh'), ('174', '/dev/sdi')]]|
-[2020/07/16 13:38:12] [1594877888] [T] [INFO] [info] [start] [] [      Start prepare config fiel for resource res_log_test_174]|
-[2020/07/16 13:38:12] [1594877888] [F] [DATA] [value] [list] [content of drbd config file] [['resource res_log_test_174 {', '\\ \\ \\ \\ on maxluntarget {', '\\ \\ \\ \\ \\ \\ \\ \\ device /dev/drbd174\\;', '\\ \\ \\ \\ \\ \\ \\ \\ disk /dev/sdi\\;', '\\ \\ \\ \\ \\ \\ \\ \\ address 10.203.1.199:7789\\;', '\\ \\ \\ \\ \\ \\ \\ \\ node-id 0\\;', '\\ \\ \\ \\ \\ \\ \\ \\ meta-disk internal\\;', '\\ \\ \\ \\}', '}']]|
-[2020/07/16 13:38:12] [1594877888] [T] [INFO] [info] [finish] [] [      Create DRBD config file "res_log_test_174.res" done]|
-[2020/07/16 13:38:12] [1594877888] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_174]|
-[2020/07/16 13:38:12] [1594877888] [T] [INFO] [info] [start] [8957198427] [      Initialize drbd for res_log_test_174]|
-[2020/07/16 13:38:12] [1594877888] [F] [DATA] [STR] [usnkegs] [] [8957198427]|
-[2020/07/16 13:38:12] [1594877888] [T] [OPRT] [cmd] [ssh] [8957198427] [drbdadm create-md res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [cmd] [ssh] [8957198427] [{'sts': 1, 'rst': b'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
-[2020/07/16 13:38:13] [1594877888] [T] [OPRT] [regular] [findall] [9957817834] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [regular] [findall] [9957817834] [['New drbd meta data block successfully created']]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [STR] [elsflsnek] [] [4398519877]|
-[2020/07/16 13:38:13] [1594877888] [T] [OPRT] [cmd] [ssh] [4398519877] [drbdadm up res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [cmd] [ssh] [4398519877] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:13] [1594877888] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [STR] [7C4LU6Xr] [] [1789839457]|
-[2020/07/16 13:38:13] [1594877888] [T] [OPRT] [cmd] [ssh] [1789839457] [drbdadm primary --force res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [cmd] [ssh] [1789839457] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:13] [1594877888] [T] [INFO] [info] [finish] [] [    res_log_test_174 synchronize successfully]|
-[2020/07/16 13:38:13] [1594877888] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [STR] [By91GFxC] [] [8877945139]|
-[2020/07/16 13:38:13] [1594877888] [T] [OPRT] [cmd] [ssh] [8877945139] [drbdadm status res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [cmd] [ssh] [8877945139] [{'sts': 1, 'rst': b'res_log_test_174 role:Primary\n  disk:UpToDate\n\n'}]|
-[2020/07/16 13:38:13] [1594877888] [T] [OPRT] [regular] [findall] [9871395478] [{re.compile('disk:(\\w*)'): 'res_log_test_174 role:Primary\n  disk:UpToDate\n\n'}]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [regular] [findall] [9871395478] [['UpToDate']]|
-[2020/07/16 13:38:13] [1594877888] [T] [INFO] [info] [finish] [] [    res_log_test_174 DRBD check successfully]|
-[2020/07/16 13:38:13] [1594877888] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [T] [INFO] [info] [start] [4958198773] [    Start to create iSCSILogicalUnit resource res_log_test_174]|
-[2020/07/16 13:38:13] [1594877888] [F] [DATA] [STR] [LXYV7dft] [] [4958198773]|
-[2020/07/16 13:38:13] [1594877888] [T] [OPRT] [cmd] [ssh] [4958198773] [crm conf primitive res_log_test_174             iSCSILogicalUnit params target_iqn="iqn.2020-06.com.example:test-max-lun"             implementation=lio-t lun=174 path="/dev/drbd174"            allowed_initiators="iqn.1993-08.org.debian:01:885240c2d86c" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped]|
-[2020/07/16 13:38:15] [1594877888] [F] [DATA] [cmd] [ssh] [4958198773] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:15] [1594877888] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
-[2020/07/16 13:38:15] [1594877888] [T] [INFO] [info] [start] [5871759498] [      start to setting up iSCSILogicalUnit resources of colocation]|
-[2020/07/16 13:38:15] [1594877888] [F] [DATA] [STR] [E03YgRBd] [] [5871759498]|
-[2020/07/16 13:38:15] [1594877888] [T] [OPRT] [cmd] [ssh] [5871759498] [crm conf colocation co_res_log_test_174 inf: res_log_test_174 t_test]|
-[2020/07/16 13:38:16] [1594877888] [F] [DATA] [cmd] [ssh] [5871759498] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:16] [1594877888] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
-[2020/07/16 13:38:16] [1594877888] [T] [INFO] [info] [start] [8867495719] [      Start to setting up iSCSILogicalUnit resources of order]|
-[2020/07/16 13:38:16] [1594877888] [F] [DATA] [STR] [0GHI63jX] [] [8867495719]|
-[2020/07/16 13:38:16] [1594877888] [T] [OPRT] [cmd] [ssh] [8867495719] [crm conf order or_res_log_test_174 t_test res_log_test_174]|
-[2020/07/16 13:38:18] [1594877888] [F] [DATA] [cmd] [ssh] [8867495719] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:18] [1594877888] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
-[2020/07/16 13:38:18] [1594877888] [T] [INFO] [info] [start] [8917889574] [      Start the iSCSILogicalUnit resource res_log_test_174]|
-[2020/07/16 13:38:18] [1594877888] [F] [DATA] [STR] [YnTDsuVX] [] [8917889574]|
-[2020/07/16 13:38:18] [1594877888] [T] [OPRT] [cmd] [ssh] [8917889574] [crm res start res_log_test_174]|
-[2020/07/16 13:38:19] [1594877888] [F] [DATA] [cmd] [ssh] [8917889574] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:19] [1594877888] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
-[2020/07/16 13:38:19] [1594877888] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
-[2020/07/16 13:38:19] [1594877888] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
-[2020/07/16 13:38:19] [1594877888] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.200', 'port': '22', 'username': 'root', 'password': 'password'}]|
-[2020/07/16 13:38:20] [1594877888] [T] [INFO] [info] [start] [] [  Discover iSCSI session for 10.203.1.199]|
-[2020/07/16 13:38:20] [1594877888] [T] [INFO] [info] [start] [8179507409] [    Execute the command and check up the status of session]|
-[2020/07/16 13:38:20] [1594877888] [F] [DATA] [STR] [V9jGOP2v] [] [8179507409]|
-[2020/07/16 13:38:20] [1594877888] [T] [OPRT] [cmd] [ssh] [8179507409] [iscsiadm -m session]|
-[2020/07/16 13:38:20] [1594877888] [F] [DATA] [cmd] [ssh] [8179507409] [{'sts': 1, 'rst': b'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
-[2020/07/16 13:38:20] [1594877888] [T] [OPRT] [regular] [findall] [0791749508] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
-[2020/07/16 13:38:20] [1594877888] [F] [DATA] [regular] [findall] [0791749508] [['10.203.1.199']]|
-[2020/07/16 13:38:20] [1594877888] [T] [INFO] [info] [finish] [8179507409] [    ISCSI already login to VersaPLX]|
-[2020/07/16 13:38:20] [1594877888] [T] [INFO] [info] [start] [0104758997] [    Start to scan SCSI device normal]|
-[2020/07/16 13:38:20] [1594877888] [F] [DATA] [STR] [N6YwGtRJ] [] [0104758997]|
-[2020/07/16 13:38:20] [1594877888] [T] [OPRT] [cmd] [ssh] [0104758997] [/usr/bin/rescan-scsi-bus.sh]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [cmd] [ssh] [0104758997] [{'sts': 1, 'rst': b'Scanning SCSI subsystem for new devices\nScanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 2 0 0 0 ...\r Calling udevadm settle (can take a while) \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D                                           \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D Scanning for device 2 0 0 0 ... \nOLD: Host: scsi2 Channel: 00 Id: 00 Lun: 00\n      Vendor: NECVMWar Model: VMware SATA CD00 Rev: 1.00\n      Type:   CD-ROM                           ANSI SCSI revision: 05\nScanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 7 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 8 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 9 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 10 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 11 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 12 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 13 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 14 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 15 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 16 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 17 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 18 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 19 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 20 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 21 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 22 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 23 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 24 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 25 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 26 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 27 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 28 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 29 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 30 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 31 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 32 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 32 0 0 0 ...\r Scanning for device 32 0 0 0 ... \nOLD: Host: scsi32 Channel: 00 Id: 00 Lun: 00\n      Vendor: VMware   Model: Virtual disk     Rev: 2.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 06\nScanning host 34 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 34 0 0 0 ...\r Scanning for device 34 0 0 0 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 00\n      Vendor: LIO-ORG  Model: res_0_0          Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 165 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 165\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 166 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 166\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 167 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 167\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 173 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 173\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 174 ... \nOLD: \rNEW: Host: scsi34 Channel: 00 Id: 00 Lun: 174\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n1 new or changed device(s) found.          \n\t[34:0:0:174]\n0 remapped or resized device(s) found.\n0 device(s) removed.                 \n'}]|
-[2020/07/16 13:38:22] [1594877888] [T] [INFO] [info] [start] [4057197982] [    Start to list all SCSI device]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [STR] [s9mf7aYb] [] [4057197982]|
-[2020/07/16 13:38:22] [1594877888] [T] [OPRT] [cmd] [ssh] [4057197982] [lsscsi]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [cmd] [ssh] [4057197982] [{'sts': 1, 'rst': b'[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n'}]|
-[2020/07/16 13:38:22] [1594877888] [T] [OPRT] [regular] [findall] [8775929014] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n'}]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [regular] [findall] [8775929014] [[('0', '/dev/sdb'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg')]]|
-[2020/07/16 13:38:22] [1594877888] [T] [INFO] [info] [start] [7180799542] [    Start to format /dev/sdg]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [STR] [7afztNL6] [] [7180799542]|
-[2020/07/16 13:38:22] [1594877888] [T] [OPRT] [cmd] [ssh] [7180799542] [mkfs.ext4 /dev/sdg -F]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [cmd] [ssh] [7180799542] [{'sts': 1, 'rst': b'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: 9b566585-91b1-4f53-ab7c-b4b8b8e1840a\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
-[2020/07/16 13:38:22] [1594877888] [T] [OPRT] [regular] [findall] [4170599872] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: 9b566585-91b1-4f53-ab7c-b4b8b8e1840a\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [regular] [findall] [4170599872] [['done', 'done', 'done', 'done']]|
-[2020/07/16 13:38:22] [1594877888] [T] [INFO] [info] [start] [9810257794] [    Try mount /dev/sdg to "/mnt"]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [STR] [6CJ5opVX] [] [9810257794]|
-[2020/07/16 13:38:22] [1594877888] [T] [OPRT] [cmd] [ssh] [9810257794] [mount /dev/sdg /mnt]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [cmd] [ssh] [9810257794] [{'sts': 1, 'rst': b''}]|
-[2020/07/16 13:38:22] [1594877888] [T] [INFO] [info] [finish] [9810257794] [    Disk /dev/sdg mounted to "/mnt"]|
-[2020/07/16 13:38:22] [1594877888] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
-[2020/07/16 13:38:22] [1594877888] [F] [DATA] [STR] [CwS9LYk0] [] [9718504972]|
-[2020/07/16 13:38:22] [1594877888] [T] [OPRT] [cmd] [ssh] [9718504972] [dd if=/dev/zero of=/mnt/t.dat bs=512k count=16]|
-[2020/07/16 13:38:23] [1594877888] [T] [INFO] [warning] [failed] [] [  Command "dd if=/dev/zero of=/mnt/t.dat bs=512k count=16" execute failed]|
-[2020/07/16 13:38:23] [1594877888] [F] [DATA] [cmd] [ssh] [9718504972] [{'sts': 0, 'rst': b'16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.726148 s, 11.6 MB/s\n'}]|
-[2020/07/16 13:38:23] [1594877888] [T] [OPRT] [regular] [findall] [5104397978] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.726148 s, 11.6 MB/s\n'}]|
-[2020/07/16 13:38:23] [1594877888] [F] [DATA] [regular] [findall] [5104397978] [11.6 MB/s]|
-[2020/07/16 13:38:23] [1594877888] [T] [INFO] [info] [finish] [] [    Write Speed: 11.6 MB/s]|
-[2020/07/16 13:38:23] [1594877888] [F] [DATA] [STR] [hsjG0miU] [] [4179708395]|
-[2020/07/16 13:38:23] [1594877888] [T] [OPRT] [cmd] [ssh] [4179708395] [dd if=/mnt/t.dat of=/dev/zero bs=512k count=16]|
-[2020/07/16 13:38:23] [1594877888] [T] [INFO] [warning] [failed] [] [  Command "dd if=/mnt/t.dat of=/dev/zero bs=512k count=16" execute failed]|
-[2020/07/16 13:38:23] [1594877888] [F] [DATA] [cmd] [ssh] [4179708395] [{'sts': 0, 'rst': b'16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00399223 s, 2.1 GB/s\n'}]|
-[2020/07/16 13:38:23] [1594877888] [T] [OPRT] [regular] [findall] [5149377089] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00399223 s, 2.1 GB/s\n'}]|
-[2020/07/16 13:38:23] [1594877888] [F] [DATA] [regular] [findall] [5149377089] [2.1 GB/s]|
-[2020/07/16 13:38:23] [1594877888] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.1 GB/s]|
+[2020/07/16 13:55:12] [1594878912] [T] [DATA] [input] [user_input] [] [main.py -s log_test -id 175]|
+[2020/07/16 13:55:12] [1594878912] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 13:55:12] [1594878912] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 13:55:12] [1594878912] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 13:55:12] [1594878912] [T] [INFO] [info] [start] [] [  Start to connect NetApp via telnet]|
+[2020/07/16 13:55:12] [1594878912] [F] [DATA] [value] [dict] [data for telnet connect] [{'host': '10.203.1.231', 'port': 23, 'username': 'root', 'password': 'Feixi@123'}]|
+[2020/07/16 13:55:13] [1594878912] [T] [INFO] [info] [start] [5491389871] [  Start to create lun, name: log_test_175]|
+[2020/07/16 13:55:13] [1594878912] [F] [DATA] [STR] [jMPFwXy2] [] [5491389871]|
+[2020/07/16 13:55:13] [1594878912] [T] [OPRT] [cmd] [telnet] [5491389871] [lun create -s 10m -t linux /vol/esxi/log_test_175]|
+[2020/07/16 13:55:13] [1594878912] [T] [OPRT] [cmd] [telnet] [9487135918] [lun create -s 10m -t linux /vol/esxi/log_test_175]|
+[2020/07/16 13:55:13] [1594878912] [T] [INFO] [info] [finish] [5491389871] [  Create LUN log_test_175 successful]|
+[2020/07/16 13:55:13] [1594878912] [T] [INFO] [info] [start] [8749931815] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 13:55:13] [1594878912] [F] [DATA] [STR] [1lvpO6N5] [] [8749931815]|
+[2020/07/16 13:55:13] [1594878912] [T] [OPRT] [cmd] [telnet] [8749931815] [lun map /vol/esxi/log_test_175 hydra 175]|
+[2020/07/16 13:55:13] [1594878912] [T] [OPRT] [cmd] [telnet] [7185819493] [lun map /vol/esxi/log_test_175 hydra 175]|
+[2020/07/16 13:55:13] [1594878912] [T] [INFO] [info] [finish] [8749931815] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 13:55:13] [1594878912] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 13:55:13] [1594878912] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 13:55:13] [1594878912] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 13:55:14] [1594878912] [T] [INFO] [info] [start] [5819841497] [    Start to scan SCSI device normal]|
+[2020/07/16 13:55:14] [1594878912] [F] [DATA] [STR] [N6YwGtRJ] [] [5819841497]|
+[2020/07/16 13:55:14] [1594878912] [T] [OPRT] [cmd] [ssh] [5819841497] [/usr/bin/rescan-scsi-bus.sh]|
+[2020/07/16 13:55:16] [1594878912] [F] [DATA] [cmd] [ssh] [5819841497] [{'sts': 1, 'rst': b'Scanning SCSI subsystem for new devices\nScanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 2 0 0 0 ...\r Calling udevadm settle (can take a while) \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D                                           \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D Scanning for device 2 0 0 0 ... \nOLD: Host: scsi2 Channel: 00 Id: 00 Lun: 00\n      Vendor: NECVMWar Model: VMware SATA CD00 Rev: 1.00\n      Type:   CD-ROM                           ANSI SCSI revision: 05\nScanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 7 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 8 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 9 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 10 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 11 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 12 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 13 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 14 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 15 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 16 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 17 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 18 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 19 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 20 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 21 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 22 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 23 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 24 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 25 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 26 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 27 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 28 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 29 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 30 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 31 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 32 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 32 0 0 0 ...\r Scanning for device 32 0 0 0 ... \nOLD: Host: scsi32 Channel: 00 Id: 00 Lun: 00\n      Vendor: VMware   Model: Virtual disk     Rev: 2.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 06\nScanning host 36 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 36 0 0 0 ...\r Scanning for device 36 0 0 0 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 00\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 4 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 04\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 15 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 15\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 165 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 165\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 166 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 166\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 167 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 167\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 171 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 171\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 172 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 172\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 173 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 173\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 174 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 174\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 175 ... \nOLD: \rNEW: Host: scsi36 Channel: 00 Id: 00 Lun: 175\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n1 new or changed device(s) found.          \n\t[36:0:0:175]\n0 remapped or resized device(s) found.\n0 device(s) removed.                 \n'}]|
+[2020/07/16 13:55:16] [1594878912] [T] [INFO] [info] [start] [1746819859] [    Start to list all SCSI device]|
+[2020/07/16 13:55:16] [1594878912] [F] [DATA] [STR] [D37nG6Yi] [] [1746819859]|
+[2020/07/16 13:55:16] [1594878912] [T] [OPRT] [cmd] [ssh] [1746819859] [lsscsi]|
+[2020/07/16 13:55:16] [1594878912] [F] [DATA] [cmd] [ssh] [1746819859] [{'sts': 1, 'rst': b'[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[36:0:0:0]   disk    NETAPP   LUN              7320  /dev/sdb \n[36:0:0:4]   disk    NETAPP   LUN              7320  /dev/sdk \n[36:0:0:15]  disk    NETAPP   LUN              7320  /dev/sdj \n[36:0:0:165] disk    NETAPP   LUN              7320  /dev/sdd \n[36:0:0:166] disk    NETAPP   LUN              7320  /dev/sde \n[36:0:0:167] disk    NETAPP   LUN              7320  /dev/sdc \n[36:0:0:171] disk    NETAPP   LUN              7320  /dev/sdf \n[36:0:0:172] disk    NETAPP   LUN              7320  /dev/sdg \n[36:0:0:173] disk    NETAPP   LUN              7320  /dev/sdh \n[36:0:0:174] disk    NETAPP   LUN              7320  /dev/sdi \n[36:0:0:175] disk    NETAPP   LUN              7320  /dev/sdl \n'}]|
+[2020/07/16 13:55:16] [1594878912] [T] [OPRT] [regular] [findall] [1698185947] [{'\\:(\\d*)\\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[36:0:0:0]   disk    NETAPP   LUN              7320  /dev/sdb \n[36:0:0:4]   disk    NETAPP   LUN              7320  /dev/sdk \n[36:0:0:15]  disk    NETAPP   LUN              7320  /dev/sdj \n[36:0:0:165] disk    NETAPP   LUN              7320  /dev/sdd \n[36:0:0:166] disk    NETAPP   LUN              7320  /dev/sde \n[36:0:0:167] disk    NETAPP   LUN              7320  /dev/sdc \n[36:0:0:171] disk    NETAPP   LUN              7320  /dev/sdf \n[36:0:0:172] disk    NETAPP   LUN              7320  /dev/sdg \n[36:0:0:173] disk    NETAPP   LUN              7320  /dev/sdh \n[36:0:0:174] disk    NETAPP   LUN              7320  /dev/sdi \n[36:0:0:175] disk    NETAPP   LUN              7320  /dev/sdl \n'}]|
+[2020/07/16 13:55:16] [1594878912] [F] [DATA] [regular] [findall] [1698185947] [[('0', '/dev/sdb'), ('4', '/dev/sdk'), ('15', '/dev/sdj'), ('165', '/dev/sdd'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('171', '/dev/sdf'), ('172', '/dev/sdg'), ('173', '/dev/sdh'), ('174', '/dev/sdi'), ('175', '/dev/sdl')]]|
+[2020/07/16 13:55:16] [1594878912] [T] [INFO] [info] [start] [] [      Start prepare config fiel for resource res_log_test_175]|
+[2020/07/16 13:55:16] [1594878912] [F] [DATA] [value] [list] [content of drbd config file] [['resource res_log_test_175 {', '\\ \\ \\ \\ on maxluntarget {', '\\ \\ \\ \\ \\ \\ \\ \\ device /dev/drbd175\\;', '\\ \\ \\ \\ \\ \\ \\ \\ disk /dev/sdl\\;', '\\ \\ \\ \\ \\ \\ \\ \\ address 10.203.1.199:7789\\;', '\\ \\ \\ \\ \\ \\ \\ \\ node-id 0\\;', '\\ \\ \\ \\ \\ \\ \\ \\ meta-disk internal\\;', '\\ \\ \\ \\}', '}']]|
+[2020/07/16 13:55:17] [1594878912] [T] [INFO] [info] [finish] [] [      Create DRBD config file "res_log_test_175.res" done]|
+[2020/07/16 13:55:17] [1594878912] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 13:55:17] [1594878912] [T] [INFO] [info] [start] [7178148599] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 13:55:17] [1594878912] [F] [DATA] [STR] [usnkegs] [] [7178148599]|
+[2020/07/16 13:55:17] [1594878912] [T] [OPRT] [cmd] [ssh] [7178148599] [drbdadm create-md res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [cmd] [ssh] [7178148599] [{'sts': 1, 'rst': b'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 13:55:19] [1594878912] [T] [OPRT] [regular] [findall] [8997591841] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [regular] [findall] [8997591841] [['New drbd meta data block successfully created']]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [STR] [elsflsnek] [] [9418179589]|
+[2020/07/16 13:55:19] [1594878912] [T] [OPRT] [cmd] [ssh] [9418179589] [drbdadm up res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [cmd] [ssh] [9418179589] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:19] [1594878912] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [STR] [7C4LU6Xr] [] [5818994179]|
+[2020/07/16 13:55:19] [1594878912] [T] [OPRT] [cmd] [ssh] [5818994179] [drbdadm primary --force res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [cmd] [ssh] [5818994179] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:19] [1594878912] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 13:55:19] [1594878912] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [STR] [By91GFxC] [] [9158497918]|
+[2020/07/16 13:55:19] [1594878912] [T] [OPRT] [cmd] [ssh] [9158497918] [drbdadm status res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [cmd] [ssh] [9158497918] [{'sts': 1, 'rst': b'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 13:55:19] [1594878912] [T] [OPRT] [regular] [findall] [4817999815] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [regular] [findall] [4817999815] [['UpToDate']]|
+[2020/07/16 13:55:19] [1594878912] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 13:55:19] [1594878912] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [T] [INFO] [info] [start] [9458897911] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 13:55:19] [1594878912] [F] [DATA] [STR] [LXYV7dft] [] [9458897911]|
+[2020/07/16 13:55:19] [1594878912] [T] [OPRT] [cmd] [ssh] [9458897911] [crm conf primitive res_log_test_175             iSCSILogicalUnit params target_iqn="iqn.2020-06.com.example:test-max-lun"             implementation=lio-t lun=175 path="/dev/drbd175"            allowed_initiators="iqn.1993-08.org.debian:01:885240c2d86c" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped]|
+[2020/07/16 13:55:21] [1594878912] [F] [DATA] [cmd] [ssh] [9458897911] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:21] [1594878912] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 13:55:21] [1594878912] [T] [INFO] [info] [start] [8189972514] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 13:55:21] [1594878912] [F] [DATA] [STR] [E03YgRBd] [] [8189972514]|
+[2020/07/16 13:55:21] [1594878912] [T] [OPRT] [cmd] [ssh] [8189972514] [crm conf colocation co_res_log_test_175 inf: res_log_test_175 t_test]|
+[2020/07/16 13:55:23] [1594878912] [F] [DATA] [cmd] [ssh] [8189972514] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:23] [1594878912] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 13:55:23] [1594878912] [T] [INFO] [info] [start] [7341259889] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 13:55:23] [1594878912] [F] [DATA] [STR] [0GHI63jX] [] [7341259889]|
+[2020/07/16 13:55:23] [1594878912] [T] [OPRT] [cmd] [ssh] [7341259889] [crm conf order or_res_log_test_175 t_test res_log_test_175]|
+[2020/07/16 13:55:24] [1594878912] [F] [DATA] [cmd] [ssh] [7341259889] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:24] [1594878912] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 13:55:24] [1594878912] [T] [INFO] [info] [start] [5729898144] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 13:55:24] [1594878912] [F] [DATA] [STR] [YnTDsuVX] [] [5729898144]|
+[2020/07/16 13:55:24] [1594878912] [T] [OPRT] [cmd] [ssh] [5729898144] [crm res start res_log_test_175]|
+[2020/07/16 13:55:26] [1594878912] [F] [DATA] [cmd] [ssh] [5729898144] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:26] [1594878912] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 13:55:26] [1594878912] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 13:55:26] [1594878912] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 13:55:26] [1594878912] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.200', 'port': '22', 'username': 'root', 'password': 'password'}]|
+[2020/07/16 13:55:27] [1594878912] [T] [INFO] [info] [start] [] [  Discover iSCSI session for 10.203.1.199]|
+[2020/07/16 13:55:27] [1594878912] [T] [INFO] [info] [start] [9514827798] [    Execute the command and check up the status of session]|
+[2020/07/16 13:55:27] [1594878912] [F] [DATA] [STR] [V9jGOP2v] [] [9514827798]|
+[2020/07/16 13:55:27] [1594878912] [T] [OPRT] [cmd] [ssh] [9514827798] [iscsiadm -m session]|
+[2020/07/16 13:55:27] [1594878912] [F] [DATA] [cmd] [ssh] [9514827798] [{'sts': 1, 'rst': b'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 13:55:27] [1594878912] [T] [OPRT] [regular] [findall] [7425898791] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 13:55:27] [1594878912] [F] [DATA] [regular] [findall] [7425898791] [['10.203.1.199']]|
+[2020/07/16 13:55:27] [1594878912] [T] [INFO] [info] [finish] [9514827798] [    ISCSI already login to VersaPLX]|
+[2020/07/16 13:55:27] [1594878912] [T] [INFO] [info] [start] [4157899782] [    Start to scan SCSI device normal]|
+[2020/07/16 13:55:27] [1594878912] [F] [DATA] [STR] [N6YwGtRJ] [] [4157899782]|
+[2020/07/16 13:55:27] [1594878912] [T] [OPRT] [cmd] [ssh] [4157899782] [/usr/bin/rescan-scsi-bus.sh]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [cmd] [ssh] [4157899782] [{'sts': 1, 'rst': b'Scanning SCSI subsystem for new devices\nScanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 2 0 0 0 ...\r Calling udevadm settle (can take a while) \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D                                           \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D Scanning for device 2 0 0 0 ... \nOLD: Host: scsi2 Channel: 00 Id: 00 Lun: 00\n      Vendor: NECVMWar Model: VMware SATA CD00 Rev: 1.00\n      Type:   CD-ROM                           ANSI SCSI revision: 05\nScanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 7 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 8 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 9 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 10 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 11 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 12 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 13 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 14 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 15 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 16 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 17 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 18 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 19 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 20 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 21 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 22 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 23 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 24 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 25 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 26 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 27 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 28 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 29 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 30 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 31 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 32 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 32 0 0 0 ...\r Scanning for device 32 0 0 0 ... \nOLD: Host: scsi32 Channel: 00 Id: 00 Lun: 00\n      Vendor: VMware   Model: Virtual disk     Rev: 2.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 06\nScanning host 34 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 34 0 0 0 ...\r Scanning for device 34 0 0 0 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 00\n      Vendor: LIO-ORG  Model: res_0_0          Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 4 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 04\n      Vendor: LIO-ORG  Model: res_luntest_4    Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 165 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 165\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 166 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 166\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 167 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 167\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 173 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 173\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 174 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 174\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 175 ... \nOLD: \rNEW: Host: scsi34 Channel: 00 Id: 00 Lun: 175\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n1 new or changed device(s) found.          \n\t[34:0:0:175]\n0 remapped or resized device(s) found.\n0 device(s) removed.                 \n'}]|
+[2020/07/16 13:55:29] [1594878912] [T] [INFO] [info] [start] [2981489795] [    Start to list all SCSI device]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [STR] [s9mf7aYb] [] [2981489795]|
+[2020/07/16 13:55:29] [1594878912] [T] [OPRT] [cmd] [ssh] [2981489795] [lsscsi]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [cmd] [ssh] [2981489795] [{'sts': 1, 'rst': b'[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 13:55:29] [1594878912] [T] [OPRT] [regular] [findall] [8948752919] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [regular] [findall] [8948752919] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 13:55:29] [1594878912] [T] [INFO] [info] [start] [9852879194] [    Start to format /dev/sdi]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [STR] [7afztNL6] [] [9852879194]|
+[2020/07/16 13:55:29] [1594878912] [T] [OPRT] [cmd] [ssh] [9852879194] [mkfs.ext4 /dev/sdi -F]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [cmd] [ssh] [9852879194] [{'sts': 1, 'rst': b'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 13:55:29] [1594878912] [T] [OPRT] [regular] [findall] [4517899982] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [regular] [findall] [4517899982] [['done', 'done', 'done', 'done']]|
+[2020/07/16 13:55:29] [1594878912] [T] [INFO] [info] [start] [9988942175] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [STR] [6CJ5opVX] [] [9988942175]|
+[2020/07/16 13:55:29] [1594878912] [T] [OPRT] [cmd] [ssh] [9988942175] [mount /dev/sdi /mnt]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [cmd] [ssh] [9988942175] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:29] [1594878912] [T] [INFO] [info] [finish] [9988942175] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 13:55:29] [1594878912] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 13:55:29] [1594878912] [F] [DATA] [STR] [CwS9LYk0] [] [1249989578]|
+[2020/07/16 13:55:29] [1594878912] [T] [OPRT] [cmd] [ssh] [1249989578] [dd if=/dev/zero of=/mnt/t.dat bs=512k count=16]|
+[2020/07/16 13:55:30] [1594878912] [T] [INFO] [warning] [failed] [] [  Command "dd if=/dev/zero of=/mnt/t.dat bs=512k count=16" execute failed]|
+[2020/07/16 13:55:30] [1594878912] [F] [DATA] [cmd] [ssh] [1249989578] [{'sts': 0, 'rst': b'16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 13:55:30] [1594878912] [T] [OPRT] [regular] [findall] [8807153949] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 13:55:30] [1594878912] [F] [DATA] [regular] [findall] [8807153949] [11.4 MB/s]|
+[2020/07/16 13:55:30] [1594878912] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 13:55:30] [1594878912] [F] [DATA] [STR] [hsjG0miU] [] [1394988507]|
+[2020/07/16 13:55:30] [1594878912] [T] [OPRT] [cmd] [ssh] [1394988507] [dd if=/mnt/t.dat of=/dev/zero bs=512k count=16]|
+[2020/07/16 13:55:30] [1594878912] [T] [INFO] [warning] [failed] [] [  Command "dd if=/mnt/t.dat of=/dev/zero bs=512k count=16" execute failed]|
+[2020/07/16 13:55:30] [1594878912] [F] [DATA] [cmd] [ssh] [1394988507] [{'sts': 0, 'rst': b'16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 13:55:30] [1594878912] [T] [OPRT] [regular] [findall] [5718830499] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 13:55:30] [1594878912] [F] [DATA] [regular] [findall] [5718830499] [2.4 GB/s]|
+[2020/07/16 13:55:30] [1594878912] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 13:55:34] [1594878934] [T] [DATA] [input] [user_input] [] [main.py -s log_test -id 176]|
+[2020/07/16 13:55:34] [1594878934] [F] [DATA] [STR] [Start a new trasaction] [] [176]|
+[2020/07/16 13:55:34] [1594878934] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 13:55:34] [1594878934] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 13:55:34] [1594878934] [T] [INFO] [info] [start] [] [  Start to connect NetApp via telnet]|
+[2020/07/16 13:55:34] [1594878934] [F] [DATA] [value] [dict] [data for telnet connect] [{'host': '10.203.1.231', 'port': 23, 'username': 'root', 'password': 'Feixi@123'}]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [start] [9458853197] [  Start to create lun, name: log_test_176]|
+[2020/07/16 13:55:35] [1594878934] [F] [DATA] [STR] [jMPFwXy2] [] [9458853197]|
+[2020/07/16 13:55:35] [1594878934] [T] [OPRT] [cmd] [telnet] [9458853197] [lun create -s 10m -t linux /vol/esxi/log_test_176]|
+[2020/07/16 13:55:35] [1594878934] [T] [OPRT] [cmd] [telnet] [8534987951] [lun create -s 10m -t linux /vol/esxi/log_test_176]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [finish] [9458853197] [  Create LUN log_test_176 successful]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [start] [4591598783] [  Start to map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 13:55:35] [1594878934] [F] [DATA] [STR] [1lvpO6N5] [] [4591598783]|
+[2020/07/16 13:55:35] [1594878934] [T] [OPRT] [cmd] [telnet] [4591598783] [lun map /vol/esxi/log_test_176 hydra 176]|
+[2020/07/16 13:55:35] [1594878934] [T] [OPRT] [cmd] [telnet] [7419588395] [lun map /vol/esxi/log_test_176 hydra 176]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [finish] [4591598783] [  Finish with map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 13:55:35] [1594878934] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 13:55:35] [1594878934] [T] [INFO] [info] [start] [5781389495] [    Start to scan SCSI device normal]|
+[2020/07/16 13:55:35] [1594878934] [F] [DATA] [STR] [N6YwGtRJ] [] [5781389495]|
+[2020/07/16 13:55:35] [1594878934] [T] [OPRT] [cmd] [ssh] [5781389495] [/usr/bin/rescan-scsi-bus.sh]|
+[2020/07/16 13:55:38] [1594878934] [F] [DATA] [cmd] [ssh] [5781389495] [{'sts': 1, 'rst': b'Scanning SCSI subsystem for new devices\nScanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 2 0 0 0 ...\r Calling udevadm settle (can take a while) \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D                                           \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D Scanning for device 2 0 0 0 ... \nOLD: Host: scsi2 Channel: 00 Id: 00 Lun: 00\n      Vendor: NECVMWar Model: VMware SATA CD00 Rev: 1.00\n      Type:   CD-ROM                           ANSI SCSI revision: 05\nScanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 7 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 8 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 9 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 10 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 11 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 12 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 13 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 14 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 15 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 16 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 17 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 18 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 19 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 20 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 21 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 22 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 23 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 24 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 25 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 26 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 27 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 28 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 29 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 30 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 31 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 32 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 32 0 0 0 ...\r Scanning for device 32 0 0 0 ... \nOLD: Host: scsi32 Channel: 00 Id: 00 Lun: 00\n      Vendor: VMware   Model: Virtual disk     Rev: 2.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 06\nScanning host 36 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 36 0 0 0 ...\r Scanning for device 36 0 0 0 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 00\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 4 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 04\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 15 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 15\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 165 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 165\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 166 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 166\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 167 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 167\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 171 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 171\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 172 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 172\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 173 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 173\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 174 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 174\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 175 ... \nOLD: Host: scsi36 Channel: 00 Id: 00 Lun: 175\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n Scanning for device 36 0 0 176 ... \nOLD: \rNEW: Host: scsi36 Channel: 00 Id: 00 Lun: 176\n      Vendor: NETAPP   Model: LUN              Rev: 7320\n      Type:   Direct-Access                    ANSI SCSI revision: 04\n1 new or changed device(s) found.          \n\t[36:0:0:176]\n0 remapped or resized device(s) found.\n0 device(s) removed.                 \n'}]|
+[2020/07/16 13:55:38] [1594878934] [T] [INFO] [info] [start] [4319988758] [    Start to list all SCSI device]|
+[2020/07/16 13:55:38] [1594878934] [F] [DATA] [STR] [D37nG6Yi] [] [4319988758]|
+[2020/07/16 13:55:38] [1594878934] [T] [OPRT] [cmd] [ssh] [4319988758] [lsscsi]|
+[2020/07/16 13:55:38] [1594878934] [F] [DATA] [cmd] [ssh] [4319988758] [{'sts': 1, 'rst': b'[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[36:0:0:0]   disk    NETAPP   LUN              7320  /dev/sdb \n[36:0:0:4]   disk    NETAPP   LUN              7320  /dev/sdk \n[36:0:0:15]  disk    NETAPP   LUN              7320  /dev/sdj \n[36:0:0:165] disk    NETAPP   LUN              7320  /dev/sdd \n[36:0:0:166] disk    NETAPP   LUN              7320  /dev/sde \n[36:0:0:167] disk    NETAPP   LUN              7320  /dev/sdc \n[36:0:0:171] disk    NETAPP   LUN              7320  /dev/sdf \n[36:0:0:172] disk    NETAPP   LUN              7320  /dev/sdg \n[36:0:0:173] disk    NETAPP   LUN              7320  /dev/sdh \n[36:0:0:174] disk    NETAPP   LUN              7320  /dev/sdi \n[36:0:0:175] disk    NETAPP   LUN              7320  /dev/sdl \n[36:0:0:176] disk    NETAPP   LUN              7320  /dev/sdm \n'}]|
+[2020/07/16 13:55:38] [1594878934] [T] [OPRT] [regular] [findall] [8849795183] [{'\\:(\\d*)\\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[36:0:0:0]   disk    NETAPP   LUN              7320  /dev/sdb \n[36:0:0:4]   disk    NETAPP   LUN              7320  /dev/sdk \n[36:0:0:15]  disk    NETAPP   LUN              7320  /dev/sdj \n[36:0:0:165] disk    NETAPP   LUN              7320  /dev/sdd \n[36:0:0:166] disk    NETAPP   LUN              7320  /dev/sde \n[36:0:0:167] disk    NETAPP   LUN              7320  /dev/sdc \n[36:0:0:171] disk    NETAPP   LUN              7320  /dev/sdf \n[36:0:0:172] disk    NETAPP   LUN              7320  /dev/sdg \n[36:0:0:173] disk    NETAPP   LUN              7320  /dev/sdh \n[36:0:0:174] disk    NETAPP   LUN              7320  /dev/sdi \n[36:0:0:175] disk    NETAPP   LUN              7320  /dev/sdl \n[36:0:0:176] disk    NETAPP   LUN              7320  /dev/sdm \n'}]|
+[2020/07/16 13:55:38] [1594878934] [F] [DATA] [regular] [findall] [8849795183] [[('0', '/dev/sdb'), ('4', '/dev/sdk'), ('15', '/dev/sdj'), ('165', '/dev/sdd'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('171', '/dev/sdf'), ('172', '/dev/sdg'), ('173', '/dev/sdh'), ('174', '/dev/sdi'), ('175', '/dev/sdl'), ('176', '/dev/sdm')]]|
+[2020/07/16 13:55:38] [1594878934] [T] [INFO] [info] [start] [] [      Start prepare config fiel for resource res_log_test_176]|
+[2020/07/16 13:55:38] [1594878934] [F] [DATA] [value] [list] [content of drbd config file] [['resource res_log_test_176 {', '\\ \\ \\ \\ on maxluntarget {', '\\ \\ \\ \\ \\ \\ \\ \\ device /dev/drbd176\\;', '\\ \\ \\ \\ \\ \\ \\ \\ disk /dev/sdm\\;', '\\ \\ \\ \\ \\ \\ \\ \\ address 10.203.1.199:7789\\;', '\\ \\ \\ \\ \\ \\ \\ \\ node-id 0\\;', '\\ \\ \\ \\ \\ \\ \\ \\ meta-disk internal\\;', '\\ \\ \\ \\}', '}']]|
+[2020/07/16 13:55:38] [1594878934] [T] [INFO] [info] [finish] [] [      Create DRBD config file "res_log_test_176.res" done]|
+[2020/07/16 13:55:38] [1594878934] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_176]|
+[2020/07/16 13:55:38] [1594878934] [T] [INFO] [info] [start] [1754893898] [      Initialize drbd for res_log_test_176]|
+[2020/07/16 13:55:38] [1594878934] [F] [DATA] [STR] [usnkegs] [] [1754893898]|
+[2020/07/16 13:55:38] [1594878934] [T] [OPRT] [cmd] [ssh] [1754893898] [drbdadm create-md res_log_test_176]|
+[2020/07/16 13:55:43] [1594878934] [F] [DATA] [cmd] [ssh] [1754893898] [{'sts': 1, 'rst': b'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 13:55:43] [1594878934] [T] [OPRT] [regular] [findall] [1358974489] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 13:55:43] [1594878934] [F] [DATA] [regular] [findall] [1358974489] [['New drbd meta data block successfully created']]|
+[2020/07/16 13:55:43] [1594878934] [F] [DATA] [STR] [elsflsnek] [] [9548198473]|
+[2020/07/16 13:55:43] [1594878934] [T] [OPRT] [cmd] [ssh] [9548198473] [drbdadm up res_log_test_176]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [cmd] [ssh] [9548198473] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:45] [1594878934] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_176]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [STR] [7C4LU6Xr] [] [8891455794]|
+[2020/07/16 13:55:45] [1594878934] [T] [OPRT] [cmd] [ssh] [8891455794] [drbdadm primary --force res_log_test_176]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [cmd] [ssh] [8891455794] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:45] [1594878934] [T] [INFO] [info] [finish] [] [    res_log_test_176 synchronize successfully]|
+[2020/07/16 13:55:45] [1594878934] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [STR] [By91GFxC] [] [4588594719]|
+[2020/07/16 13:55:45] [1594878934] [T] [OPRT] [cmd] [ssh] [4588594719] [drbdadm status res_log_test_176]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [cmd] [ssh] [4588594719] [{'sts': 1, 'rst': b'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 13:55:45] [1594878934] [T] [OPRT] [regular] [findall] [4847159958] [{re.compile('disk:(\\w*)'): 'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [regular] [findall] [4847159958] [['UpToDate']]|
+[2020/07/16 13:55:45] [1594878934] [T] [INFO] [info] [finish] [] [    res_log_test_176 DRBD check successfully]|
+[2020/07/16 13:55:45] [1594878934] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_176]|
+[2020/07/16 13:55:45] [1594878934] [T] [INFO] [info] [start] [4858159974] [    Start to create iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 13:55:45] [1594878934] [F] [DATA] [STR] [LXYV7dft] [] [4858159974]|
+[2020/07/16 13:55:45] [1594878934] [T] [OPRT] [cmd] [ssh] [4858159974] [crm conf primitive res_log_test_176             iSCSILogicalUnit params target_iqn="iqn.2020-06.com.example:test-max-lun"             implementation=lio-t lun=176 path="/dev/drbd176"            allowed_initiators="iqn.1993-08.org.debian:01:885240c2d86c" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped]|
+[2020/07/16 13:55:46] [1594878934] [F] [DATA] [cmd] [ssh] [4858159974] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:46] [1594878934] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 13:55:46] [1594878934] [T] [INFO] [info] [start] [5469184798] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 13:55:46] [1594878934] [F] [DATA] [STR] [E03YgRBd] [] [5469184798]|
+[2020/07/16 13:55:46] [1594878934] [T] [OPRT] [cmd] [ssh] [5469184798] [crm conf colocation co_res_log_test_176 inf: res_log_test_176 t_test]|
+[2020/07/16 13:55:48] [1594878934] [F] [DATA] [cmd] [ssh] [5469184798] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:48] [1594878934] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 13:55:48] [1594878934] [T] [INFO] [info] [start] [7895841984] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 13:55:48] [1594878934] [F] [DATA] [STR] [0GHI63jX] [] [7895841984]|
+[2020/07/16 13:55:48] [1594878934] [T] [OPRT] [cmd] [ssh] [7895841984] [crm conf order or_res_log_test_176 t_test res_log_test_176]|
+[2020/07/16 13:55:49] [1594878934] [F] [DATA] [cmd] [ssh] [7895841984] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:49] [1594878934] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 13:55:49] [1594878934] [T] [INFO] [info] [start] [9478419859] [      Start the iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 13:55:49] [1594878934] [F] [DATA] [STR] [YnTDsuVX] [] [9478419859]|
+[2020/07/16 13:55:49] [1594878934] [T] [OPRT] [cmd] [ssh] [9478419859] [crm res start res_log_test_176]|
+[2020/07/16 13:55:51] [1594878934] [F] [DATA] [cmd] [ssh] [9478419859] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:51] [1594878934] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 13:55:51] [1594878934] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 13:55:51] [1594878934] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 13:55:51] [1594878934] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.200', 'port': '22', 'username': 'root', 'password': 'password'}]|
+[2020/07/16 13:55:52] [1594878934] [T] [INFO] [info] [start] [] [  Discover iSCSI session for 10.203.1.199]|
+[2020/07/16 13:55:52] [1594878934] [T] [INFO] [info] [start] [1248987955] [    Execute the command and check up the status of session]|
+[2020/07/16 13:55:52] [1594878934] [F] [DATA] [STR] [V9jGOP2v] [] [1248987955]|
+[2020/07/16 13:55:52] [1594878934] [T] [OPRT] [cmd] [ssh] [1248987955] [iscsiadm -m session]|
+[2020/07/16 13:55:52] [1594878934] [F] [DATA] [cmd] [ssh] [1248987955] [{'sts': 1, 'rst': b'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 13:55:52] [1594878934] [T] [OPRT] [regular] [findall] [8142599857] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 13:55:52] [1594878934] [F] [DATA] [regular] [findall] [8142599857] [['10.203.1.199']]|
+[2020/07/16 13:55:52] [1594878934] [T] [INFO] [info] [finish] [1248987955] [    ISCSI already login to VersaPLX]|
+[2020/07/16 13:55:52] [1594878934] [T] [INFO] [info] [start] [8552891749] [    Start to scan SCSI device normal]|
+[2020/07/16 13:55:52] [1594878934] [F] [DATA] [STR] [N6YwGtRJ] [] [8552891749]|
+[2020/07/16 13:55:52] [1594878934] [T] [OPRT] [cmd] [ssh] [8552891749] [/usr/bin/rescan-scsi-bus.sh]|
+[2020/07/16 13:55:54] [1594878934] [F] [DATA] [cmd] [ssh] [8552891749] [{'sts': 1, 'rst': b'Scanning SCSI subsystem for new devices\nScanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 2 0 0 0 ...\r Calling udevadm settle (can take a while) \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D                                           \x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D Scanning for device 2 0 0 0 ... \nOLD: Host: scsi2 Channel: 00 Id: 00 Lun: 00\n      Vendor: NECVMWar Model: VMware SATA CD00 Rev: 1.00\n      Type:   CD-ROM                           ANSI SCSI revision: 05\nScanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 7 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 8 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 9 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 10 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 11 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 12 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 13 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 14 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 15 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 16 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 17 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 18 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 19 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 20 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 21 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 22 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 23 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 24 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 25 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 26 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 27 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 28 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 29 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 30 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 31 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\nScanning host 32 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 32 0 0 0 ...\r Scanning for device 32 0 0 0 ... \nOLD: Host: scsi32 Channel: 00 Id: 00 Lun: 00\n      Vendor: VMware   Model: Virtual disk     Rev: 2.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 06\nScanning host 34 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs\n Scanning for device 34 0 0 0 ...\r Scanning for device 34 0 0 0 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 00\n      Vendor: LIO-ORG  Model: res_0_0          Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 4 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 04\n      Vendor: LIO-ORG  Model: res_luntest_4    Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 165 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 165\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 166 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 166\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 167 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 167\n      Vendor: LIO-ORG  Model: res_log_test_16  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 173 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 173\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 174 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 174\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 175 ... \nOLD: Host: scsi34 Channel: 00 Id: 00 Lun: 175\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n Scanning for device 34 0 0 176 ... \nOLD: \rNEW: Host: scsi34 Channel: 00 Id: 00 Lun: 176\n      Vendor: LIO-ORG  Model: res_log_test_17  Rev: 4.0 \n      Type:   Direct-Access                    ANSI SCSI revision: 05\n1 new or changed device(s) found.          \n\t[34:0:0:176]\n0 remapped or resized device(s) found.\n0 device(s) removed.                 \n'}]|
+[2020/07/16 13:55:54] [1594878934] [T] [INFO] [info] [start] [1875899454] [    Start to list all SCSI device]|
+[2020/07/16 13:55:54] [1594878934] [F] [DATA] [STR] [s9mf7aYb] [] [1875899454]|
+[2020/07/16 13:55:54] [1594878934] [T] [OPRT] [cmd] [ssh] [1875899454] [lsscsi]|
+[2020/07/16 13:55:54] [1594878934] [F] [DATA] [cmd] [ssh] [1875899454] [{'sts': 1, 'rst': b'[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 13:55:54] [1594878934] [T] [OPRT] [regular] [findall] [7954189584] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 13:55:54] [1594878934] [F] [DATA] [regular] [findall] [7954189584] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi'), ('176', '/dev/sdj')]]|
+[2020/07/16 13:55:54] [1594878934] [T] [INFO] [info] [start] [9814984557] [    Start to format /dev/sdj]|
+[2020/07/16 13:55:54] [1594878934] [F] [DATA] [STR] [7afztNL6] [] [9814984557]|
+[2020/07/16 13:55:54] [1594878934] [T] [OPRT] [cmd] [ssh] [9814984557] [mkfs.ext4 /dev/sdj -F]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [cmd] [ssh] [9814984557] [{'sts': 1, 'rst': b'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 13:55:55] [1594878934] [T] [OPRT] [regular] [findall] [9514875589] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [regular] [findall] [9514875589] [['done', 'done', 'done', 'done']]|
+[2020/07/16 13:55:55] [1594878934] [T] [INFO] [info] [start] [4597158895] [    Try mount /dev/sdj to "/mnt"]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [STR] [6CJ5opVX] [] [4597158895]|
+[2020/07/16 13:55:55] [1594878934] [T] [OPRT] [cmd] [ssh] [4597158895] [mount /dev/sdj /mnt]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [cmd] [ssh] [4597158895] [{'sts': 1, 'rst': b''}]|
+[2020/07/16 13:55:55] [1594878934] [T] [INFO] [info] [finish] [4597158895] [    Disk /dev/sdj mounted to "/mnt"]|
+[2020/07/16 13:55:55] [1594878934] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [STR] [CwS9LYk0] [] [5998587541]|
+[2020/07/16 13:55:55] [1594878934] [T] [OPRT] [cmd] [ssh] [5998587541] [dd if=/dev/zero of=/mnt/t.dat bs=512k count=16]|
+[2020/07/16 13:55:55] [1594878934] [T] [INFO] [warning] [failed] [] [  Command "dd if=/dev/zero of=/mnt/t.dat bs=512k count=16" execute failed]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [cmd] [ssh] [5998587541] [{'sts': 0, 'rst': b'16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 13:55:55] [1594878934] [T] [OPRT] [regular] [findall] [8195475958] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 13:55:55] [1594878934] [F] [DATA] [regular] [findall] [8195475958] [11.4 MB/s]|
+[2020/07/16 13:55:55] [1594878934] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 13:55:56] [1594878934] [F] [DATA] [STR] [hsjG0miU] [] [5887645991]|
+[2020/07/16 13:55:56] [1594878934] [T] [OPRT] [cmd] [ssh] [5887645991] [dd if=/mnt/t.dat of=/dev/zero bs=512k count=16]|
+[2020/07/16 13:55:56] [1594878934] [T] [INFO] [warning] [failed] [] [  Command "dd if=/mnt/t.dat of=/dev/zero bs=512k count=16" execute failed]|
+[2020/07/16 13:55:56] [1594878934] [F] [DATA] [cmd] [ssh] [5887645991] [{'sts': 0, 'rst': b'16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 13:55:56] [1594878934] [T] [OPRT] [regular] [findall] [8499157685] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 13:55:56] [1594878934] [F] [DATA] [regular] [findall] [8499157685] [2.5 GB/s]|
+[2020/07/16 13:55:56] [1594878934] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.5 GB/s]|
+[2020/07/16 13:58:12] [1594879092] [T] [DATA] [input] [user_input] [] [main.py re -t]|
+[2020/07/16 13:58:14] [1594879094] [T] [DATA] [input] [user_input] [] [main.py re -t 1594878912]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [0498975194] [  Start to create lun, name: log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [0498975194] [  Create LUN log_test_175 successful]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [4875949109] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [4875949109] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [1075899494] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [9479190485] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [9479190485] [['New drbd meta data block successfully created']]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [8591997440] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [8591997440] [['UpToDate']]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [7849914059] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [4849990571] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [8499719504] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [1495804979] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [4591984907] [    Execute the command and check up the status of session]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [5794190489] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [5794190489] [['10.203.1.199']]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [4591984907] [    ISCSI already login to VersaPLX]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [9440581997] [    Start to scan SCSI device normal]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [0419479958] [    Start to list all SCSI device]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [4987959410] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [4987959410] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [5948709491] [    Start to format /dev/sdi]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [9908157494] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [9908157494] [['done', 'done', 'done', 'done']]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [7104849959] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [7104849959] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [0984149957] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [0984149957] [11.4 MB/s]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 13:58:14] [1594879094] [T] [OPRT] [regular] [findall] [7584949190] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 13:58:14] [1594879094] [F] [DATA] [regular] [findall] [7584949190] [2.4 GB/s]|
+[2020/07/16 13:58:14] [1594879094] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 14:01:19] [1594879279] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:01:19] [1594879279] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:01:19] [1594879279] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [8294997175] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [finish] [8294997175] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [9198257749] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [finish] [9198257749] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [8479195729] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:01:19] [1594879279] [T] [OPRT] [regular] [findall] [8957497219] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:01:19] [1594879279] [F] [DATA] [regular] [findall] [8957497219] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:01:19] [1594879279] [T] [OPRT] [regular] [findall] [1984529797] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:01:19] [1594879279] [F] [DATA] [regular] [findall] [1984529797] [['UpToDate']]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:01:19] [1594879279] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 14:01:19] [1594879279] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [7858012994] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [8281099475] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9542178890] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [5708189924] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [2994718850] [    Execute the command and check up the status of session]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [8592084197] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [8592084197] [['10.203.1.199']]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [2994718850] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [8049972581] [    Start to scan SCSI device normal]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [7489519820] [    Start to list all SCSI device]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [9818754209] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [9818754209] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9781408925] [    Start to format /dev/sdi]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [9271984580] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [9271984580] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9901278548] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [9901278548] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [8759209148] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [8759209148] [11.4 MB/s]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [7159498082] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [7159498082] [2.4 GB/s]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 14:01:20] [1594879280] [F] [DATA] [STR] [Start a new trasaction] [] [176]|
+[2020/07/16 14:01:20] [1594879280] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9928148705] [  Start to create lun, name: log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [9928148705] [  Create LUN log_test_176 successful]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [1820997485] [  Start to map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [1820997485] [  Finish with map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [8297819405] [      Initialize drbd for res_log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [9482785910] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [9482785910] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    res_log_test_176 synchronize successfully]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [1874590892] [{re.compile('disk:(\\w*)'): 'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [1874590892] [['UpToDate']]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    res_log_test_176 DRBD check successfully]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [8985042719] [    Start to create iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [1928597804] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [7145890928] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9174885029] [      Start the iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9872908541] [    Execute the command and check up the status of session]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [9188952740] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [9188952740] [['10.203.1.199']]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [9872908541] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [4885172099] [    Start to scan SCSI device normal]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [5988402917] [    Start to list all SCSI device]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [1980547298] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [1980547298] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi'), ('176', '/dev/sdj')]]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [9802987415] [    Start to format /dev/sdj]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [8187949052] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [8187949052] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [8025148979] [    Try mount /dev/sdj to "/mnt"]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [8025148979] [    Disk /dev/sdj mounted to "/mnt"]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [9278504891] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [9278504891] [11.4 MB/s]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:01:20] [1594879279] [T] [OPRT] [regular] [findall] [2018794598] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 14:01:20] [1594879279] [F] [DATA] [regular] [findall] [2018794598] [2.5 GB/s]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.5 GB/s]|
+[2020/07/16 14:01:20] [1594879280] [F] [DATA] [STR] [Start a new trasaction] [] [None]|
+[2020/07/16 14:01:20] [1594879280] [F] [DATA] [STR] [unique_str] [] [None]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:01:20] [1594879279] [T] [INFO] [info] [start] [1842989075] [  Start to create lun, name: None_None]|
+[2020/07/16 14:31:49] [1594881109] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:31:49] [1594881109] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:31:49] [1594881109] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [1911089485] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [finish] [1911089485] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [5118419890] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [finish] [5118419890] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [9181549108] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:31:49] [1594881109] [T] [OPRT] [regular] [findall] [5898914110] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:31:49] [1594881109] [F] [DATA] [regular] [findall] [5898914110] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:31:49] [1594881109] [T] [OPRT] [regular] [findall] [1594098811] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:31:49] [1594881109] [F] [DATA] [regular] [findall] [1594098811] [['UpToDate']]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:31:49] [1594881109] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 14:31:49] [1594881109] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 14:31:52] [1594881109] [F] [DATA] [debug] [exception] [ssh connect] [Traceback (most recent call last):
+  File "/Users/vinceshen/Desktop/Hydra/Hydra/connect.py", line 41, in _connect
+    timeout=self._timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/util.py", line 280, in retry_on_signal
+    return function()
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+socket.timeout: timed out
+]|
+[2020/07/16 14:31:52] [1594881109] [T] [INFO] [error] [exit] [] [  Connect to 10.203.1.199 failed with error: timed out]|
+[2020/07/16 14:32:11] [1594881131] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:32:32] [1594881152] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:32:49] [1594881169] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:34:05] [1594881245] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:34:05] [1594881245] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:34:05] [1594881245] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [1214589458] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [finish] [1214589458] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [1528441985] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [finish] [1528441985] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [8254519481] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:34:05] [1594881245] [T] [OPRT] [regular] [findall] [4542988511] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:34:05] [1594881245] [F] [DATA] [regular] [findall] [4542988511] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:34:05] [1594881245] [T] [OPRT] [regular] [findall] [2485411589] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:34:05] [1594881245] [F] [DATA] [regular] [findall] [2485411589] [['UpToDate']]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:34:05] [1594881245] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 14:34:05] [1594881245] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 14:34:08] [1594881245] [F] [DATA] [debug] [exception] [ssh connect] [Traceback (most recent call last):
+  File "/Users/vinceshen/Desktop/Hydra/Hydra/connect.py", line 41, in _connect
+    timeout=self._timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/util.py", line 280, in retry_on_signal
+    return function()
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+socket.timeout: timed out
+]|
+[2020/07/16 14:34:08] [1594881245] [T] [INFO] [error] [exit] [] [  Connect to 10.203.1.199 failed with error: timed out]|
+[2020/07/16 14:35:36] [1594881336] [T] [DATA] [input] [user_input] [] [main.py re -t 1594878912]|
+[2020/07/16 14:35:36] [1594881336] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:35:36] [1594881336] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [5611838349] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [finish] [5611838349] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [4119586833] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [finish] [4119586833] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [4118385369] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:35:36] [1594881336] [T] [OPRT] [regular] [findall] [9368158413] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:35:36] [1594881336] [F] [DATA] [regular] [findall] [9368158413] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:35:36] [1594881336] [T] [OPRT] [regular] [findall] [8395146138] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:35:36] [1594881336] [F] [DATA] [regular] [findall] [8395146138] [['UpToDate']]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:35:36] [1594881336] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 14:35:36] [1594881336] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 14:35:39] [1594881336] [F] [DATA] [debug] [exception] [ssh connect] [Traceback (most recent call last):
+  File "/Users/vinceshen/Desktop/Hydra/Hydra/connect.py", line 41, in _connect
+    timeout=self._timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/util.py", line 280, in retry_on_signal
+    return function()
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+socket.timeout: timed out
+]|
+[2020/07/16 14:35:39] [1594881336] [T] [INFO] [error] [exit] [] [  Connect to 10.203.1.199 failed with error: timed out]|
+[2020/07/16 14:35:52] [1594881352] [T] [DATA] [input] [user_input] [] [main.py re -t 1594879092]|
+[2020/07/16 14:35:52] [1594881352] [F] [DATA] [STR] [Start a new trasaction] [] [None]|
+[2020/07/16 14:35:52] [1594881352] [F] [DATA] [STR] [unique_str] [] [None]|
+[2020/07/16 14:35:52] [1594881352] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:35:52] [1594881352] [T] [INFO] [info] [start] [5884251913] [  Start to create lun, name: None_None]|
+[2020/07/16 14:36:19] [1594881379] [T] [DATA] [input] [user_input] [] [main.py re -t 1594879092]|
+[2020/07/16 14:36:19] [1594881379] [F] [DATA] [STR] [Start a new trasaction] [] [None]|
+[2020/07/16 14:36:19] [1594881379] [F] [DATA] [STR] [unique_str] [] [None]|
+[2020/07/16 14:36:19] [1594881379] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:36:19] [1594881379] [T] [INFO] [info] [start] [3548791819] [  Start to create lun, name: None_None]|
+[2020/07/16 14:36:48] [1594881408] [T] [DATA] [input] [user_input] [] [main.py re -t 1594879092]|
+[2020/07/16 14:37:04] [1594881424] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:37:34] [1594881454] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:37:43] [1594881463] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:37:43] [1594881463] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:37:43] [1594881463] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [8448963511] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [finish] [8448963511] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [1681445893] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [finish] [1681445893] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [5418649138] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:37:43] [1594881463] [T] [OPRT] [regular] [findall] [4189381546] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:37:43] [1594881463] [F] [DATA] [regular] [findall] [4189381546] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:37:43] [1594881463] [T] [OPRT] [regular] [findall] [1854849613] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:37:43] [1594881463] [F] [DATA] [regular] [findall] [1854849613] [['UpToDate']]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:37:43] [1594881463] [T] [INFO] [info] [start] [] [  Start to connect VersaPLX via SSH]|
+[2020/07/16 14:37:43] [1594881463] [F] [DATA] [value] [dict] [data for SSH connect] [{'host': '10.203.1.199', 'port': 22, 'username': 'root', 'password': 'password'}]|
+[2020/07/16 14:37:46] [1594881463] [F] [DATA] [debug] [exception] [ssh connect] [Traceback (most recent call last):
+  File "/Users/vinceshen/Desktop/Hydra/Hydra/connect.py", line 41, in _connect
+    timeout=self._timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/util.py", line 280, in retry_on_signal
+    return function()
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/paramiko/client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+socket.timeout: timed out
+]|
+[2020/07/16 14:37:46] [1594881463] [T] [INFO] [error] [exit] [] [  Connect to 10.203.1.199 failed with error: timed out]|
+[2020/07/16 14:40:48] [1594881648] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:40:48] [1594881648] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:40:48] [1594881648] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [6451818849] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [finish] [6451818849] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [5681494881] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [finish] [5681494881] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [6889511484] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:40:48] [1594881648] [T] [OPRT] [regular] [findall] [4461815889] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:40:48] [1594881648] [F] [DATA] [regular] [findall] [4461815889] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:40:48] [1594881648] [T] [OPRT] [regular] [findall] [8694881451] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:40:48] [1594881648] [F] [DATA] [regular] [findall] [8694881451] [['UpToDate']]|
+[2020/07/16 14:40:48] [1594881648] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [9615864218] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [9615864218] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [2894566118] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [2894566118] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [9211646588] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [9268156814] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [9268156814] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [4668181529] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [4668181529] [['UpToDate']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [9662485118] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [4612865981] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [1982468651] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [6891825614] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [1296654818] [    Execute the command and check up the status of session]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [9516168842] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [9516168842] [['10.203.1.199']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [1296654818] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [2186149685] [    Start to scan SCSI device normal]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [5619462818] [    Start to list all SCSI device]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [1964618852] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [1964618852] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [2945861618] [    Start to format /dev/sdi]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [9218564816] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [9218564816] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [6415819286] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [6415819286] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [8416251896] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [8416251896] [11.4 MB/s]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [1512948686] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [1512948686] [2.4 GB/s]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [STR] [Start a new trasaction] [] [176]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [8146291568] [  Start to create lun, name: log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [8146291568] [  Create LUN log_test_176 successful]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [4259618168] [  Start to map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [4259618168] [  Finish with map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [5128964681] [      Initialize drbd for res_log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [8891165246] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [8891165246] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    res_log_test_176 synchronize successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [4586298611] [{re.compile('disk:(\\w*)'): 'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [4586298611] [['UpToDate']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    res_log_test_176 DRBD check successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [6218169584] [    Start to create iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [9168125468] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [8296645181] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [8968651142] [      Start the iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [9615142688] [    Execute the command and check up the status of session]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [6881516492] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [6881516492] [['10.203.1.199']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [finish] [9615142688] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [1841298665] [    Start to scan SCSI device normal]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [9166845812] [    Start to list all SCSI device]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [2156498186] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [2156498186] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi'), ('176', '/dev/sdj')]]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [1168496285] [    Start to format /dev/sdj]|
+[2020/07/16 14:41:02] [1594881662] [T] [OPRT] [regular] [findall] [5981682641] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:41:02] [1594881662] [F] [DATA] [regular] [findall] [5981682641] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:41:02] [1594881662] [T] [INFO] [info] [start] [8164625918] [    Try mount /dev/sdj to "/mnt"]|
+[2020/07/16 14:41:03] [1594881662] [T] [INFO] [info] [finish] [8164625918] [    Disk /dev/sdj mounted to "/mnt"]|
+[2020/07/16 14:41:03] [1594881662] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:41:03] [1594881662] [T] [OPRT] [regular] [findall] [6681953184] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:41:03] [1594881662] [F] [DATA] [regular] [findall] [6681953184] [11.4 MB/s]|
+[2020/07/16 14:41:03] [1594881662] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:41:03] [1594881662] [T] [OPRT] [regular] [findall] [5813961468] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 14:41:03] [1594881662] [F] [DATA] [regular] [findall] [5813961468] [2.5 GB/s]|
+[2020/07/16 14:41:03] [1594881662] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.5 GB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8843594117] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [8843594117] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8171489435] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [8171489435] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [1389484571] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [1154479883] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [1154479883] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [3194851487] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [3194851487] [['UpToDate']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [3751891448] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8149735841] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [3148148597] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8137981544] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8589714314] [    Execute the command and check up the status of session]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [1415934788] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [1415934788] [['10.203.1.199']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [8589714314] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [5879344181] [    Start to scan SCSI device normal]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [3184497185] [    Start to list all SCSI device]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [1839574148] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [1839574148] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [9371841854] [    Start to format /dev/sdi]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [8457189314] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [8457189314] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [9854748131] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [9854748131] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [7384811594] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [7384811594] [11.4 MB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [1388449157] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [1388449157] [2.4 GB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [STR] [Start a new trasaction] [] [176]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8751484913] [  Start to create lun, name: log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [8751484913] [  Create LUN log_test_176 successful]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [5474819831] [  Start to map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [5474819831] [  Finish with map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [1384859417] [      Initialize drbd for res_log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [9814415873] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [9814415873] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    res_log_test_176 synchronize successfully]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [8491518347] [{re.compile('disk:(\\w*)'): 'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [8491518347] [['UpToDate']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    res_log_test_176 DRBD check successfully]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [3848915741] [    Start to create iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8819741534] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [5184749381] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [3491817854] [      Start the iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [1548913748] [    Execute the command and check up the status of session]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [7145183984] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [7145183984] [['10.203.1.199']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [1548913748] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [3941147588] [    Start to scan SCSI device normal]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [8384941175] [    Start to list all SCSI device]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [4315719848] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [4315719848] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi'), ('176', '/dev/sdj')]]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [1547488913] [    Start to format /dev/sdj]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [4837115984] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [4837115984] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [1488175943] [    Try mount /dev/sdj to "/mnt"]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [1488175943] [    Disk /dev/sdj mounted to "/mnt"]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [3474818915] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [3474818915] [11.4 MB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [OPRT] [regular] [findall] [7458981134] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 14:42:14] [1594881734] [F] [DATA] [regular] [findall] [7458981134] [2.5 GB/s]|
+[2020/07/16 14:42:14] [1594881734] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.5 GB/s]|
+[2020/07/16 14:42:27] [1594881747] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [9415774881] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [9415774881] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [5147147898] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [5147147898] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [8418147975] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [OPRT] [regular] [findall] [1758744189] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [regular] [findall] [1758744189] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:42:27] [1594881747] [T] [OPRT] [regular] [findall] [4574791818] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [regular] [findall] [4574791818] [['UpToDate']]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [7474891815] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [9418587714] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [7411889574] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [5718941478] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [9744158718] [    Execute the command and check up the status of session]|
+[2020/07/16 14:42:27] [1594881747] [T] [OPRT] [regular] [findall] [9714481578] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [regular] [findall] [9714481578] [['10.203.1.199']]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [9744158718] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [9418471758] [    Start to scan SCSI device normal]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [8981747154] [    Start to list all SCSI device]|
+[2020/07/16 14:42:27] [1594881747] [T] [OPRT] [regular] [findall] [1857847194] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [regular] [findall] [1857847194] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [7848519471] [    Start to format /dev/sdi]|
+[2020/07/16 14:42:27] [1594881747] [T] [OPRT] [regular] [findall] [4859117487] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [regular] [findall] [4859117487] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [5781148497] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [5781148497] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:42:27] [1594881747] [T] [OPRT] [regular] [findall] [4175914878] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:42:27] [1594881747] [F] [DATA] [regular] [findall] [4175914878] [11.4 MB/s]|
+[2020/07/16 14:42:27] [1594881747] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [1917548488] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [1917548488] [2.4 GB/s]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 14:42:28] [1594881748] [F] [DATA] [STR] [Start a new trasaction] [] [176]|
+[2020/07/16 14:42:28] [1594881748] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [5149748818] [  Start to create lun, name: log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [5149748818] [  Create LUN log_test_176 successful]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [4894718185] [  Start to map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [4894718185] [  Finish with map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [5714841898] [      Initialize drbd for res_log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [8474981581] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [8474981581] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [    res_log_test_176 synchronize successfully]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [1784149858] [{re.compile('disk:(\\w*)'): 'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [1784149858] [['UpToDate']]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [    res_log_test_176 DRBD check successfully]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [1598417884] [    Start to create iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [4188951478] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [9518844781] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [4411988578] [      Start the iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [5887418491] [    Execute the command and check up the status of session]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [5788448911] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [5788448911] [['10.203.1.199']]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [5887418491] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [1417885894] [    Start to scan SCSI device normal]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [8848971514] [    Start to list all SCSI device]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [7145889841] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [7145889841] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi'), ('176', '/dev/sdj')]]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [9118857484] [    Start to format /dev/sdj]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [7181498854] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [7181498854] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [4748819851] [    Try mount /dev/sdj to "/mnt"]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [4748819851] [    Disk /dev/sdj mounted to "/mnt"]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [5189784814] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [5189784814] [11.4 MB/s]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:42:28] [1594881747] [T] [OPRT] [regular] [findall] [5897488141] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 14:42:28] [1594881747] [F] [DATA] [regular] [findall] [5897488141] [2.5 GB/s]|
+[2020/07/16 14:42:28] [1594881747] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.5 GB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [DATA] [input] [user_input] [] [main.py re -d 2020/07/16 13:55:12 2020/07/16 13:58:14]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [STR] [Start a new trasaction] [] [175]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5711158489] [  Start to create lun, name: log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [5711158489] [  Create LUN log_test_175 successful]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5815741918] [  Start to map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [5815741918] [  Finish with map LUN, LUN name: log_test_175, LUN ID: 175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [1549718581] [      Initialize drbd for res_log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [1458715819] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [1458715819] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    res_log_test_175 synchronize successfully]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [8714951815] [{re.compile('disk:(\\w*)'): 'res_log_test_175 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [8714951815] [['UpToDate']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    res_log_test_175 DRBD check successfully]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [9184571185] [    Start to create iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5181841597] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [7851194851] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [7815541819] [      Start the iSCSILogicalUnit resource res_log_test_175]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [8518175941] [    Execute the command and check up the status of session]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [8148579511] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [8148579511] [['10.203.1.199']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [8518175941] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [9171814855] [    Start to scan SCSI device normal]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [7115581894] [    Start to list all SCSI device]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [5189148175] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [5189148175] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi')]]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [4911178558] [    Start to format /dev/sdi]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [1471895518] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: a52a934e-d11a-47c9-aa90-024e344e47c3\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [1471895518] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [1498587115] [    Try mount /dev/sdi to "/mnt"]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [1498587115] [    Disk /dev/sdi mounted to "/mnt"]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [4818511579] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.735057 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [4818511579] [11.4 MB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [1954578181] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342686 s, 2.4 GB/s\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [1954578181] [2.4 GB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.4 GB/s]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [STR] [Start a new trasaction] [] [176]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [STR] [unique_str] [] [log_test]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [Start to configure LUN on NetApp Storage]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [7911858451] [  Start to create lun, name: log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [7911858451] [  Create LUN log_test_176 successful]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5547981118] [  Start to map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [5547981118] [  Finish with map LUN, LUN name: log_test_176, LUN ID: 176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [Start to configure DRDB resource and crm resource on VersaPLX]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [    Start to configure DRBD resource res_log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [1785194185] [      Initialize drbd for res_log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [8515811497] [{re.compile('New drbd meta data block successfully created'): 'initializing activity log\nWriting meta data...\nNew drbd meta data block successfully created.\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [8515811497] [['New drbd meta data block successfully created']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [      Start to initial synchronization for res_log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    res_log_test_176 synchronize successfully]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [      Start to check DRBD resource status]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [9181857415] [{re.compile('disk:(\\w*)'): 'res_log_test_176 role:Primary\n  disk:UpToDate\n\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [9181857415] [['UpToDate']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    res_log_test_176 DRBD check successfully]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [  Start to configure crm resource res_log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [1541788159] [    Start to create iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    Create iSCSILogicalUnit successfully]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [1195148875] [      start to setting up iSCSILogicalUnit resources of colocation]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [      Setting colocation successful]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5119874185] [      Start to setting up iSCSILogicalUnit resources of order]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [      Setting order succeed]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5111857498] [      Start the iSCSILogicalUnit resource res_log_test_176]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [      ISCSI LUN start successful]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [Start to Format and do some IO test on Host]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [5918148715] [    Execute the command and check up the status of session]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [8171155498] [{re.compile('tcp:.*(10.203.1.199):.*'): 'tcp: [67] 10.203.1.199:3260,1 iqn.2020-06.com.example:test-max-lun (non-flash)\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [8171155498] [['10.203.1.199']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [5918148715] [    ISCSI already login to VersaPLX]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [9841811575] [    Start to scan SCSI device normal]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [7151588491] [    Start to list all SCSI device]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [5418851917] [{'\\:(\\d*)\\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})': '[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0 \n[32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda \n[34:0:0:0]   disk    LIO-ORG  res_0_0          4.0   /dev/sdb \n[34:0:0:4]   disk    LIO-ORG  res_luntest_4    4.0   /dev/sdh \n[34:0:0:165] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdf \n[34:0:0:166] disk    LIO-ORG  res_log_test_16  4.0   /dev/sde \n[34:0:0:167] disk    LIO-ORG  res_log_test_16  4.0   /dev/sdc \n[34:0:0:173] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdd \n[34:0:0:174] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdg \n[34:0:0:175] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdi \n[34:0:0:176] disk    LIO-ORG  res_log_test_17  4.0   /dev/sdj \n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [5418851917] [[('0', '/dev/sdb'), ('4', '/dev/sdh'), ('165', '/dev/sdf'), ('166', '/dev/sde'), ('167', '/dev/sdc'), ('173', '/dev/sdd'), ('174', '/dev/sdg'), ('175', '/dev/sdi'), ('176', '/dev/sdj')]]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [7915188145] [    Start to format /dev/sdj]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [4789511185] [{'done': 'Creating filesystem with 10200 1k blocks and 2560 inodes\nFilesystem UUID: ce53dcc8-889e-418e-889c-2114d0da6c32\nSuperblock backups stored on blocks: \n\t8193\n\nAllocating group tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nWriting inode tables: 0/2\x08\x08\x08   \x08\x08\x08done                            \nCreating journal (1024 blocks): done\nWriting superblocks and filesystem accounting information: 0/2\x08\x08\x08   \x08\x08\x08done\n\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [4789511185] [['done', 'done', 'done', 'done']]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [9158718541] [    Try mount /dev/sdj to "/mnt"]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [9158718541] [    Disk /dev/sdj mounted to "/mnt"]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [start] [] [  Start speed test ... ... ... ... ... ...]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [5581711489] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.737592 s, 11.4 MB/s\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [5581711489] [11.4 MB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    Write Speed: 11.4 MB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [OPRT] [regular] [findall] [5587141891] [{re.compile('.*s, ([0-9.]* [A-Z]B/s)'): '16+0 records in\n16+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00342186 s, 2.5 GB/s\n'}]|
+[2020/07/16 14:42:31] [1594881751] [F] [DATA] [regular] [findall] [5587141891] [2.5 GB/s]|
+[2020/07/16 14:42:31] [1594881751] [T] [INFO] [info] [finish] [] [    Read  Speed: 2.5 GB/s]|

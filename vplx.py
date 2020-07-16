@@ -307,7 +307,6 @@ class VplxDrbd(object):
 
 class VplxCrm(object):
     def __init__(self):
-        init_ssh()
         self.logger = consts.glo_log()
         self.ID = consts.glo_id()
         self.STR = consts.glo_str()
@@ -319,6 +318,8 @@ class VplxCrm(object):
         self.logger.write_to_log('T', 'INFO', 'info', 'start',
                                  '', f'  Start to configure crm resource {self.lu_name}')
         # self.logger.write_to_log('INFO','info','',f'start to config crm resource {self.lu_name}') #
+        if self.rpl == 'no':
+            init_ssh()
 
     def _crm_create(self):
         '''
@@ -514,6 +515,7 @@ class VplxCrm(object):
         vplx rescan after delete
         '''
         s.scsi_rescan(SSH, 'r')
+
 
 
 if __name__ == '__main__':

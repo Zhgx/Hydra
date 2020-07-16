@@ -46,7 +46,7 @@ class Storage:
                 'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
             self.telnet_conn.execute_command(cmd)
         elif self.rpl == 'yes':
-            db = logdb.LogDB()
+            db = consts.glo_db()
             db_id, oprt_id = db.find_oprt_id_via_string(self.TID, unique_str)
             info_start = db.get_info_start(oprt_id)
             if info_start:
@@ -150,7 +150,6 @@ class Storage:
             list_of_show_lun = s.getshow(
                 self.logger, self.STR, self.ID, stor_list_todel)
             if list_of_show_lun:
-                print('storage：')
                 print(s.print_format(list_of_show_lun))
             return list_of_show_lun
         else:
