@@ -22,6 +22,7 @@ class ConnSSH(object):
         self._timeout = timeout
         self._username = username
         self._password = password
+        self._sftp
         self.SSHConnection = None
         self.ssh_connect()
 
@@ -70,6 +71,26 @@ class ConnSSH(object):
             self.logger.write_to_log(
                 'T', 'INFO', 'info', 'start', '', '  Retry connect to VersaPLX via SSH')
             self._connect()
+
+    def download(self, remotepath, localpath):
+        def _download():
+            if self._sftp is None:
+                self._sftp = self.SSHConnection.open_sftp()
+            self._sftp.get(remotepath, localpath)
+        try:
+            _download()
+        except AttributeError as e:
+            print(f'Download file "{remotepath}" failed with error: {e} )
+
+    def upload(self, localpath, remotepath):
+        def _upload():
+            if self._sftp is None:
+                self._sftp = self.SSHConnection.open_sftp()
+            self._sftp.put(localpath, remotepath)
+        try:
+            _upload()
+        except AttributeError as E:
+            print(f'Upload file "{remotepath}" failed with error: {e} )
 
     def close(self):
         self.SSHConnection.close()
