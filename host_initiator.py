@@ -59,7 +59,7 @@ class HostTest(object):
     '''
 
     def __init__(self):
-        print('Start IO test on initiator host')
+        
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self.logger.write_to_log(
@@ -81,7 +81,7 @@ class HostTest(object):
         if self.rpl == 'no':
             init_ssh()
             umount_mnt()
-            self._create_iscsi_session()
+            # self._create_iscsi_session()
         if self.rpl == 'yes':
             s.find_session(vplx_ip, SSH, 'V9jGOP2v', s.get_oprt_id())
 
@@ -179,7 +179,9 @@ class HostTest(object):
         # self.logger.write_to_log('INFO', 'info', '', (f'read speed: {read_perf}'))
 
     def start_test(self):
+        print('Start IO test on initiator host')
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
+        self._create_iscsi_session()
         dev_name = get_disk_dev()
         if self.format(dev_name):
             if self._mount(dev_name):
@@ -189,7 +191,7 @@ class HostTest(object):
         else:
             s.pwe(f'Device {dev_name} format failed')
 
-    def host_rescan(self):
+    def host_rescan_r(self):
         s.scsi_rescan(SSH, 'r')
 
 
