@@ -117,6 +117,7 @@ class ConnTelnet(object):
         self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
         self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
+        time.sleep(0.1)
         rely = self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(b'\r')
         return rely
