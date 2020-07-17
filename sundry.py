@@ -25,7 +25,7 @@ def change_id_str_to_list(id_str):
         id_ = id_range_list[0]
         id_list = [id_]
     elif len(id_range_list) == 2:
-        for id_ in range(id_range_list[0], id_range_list[1]):
+        for id_ in range(id_range_list[0], id_range_list[1] + 1):
             id_list.append(id_)
     return id_list
 
@@ -170,9 +170,9 @@ def get_to_del_list(name_list):
     if uni_str and id_list:
         for id_ in id_list:
             str_ = f'{uni_str}_{id_}'
-            name = compare(str_, name_list)
+            name = _compare(str_, name_list)
             if name:
-                list_name.append(name)
+                to_del_list.append(name)
     elif uni_str:
         for name in name_list:
             if uni_str in name:
@@ -201,11 +201,12 @@ def print_format(list_name):
 
 def prt_res_to_del(str_,res_list):
     print(f'{str_:<15} to be delete:')
+    print('-----------------------------------------------')
     if res_list:
         for i in range(len(res_list)):
             res_name = res_list[i]
-            print(f'{res_name:<30}', end='')
-            if (i + 1) % 4 == 0:
+            print(f'{res_name:<18}', end='')
+            if (i + 1) % 5 == 0:
                 print()
     else:
         print('None')

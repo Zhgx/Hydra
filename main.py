@@ -126,8 +126,10 @@ class HydraArgParse():
 
         tgt_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
         s.prt_res_to_del('\ncrm resource', tgt_to_del_list)
+
         drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
         s.prt_res_to_del('\ndrbd resource', drbd_to_del_list)
+        
         lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
         s.prt_res_to_del('\nstorage lun', lun_to_del_list)
 
