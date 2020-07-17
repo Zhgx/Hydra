@@ -169,10 +169,11 @@ class HydraArgParse():
         dict_id_str = {}
         # uniq_str: The unique string for this test, affects related naming
         ids = args.id_range
-        if args.id_range:
-            ids = [int(i) for i in args.id_range.split(',')]
+
 
         if args.delete and args.unique_str:
+            if args.id_range:
+                ids = [int(i) for i in args.id_range.split(',')]
             consts.set_glo_rpl('no')
             consts.set_glo_str(args.uniq_str)
             consts.set_glo_id_list(ids)
@@ -181,6 +182,7 @@ class HydraArgParse():
         elif args.uniq_str and args.id_range:
             consts.set_glo_rpl('no')
             consts.set_glo_log_switch('yes')
+            ids = args.id_range.split(',')
             if len(ids) == 1:
                 dict_id_str.update({ids[0]: args.uniq_str})
 

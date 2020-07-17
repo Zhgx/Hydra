@@ -46,7 +46,6 @@ def get_disk_dev():
     if disk_dev:
         return disk_dev
     else:
-        print('----------------get_disk_dev')
         s.scsi_rescan(SSH, 'a')
         disk_dev = _find_new_disk()
         if disk_dev:

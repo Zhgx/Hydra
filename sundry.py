@@ -60,10 +60,12 @@ def get_all_scsi_disk(re_string, lsscsi_result):
 
 def get_the_disk_with_lun_id(all_disk):
     logger = consts.glo_log()
-    lun_id = consts.glo_id()
+    lun_id = str(consts.glo_id())
     dict_id_disk = dict(all_disk)
+    print(dict_id_disk)
     if lun_id in dict_id_disk.keys():
         blk_dev_name = dict_id_disk[lun_id]
+        print(blk_dev_name)
         return blk_dev_name
     else:
         print(f'no disk device with SCSI ID {lun_id} found')
