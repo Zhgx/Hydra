@@ -404,6 +404,7 @@ class VplxCrm(object):
         if self._crm_create():
             if self._crm_setting():
                 if self._crm_start():
+                    time.sleep(0.5)
                     return True
 
     def _crm_status_check(self, res_name, status):
