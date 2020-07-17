@@ -109,6 +109,7 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         db = consts.glo_db()
         db_id, oprt_id = db.find_oprt_id_via_string(
             consts.glo_tsc_id(), unique_str)
+
         info_start = db.get_info_start(oprt_id)
         if info_start:
             print(info_start)

@@ -23,7 +23,7 @@ class ConnSSH(object):
         self._username = username
         self._password = password
         self.SSHConnection = None
-        self._connect()
+        self.ssh_connect()
 
     def _connect(self):
         self.logger.write_to_log(
