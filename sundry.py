@@ -13,6 +13,9 @@ import socket
 from random import shuffle
 import log
 
+def dp(str, arg):
+    print(f'{str}---------------------\n{arg}')
+
 def change_id_str_to_list(id_str):
     id_list = []
     id_range_list = [int(i) for i in id_str.split(',')]
@@ -22,7 +25,7 @@ def change_id_str_to_list(id_str):
         id_ = id_range_list[0]
         id_list = [id_]
     elif len(id_range_list) == 2:
-        for id_ in range(id_list[0], id_list[1]):
+        for id_ in range(id_range_list[0], id_range_list[1]):
             id_list.append(id_)
     return id_list
 
@@ -75,8 +78,8 @@ def get_the_disk_with_lun_id(all_disk):
     logger = consts.glo_log()
     lun_id = consts.glo_id()
     dict_id_disk = dict(all_disk)
-    if lun_id in dict_id_disk.keys():
-        blk_dev_name = dict_id_disk[lun_id]
+    if str(lun_id) in dict_id_disk.keys():
+        blk_dev_name = dict_id_disk[str(lun_id)]
         return blk_dev_name
     else:
         print(f'no disk device with SCSI ID {lun_id} found')
@@ -196,6 +199,17 @@ def print_format(list_name):
             name = name+'\n' + ''.ljust(4)
     return name
 
+def prt_res_to_del(str_,res_list):
+    print(f'{str_:<15} to be delete:')
+    if res_list:
+        for i in range(len(res_list)):
+            res_name = res_list[i]
+            print(f'{res_name:<30}', end='')
+            if (i + 1) % 4 == 0:
+                print()
+    else:
+        print('None')
+    print()
 
 # def getshow(unique_str, id_list, name_list):
 #     '''
@@ -301,9 +315,9 @@ def find_session(tgt_ip, ssh, func_str, oprt_id):
         result_session = result_session['rst'].decode('utf-8')
         re_session = re.compile(f'tcp:.*({tgt_ip}):.*')
         if re_findall(re_session, result_session):
-            print('    iSCSI already login to VersaPLX')
+            # print('    iSCSI already login to VersaPLX')
             logger.write_to_log('T', 'INFO', 'info', 'finish',
-                                oprt_id, '    ISCSI already login to VersaPLX')
+                                oprt_id, f'    ISCSI already login to {tgt_ip}')
             return True
         else:
             print('  iSCSI not login to VersaPLX, Try to login')

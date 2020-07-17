@@ -7,7 +7,7 @@ import time
 import vplx
 import storage
 import host_initiator
-import sundry
+import sundry as s
 import log
 import logdb
 
@@ -28,7 +28,7 @@ class HydraArgParse():
         self.dict_id_str = {}
 
     def init_log(self):
-        return log.Log(sundry.get_transaction_id())
+        return log.Log(s.get_transaction_id())
 
     def log_user_input(self):
         if sys.argv:
@@ -83,6 +83,7 @@ class HydraArgParse():
         Connect to NetApp Storage, Create LUN and Map to VersaPLX
         '''
         netapp = storage.Storage()
+        print('Start to configure LUN on NetApp Storage')
         netapp.lun_create()
         netapp.lun_map()
         print('------* storage end *------')
@@ -111,7 +112,6 @@ class HydraArgParse():
         Umount and start to format, write, and read iSCSI LUN
         '''
         host = host_initiator.HostTest()
-        # host.ssh.execute_command('umount /mnt')
         host.start_test()
         print('------* host_test end *------')
 
@@ -119,31 +119,32 @@ class HydraArgParse():
         '''
         User determines whether to delete and execute delete method
         '''
-
         crm = vplx.VplxCrm()
-        list_of_del_crm = crm.crm_show()
-
         drbd = vplx.VplxDrbd()
-        list_of_del_drbd = drbd.drbd_show()
-
         stor = storage.Storage()
-        list_of_del_stor = stor.lun_show()
-
         host = host_initiator.HostTest()
 
-        if list_of_del_crm or list_of_del_drbd or list_of_del_stor:
-            comfirm = input('Do you want to delete these lun (yes/no):')
-            if comfirm == 'yes':
-                crm.start_crm_del(list_of_del_crm)
-                drbd.start_drbd_del(list_of_del_drbd)
-                stor.start_stor_del(list_of_del_stor)
-                crm.vplx_rescan()
-                host.host_rescan()
+        tgt_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
+        s.prt_res_to_del('\ncrm resource', tgt_to_del_list)
+        drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
+        s.prt_res_to_del('\ndrbd resource', drbd_to_del_list)
+        lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
+        s.prt_res_to_del('\nstorage lun', lun_to_del_list)
+
+        if tgt_to_del_list or drbd_to_del_list or lun_to_del_list:
+            answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
+            if answer == 'yes' or answer == 'y':
+                crm.del_all(tgt_to_del_list)
+                drbd.del_all(drbd_to_del_list)
+                stor.del_all(lun_to_del_list)
+                # remove all deleted disk device on vplx and host
+                crm.vplx_rescan_r()
+                host.host_rescan_r()
             else:
-                sundry.pwe('Cancel succeed')
+                s.pwe('User canceled deleting proccess ...')
         else:
-            sundry.pwe(
-                'The resource you want to delete does not exist. Please confirm the information you entered.\n')
+            s.pwe(
+                '\nNo qualified resources to be delete.\n')
 
     def run(self, dict_args):
         rpl = consts.glo_rpl()
@@ -151,7 +152,7 @@ class HydraArgParse():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
             if rpl == 'no':
-                self.logger = log.Log(sundry.get_transaction_id())
+                self.logger = log.Log(s.get_transaction_id())
                 self.logger.write_to_log(
                     'F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.glo_id()}')
                 self.logger.write_to_log(
@@ -195,10 +196,10 @@ class HydraArgParse():
 
     def start(self):
         args = self.parser.parse_args()
-        
+
         # uniq_str: The unique string for this test, affects related naming
         if args.id_range:
-            id_list = change_id_str_to_list(args.id_range)
+            id_list = s.change_id_str_to_list(args.id_range)
             consts.set_glo_id_list(id_list)
 
         if args.uniq_str:
@@ -213,7 +214,7 @@ class HydraArgParse():
             consts.set_glo_log_switch('no')
             logdb.prepare_db()
             self.prepare_replay()
-            
+
         elif args.uniq_str and args.id_range:
             uniq_str = consts.glo_str()
             id_list = consts.glo_id_list()
