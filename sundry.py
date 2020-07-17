@@ -13,6 +13,22 @@ import socket
 from random import shuffle
 import log
 
+def dp(str, arg):
+    print(f'{str}---------------------\n{arg}')
+
+def change_id_str_to_list(id_str):
+    id_list = []
+    id_range_list = [int(i) for i in id_str.split(',')]
+    if len(id_range_list) not in [1,2]:
+        pwe('please verify id format')
+    elif len(id_range_list) == 1:
+        id_ = id_range_list[0]
+        id_list = [id_]
+    elif len(id_range_list) == 2:
+        for id_ in range(id_range_list[0], id_range_list[1]):
+            id_list.append(id_)
+    return id_list
+
 
 def scsi_rescan(ssh, mode):
     logger = consts.glo_log()
@@ -60,23 +76,15 @@ def get_all_scsi_disk(re_string, lsscsi_result):
 
 def get_the_disk_with_lun_id(all_disk):
     logger = consts.glo_log()
-    lun_id = str(consts.glo_id())
+    lun_id = consts.glo_id()
     dict_id_disk = dict(all_disk)
-    print(dict_id_disk)
-    if lun_id in dict_id_disk.keys():
-        blk_dev_name = dict_id_disk[lun_id]
-        print(blk_dev_name)
+    if str(lun_id) in dict_id_disk.keys():
+        blk_dev_name = dict_id_disk[str(lun_id)]
         return blk_dev_name
     else:
         print(f'no disk device with SCSI ID {lun_id} found')
         logger.write_to_log('T', 'INFO', 'warning', 'failed',
                             '', f'no disk device with SCSI ID {lun_id} found')
-
-
-# # 是个啥啊？
-# def _find_new_lun():
-#     return get_disk_dev(consts.glo_id(), re_find_id_dev, str_lsscsi, 'NetApp')
-
 
 def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
     """
@@ -97,6 +105,7 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
         return result_cmd
     elif RPL == 'yes':
+        print(f'Replay process of executing command ... {cmd} ...')
         db = consts.glo_db()
         db_id, oprt_id = db.find_oprt_id_via_string(
             consts.glo_tsc_id(), unique_str)
@@ -127,32 +136,56 @@ def pwe(print_str):
     logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
     sys.exit()
 
+def pwce(print_str):
+    """
+    print, write to log and exit.
+    :param logger: Logger object for logging
+    :param print_str: Strings to be printed and recorded
+    :param print_str: Strings to be printed and recorded
+    """
+    logger = consts.glo_log()
+    print(print_str)
+    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
+    log_file = clct_env(consts.glo_tid())
+    logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to file /var/log/{log_file}')
+    sys.exit()
 
-def compare(name, show_result):
-    if name in show_result:
+def _compare(name, name_list):
+    if name in name_list:
         return name
-    elif 'res_'+name in show_result:
+    elif 'res_'+name in name_list:
         return 'res_'+name
 
-
-def get_list_name(logger, unique_str, ids, show_result):
+def get_to_del_list(name_list):
     '''
     Generate some names with a range of id values and determine whether these names exist。
         name is lun name /resource name
         list_name is used to return the list value
+        ???????????
     '''
-    if len(ids) == 2:
-        list_name = []
-        for i in range(ids[0], ids[1]):
-            name = f'{unique_str}_{i}'
-            list_name.append(compare(name, show_result))
-        return list_name
-    elif len(ids) == 1:
-        name = f'{unique_str}_{ids[0]}'
-        return [compare(name, show_result)]
-    else:
-        pwe('please enter a valid value')
+    uni_str = consts.glo_str()
+    id_list = consts.glo_id_list()
+    to_del_list = []
 
+    if uni_str and id_list:
+        for id_ in id_list:
+            str_ = f'{uni_str}_{id_}'
+            name = compare(str_, name_list)
+            if name:
+                list_name.append(name)
+    elif uni_str:
+        for name in name_list:
+            if uni_str in name:
+                to_del_list.append(name)
+    elif id_list:
+        for id_ in id_list:
+            str_ = f'_{id_}'
+            for name in name_list:
+                if str_ in name:
+                    to_del_list.append(name)
+    else:
+        to_del_list = name_list
+    return to_del_list
 
 def print_format(list_name):
     '''
@@ -166,43 +199,27 @@ def print_format(list_name):
             name = name+'\n' + ''.ljust(4)
     return name
 
-
-def getshow(logger, unique_str, list_id, show_result):
-    '''
-    Determine the lun to be deleted according to regular matching
-    '''
-    if list_id:
-        list_name = get_list_name(logger, unique_str, list_id, show_result)
-        return list_name
+def prt_res_to_del(str_,res_list):
+    print(f'{str_:<15} to be delete:')
+    if res_list:
+        for i in range(len(res_list)):
+            res_name = res_list[i]
+            print(f'{res_name:<30}', end='')
+            if (i + 1) % 4 == 0:
+                print()
     else:
-        return show_result
+        print('None')
+    print()
 
-
-# def get_disk_dev(lun_id, re_string, lsscsi_result, dev_label, logger):
+# def getshow(unique_str, id_list, name_list):
 #     '''
-#     Use re to get the blk_dev_name through lun_id
+#     Determine the lun to be deleted according to regular matching
 #     '''
-#     # print(lsscsi_result)
-#     # self.logger.write_to_log('GetDiskPath','host','find_device',self.logger.host)
-#     re_find_path_via_id = re.compile(re_string)
-#     # self.logger.write_to_log('GetDiskPath','regular_before','find_device',lsscsi_result)
-#     re_result = re_find_path_via_id.findall(lsscsi_result)
-#     oprt_id = sundry.get_oprt_id()
-#     logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {re_string: lsscsi_result})
-#     logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
-#     if re_result:
-#         dict_id_disk = dict(re_result)
-#         if lun_id in dict_id_disk.keys():
-#             blk_dev_name = dict_id_disk[lun_id]
-#             return blk_dev_name
-#         else:
-#             print(f'no disk device with SCSI ID {lun_id} found')
-#             logger.write_to_log('T', 'INFO', 'warning', 'failed', '', f'no disk device with SCSI ID {lun_id} found')
-
+#     if id_list:
+#         list_name = get_list_name(logger, unique_str, id_list, name_list)
+#         return list_name
 #     else:
-#         print(f'no equal {dev_label} disk device found')
-#         logger.write_to_log('T', 'INFO', 'warning', 'failed',
-#                             '', f'no equal {dev_label} disk device found')
+#         return name_list
 
 
 def record_exception(func):
@@ -298,9 +315,9 @@ def find_session(tgt_ip, ssh, func_str, oprt_id):
         result_session = result_session['rst'].decode('utf-8')
         re_session = re.compile(f'tcp:.*({tgt_ip}):.*')
         if re_findall(re_session, result_session):
-            print('    iSCSI already login to VersaPLX')
+            # print('    iSCSI already login to VersaPLX')
             logger.write_to_log('T', 'INFO', 'info', 'finish',
-                                oprt_id, '    ISCSI already login to VersaPLX')
+                                oprt_id, f'    ISCSI already login to {tgt_ip}')
             return True
         else:
             print('  iSCSI not login to VersaPLX, Try to login')

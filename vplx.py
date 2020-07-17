@@ -1,12 +1,20 @@
-
 #  coding: utf-8
 import connect
 import sundry as s
 import time
+import sys
+import os
+import re
+import logdb
 import consts
 
-
+# global SSH
 SSH = None
+
+# global _ID
+# global _STR
+# global _RPL
+# global _TID
 
 host = '10.203.1.199'
 port = 22
@@ -27,6 +35,7 @@ def init_ssh():
     else:
         pass
 
+
 # --------------------------------------------------
 # --------------------------------------------------
 
@@ -46,6 +55,7 @@ def get_disk_dev():
     if disk_dev:
         return disk_dev
     else:
+        print('start rescan SCSI disk deeply')
         s.scsi_rescan(SSH, 'a')
         disk_dev = _find_new_disk()
         if disk_dev:
@@ -89,7 +99,6 @@ class VplxDrbd(object):
     def _prepare(self):
         if self.rpl == 'no':
             init_ssh()
-            self._create_iscsi_session()
 
     # def get_disk_device(self):
     #     self.blk_dev_name = get_disk_dev()
@@ -100,6 +109,7 @@ class VplxDrbd(object):
         '''
         if self.rpl == 'yes':
             return
+        self._create_iscsi_session()
         blk_dev_name = get_disk_dev()
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  f'      Start prepare config fiel for resource {self.res_name}')
@@ -258,41 +268,37 @@ class VplxDrbd(object):
         else:
             s.pwe('drbd remove config file fail')
 
-    def _get_all_drbd(self):
-        unique_str = 'UikYgtM1'
-        drbd_show_cmd = 'drbdadm status'
-        oprt_id = s.get_oprt_id()
-        drbd_show_result = s.get_ssh_cmd(
-            SSH, unique_str, drbd_show_cmd, oprt_id)
-        if drbd_show_result['sts']:
-            re_drbd = f'res_{self.STR}_[0-9]{{1,3}}'
-            list_of_all_drbd = s.re_findall(
-                re_drbd, drbd_show_result['rst'].decode('utf-8'))
-            return list_of_all_drbd
-
-    def drbd_show(self):
-        '''
-        Get the DRBD resource name through regular matching and determine whether these  exist
-        '''
-        drbd_show_result = self._get_all_drbd()
-        if drbd_show_result:
-            list_of_show_drbd = s.getshow(
-                self.logger, self.STR, self.ID_LIST, drbd_show_result)
-            if list_of_show_drbd:
-                print('DRBD：')
-                print(s.print_format(list_of_show_drbd))
-            return list_of_show_drbd
+    def get_all_cfgd_drbd(self):
+        # get list of all configured crm res
+        cmd_drbd_status = 'drbdadm status'
+        show_result = s.get_ssh_cmd(SSH, 'UikYgtM1', cmd_drbd_status, s.get_oprt_id())
+        # s.dp('drbd show ',show_result)
+        if show_result['sts']:
+            re_drbd = f'res_\w*_[0-9]{{1,3}}'
+            show_result = show_result['rst'].decode('utf-8')
+            drbd_cfgd_list = s.re_findall(re_drbd, show_result)
+            return drbd_cfgd_list
         else:
-            return False
+            s.pwe(f'command "{cmd_drbd_status}" execute failed')
+
+    # def get_and_show_drbd_to_del(self):
+    #     '''
+    #     Get all drbds through regular matching
+    #     '''
+    #     # get list of all configured drbds
+    #     drbd_cfgd_list = self._get_all_cfgd_drbd()
+    #     drbd_to_del_list = s.get_to_del_list(drbd_cfgd_list)
+    #     s.prt_res_to_del(drbd_to_del_list)
+    #     return drbd_to_del_list
 
     def drbd_del(self, res_name):
         if self._drbd_down(res_name):
             if self._drbd_del_config(res_name):
                 return True
 
-    def start_drbd_del(self, drbd_show_result):
-        if drbd_show_result:
-            for res_name in drbd_show_result:
+    def del_all(self, drbd_to_del_list):
+        if drbd_to_del_list:
+            for res_name in drbd_to_del_list:
                 self.drbd_del(res_name)
 
 
@@ -400,6 +406,18 @@ class VplxCrm(object):
                 if self._crm_start():
                     return True
 
+    def _crm_status_check(self, res_name, status):
+        cmd_crm_show = f'crm res show {res_name}'
+        result_crm_show = s.get_ssh_cmd(SSH, 'UqmUytK3', crm_show_cmd, s.get_oprt_id())
+        if status == 'running':
+            re_running = f'resource {self.res_name} is running on'
+            if s.re_findall(re_running, result_crm_show):
+                return True
+        if status == 'stopped':
+            re_stopped = f'resource {self.res_name} is stopped'  ##################
+            if s.re_findall(re_running, result_crm_show):
+                return True
+
     def _crm_verify(self, res_name):
         '''
         Check the crm resource status
@@ -471,46 +489,64 @@ class VplxCrm(object):
             if self._crm_del(res_name):
                 return True
 
-    def _get_all_crm(self):
-        unique_str = 'IpJhGfVc4'
-        res_show_cmd = 'crm res show'
-        oprt_id = s.get_oprt_id()
-        res_show_result = s.get_ssh_cmd(SSH, unique_str, res_show_cmd, oprt_id)
-        if res_show_result['sts']:
-            re_show = f'res_{self.STR}_[0-9]{{1,3}}'
-            list_of_all_crm = s.re_findall(
-                re_show, res_show_result['rst'].decode('utf-8'))
-            return list_of_all_crm
+    # def _get_all_crm(self):
 
-    def crm_show(self):
-        '''
-        Get the crm resource name through regular matching and determine whether these  exist
-        '''
-        crm_show_result = self._get_all_crm()
-        if crm_show_result:
-            list_of_show_crm = s.getshow(
-                self.logger, self.STR, self.ID_LIST, crm_show_result)
-            if list_of_show_crm:
-                print('crm：')
-                print(s.print_format(list_of_show_crm))
-            return list_of_show_crm
-        else:
-            return False
+    #     oprt_id = s.get_oprt_id()
+    #     res_show_result = s.get_ssh_cmd(SSH, unique_str, res_show_cmd, oprt_id)
+    #     if res_show_result['sts']:
+    #         re_show = 
+    #         list_of_all_crm = s.re_findall(
+    #             re_show, res_show_result['rst'].decode('utf-8'))
+    #         s.dp('out_str',res_show_result['rst'].decode('utf-8'))
+    #         s.dp('list_of_all_crm',list_of_all_crm)
+    #         return list_of_all_crm
 
-    def start_crm_del(self, crm_show_result):
-        if crm_show_result:
-            for res_name in crm_show_result:
+    # def get_tgt_to_del(self):
+    #     '''
+    #     Get the crm resource name through regular matching and determine whether these exist
+    #     '''
+    #     crm_show_result = self._get_all_crm()
+    #     if crm_show_result:
+    #         list_of_show_crm = s.get_to_del_list(crm_show_result)
+    #         if list_of_show_crm:
+    #             print('crm：')
+    #             print(s.print_format(list_of_show_crm))
+    #         return list_of_show_crm
+    #     else:
+    #         return False
+
+    def get_all_cfgd_res(self):
+        # get list of all configured crm res
+        cmd_crm_res_show = 'crm res show'
+        show_result = s.get_ssh_cmd(SSH, 'IpJhGfVc4', cmd_crm_res_show, s.get_oprt_id())
+        if show_result['sts']:
+            re_crm_res = f'res_\w*_[0-9]{{1,3}}'
+            show_result = show_result['rst'].decode('utf-8')
+            crm_res_cfgd_list = s.re_findall(re_crm_res, show_result)
+            return crm_res_cfgd_list
+
+    # def get_res_to_del(self):
+    #     '''
+    #     Get all luns through regular matching
+    #     '''
+    #     # get list of all configured luns
+    #     lun_cfgd_list = self._get_all_cfgd_lun()
+    #     lun_to_del_list = s.get_to_del_list(lun_cfgd_list)
+    #     return lun_to_del_list
+
+    def del_all(self, crm_to_del_list):
+        if crm_to_del_list:
+            for res_name in crm_to_del_list:
                 self.crm_del(res_name)
 
-    def vplx_rescan(self):
+    def vplx_rescan_r(self):
         '''
         vplx rescan after delete
         '''
         s.scsi_rescan(SSH, 'r')
 
 
-
 if __name__ == '__main__':
-    pass
     #     test_crm = VplxCrm('72', 'luntest')
     #     test_crm.discover_new_lun()
+    pass

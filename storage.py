@@ -25,7 +25,6 @@ class Storage:
 
     def __init__(self):
         self.logger = consts.glo_log()
-        print('Start to configure LUN on NetApp Storage')
         self.logger.write_to_log(
             'T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.ID = consts.glo_id()
@@ -45,7 +44,7 @@ class Storage:
                 'F', 'DATA', 'STR', unique_str, '', oprt_id)
             self.logger.write_to_log(
                 'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
-            self.telnet_conn.execute_command(cmd)
+            return self.telnet_conn.execute_command(cmd)
         elif self.rpl == 'yes':
             db = consts.glo_db()
             db_id, oprt_id = db.find_oprt_id_via_string(self.TID, unique_str)
@@ -108,7 +107,7 @@ class Storage:
         '''
         unique_str = '2ltpi6N5'
         oprt_id = s.get_oprt_id()
-        unmap = f'lun unmap /vol/esxi/{lun_name} hydra'
+        unmap = f'lun unmap {lun_name} hydra'
         unmap_result = self.ex_telnet_cmd(unique_str, unmap, oprt_id)
         if unmap_result:
             unmap_re = r'unmapped from initiator group hydra'
@@ -116,6 +115,10 @@ class Storage:
             if re_result:
                 print(f'{lun_name} unmap succeed')
                 return True
+            else:
+                print(f'can not unmap lun {lun_name}')
+        else:
+            print('unmap command execute failed')
 
     def lun_destroy(self, lun_name):
         '''
@@ -123,41 +126,40 @@ class Storage:
         '''
         unique_str = '2ltpi6N3'
         oprt_id = s.get_oprt_id()
-        destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
+        destroy_cmd = f'lun destroy {lun_name}'
         destroy_result = self.ex_telnet_cmd(unique_str, destroy_cmd, oprt_id)
         if destroy_result:
-            destroy_re = r'destroyed'
-            re_result = s.re_findall(destroy_re, destroy_result)
+            re_destroy = r'destroyed'
+            re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
                 print(f'{lun_name} destroy succeed')
                 return True
-
-    def _get_all_lun(self):
-        unique_str = '2lYpiKm3'
-        oprt_id = s.get_oprt_id()
-        lun_show_cmd = 'lun show'
-        show_result = self.ex_telnet_cmd(unique_str, lun_show_cmd, oprt_id)
-        if show_result:
-            re_show = f'/vol/esxi/({self.STR}_[0-9]{{1,3}})'
-            list_of_all_lun = s.re_findall(re_show, show_result)
-            return list_of_all_lun
-
-    def lun_show(self):
-        '''
-        Get all luns through regular matching
-        '''
-        stor_list_todel = self._get_all_lun()
-        if stor_list_todel:
-            list_of_show_lun = s.getshow(
-                self.logger, self.STR, self.ID_LIST, stor_list_todel)
-            if list_of_show_lun:
-                print(s.print_format(list_of_show_lun))
-            return list_of_show_lun
+            else:
+                print(f'can not destroy lun {lun_name}')
         else:
-            return False
+            print('destroy command execute failed')
 
-    def start_stor_del(self, stor_show_result):
-        for lun_name in stor_show_result:
+    def get_all_cfgd_lun(self):
+        # get list of all configured luns
+        cmd_lun_show = 'lun show'
+        show_result = self.ex_telnet_cmd('2lYpiKm3', cmd_lun_show, s.get_oprt_id())
+        if show_result:
+            re_show = f'/vol/esxi/\w*_[0-9]{{1,3}}'
+            lun_cfgd_list = s.re_findall(re_show, show_result)
+            return lun_cfgd_list
+
+    # def get_and_show_lun_to_del(self):
+    #     '''
+    #     Get all luns through regular matching
+    #     '''
+    #     # get list of all configured luns
+    #     lun_cfgd_list = self._get_all_cfgd_lun()
+    #     lun_to_del_list = s.get_to_del_list(lun_cfgd_list)
+    #     s.prt_res_to_del(lun_to_del_list)
+    #     return lun_to_del_list
+
+    def del_all(self, lun_to_del_list):
+        for lun_name in lun_to_del_list:
             self.lun_unmap(lun_name)
             self.lun_destroy(lun_name)
 
