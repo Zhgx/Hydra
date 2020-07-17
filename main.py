@@ -66,7 +66,7 @@ class HydraArgParse():
         parser_replay.add_argument(
             '-t',
             '--transactionid',
-            dest='transactionid',
+            dest='tid',
             metavar='',
             help='transaction id')
 
@@ -172,8 +172,10 @@ class HydraArgParse():
             self._host_test()
 
     # @sundry.record_exception
-    def prepare_replay(arg_tid, arg_data):
+    def prepare_replay(self,args):
         db = consts.glo_db()
+        arg_tid = args.tid
+        arg_date = args.date
         if arg_tid:
             string, id = db.get_string_id(arg_tid)
             if not all([string, id]):
@@ -185,16 +187,20 @@ class HydraArgParse():
             self.dict_id_str.update({id: string})
 
             # self.replay_run(args.transactionid)
-        elif arg_data:
+        elif arg_date:
             self.list_tid = db.get_transaction_id_via_date(
-                arg_data[0], arg_data[1])
-            for tid in self.list_tid:
+                arg_date[0], arg_date[1])
+            lst_tid = self.list_tid[:]
+            for tid in lst_tid:
                 string, id = db.get_string_id(tid)
                 if string and id:
                     self.dict_id_str.update({id: string})
                 else:
+                    self.list_tid.remove(tid)
                     cmd = db.get_cmd_via_tid(tid)
                     print(f'事务:{tid} 不满足replay条件，所执行的命令为：python3 {cmd}')
+                    s.dp('after remove one', self.list_tid)
+
         else:
             print('replay help')
             return
@@ -218,7 +224,7 @@ class HydraArgParse():
             consts.set_glo_rpl('yes')
             consts.set_glo_log_switch('no')
             logdb.prepare_db()
-            self.prepare_replay()
+            self.prepare_replay(args)
 
         elif args.uniq_str and args.id_range:
             uniq_str = consts.glo_str()

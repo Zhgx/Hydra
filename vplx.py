@@ -11,7 +11,6 @@ import consts
 # global SSH
 SSH = None
 
-
 # global _ID
 # global _STR
 # global _RPL
@@ -35,6 +34,7 @@ def init_ssh():
         SSH = connect.ConnSSH(host, port, user, password, timeout)
     else:
         pass
+
 
 # --------------------------------------------------
 # --------------------------------------------------
@@ -415,11 +415,9 @@ class VplxCrm(object):
             if s.re_findall(re_running, result_crm_show):
                 return True
         if status == 'stopped':
-            re_stopped = f'resource {self.res_name} is stopped' ##################
+            re_stopped = f'resource {self.res_name} is stopped'  ##################
             if s.re_findall(re_running, result_crm_show):
                 return True
-            
-
 
     def _crm_verify(self, res_name):
         '''
@@ -493,7 +491,7 @@ class VplxCrm(object):
                 return True
 
     # def _get_all_crm(self):
-        
+
     #     oprt_id = s.get_oprt_id()
     #     res_show_result = s.get_ssh_cmd(SSH, unique_str, res_show_cmd, oprt_id)
     #     if res_show_result['sts']:
@@ -549,9 +547,7 @@ class VplxCrm(object):
         s.scsi_rescan(SSH, 'r')
 
 
-
 if __name__ == '__main__':
-
     #     test_crm = VplxCrm('72', 'luntest')
     #     test_crm.discover_new_lun()
     pass
