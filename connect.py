@@ -114,6 +114,7 @@ class ConnTelnet(object):
         'executr command only on FAS270'
         self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
+        time.sleep(0.1)
         rely = self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(b'\r')
         return rely
