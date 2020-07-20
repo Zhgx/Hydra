@@ -86,15 +86,17 @@ def scsi_rescan(ssh, mode):
 
 def get_lsscsi(ssh, func_str, oprt_id):
     logger = consts.glo_log()
-    print('    Start to list all SCSI device')
-    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
-                        '    Start to list all SCSI device')
+    # print('    Start to list all SCSI device')
+    # logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
+    #                     '    Start to list all SCSI device')
+    pwl('Start to get the list of all SCSI device',2,oprt_id,'start')
     cmd_lsscsi = 'lsscsi'
     # result_lsscsi = SSH.execute_command(cmd_lsscsi)
     result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi, oprt_id)
     if result_lsscsi['sts']:
         return result_lsscsi['rst'].decode('utf-8')
     else:
+        # pwl(f'Command {cmd_lsscsi} execute failed',2,oprt_id,'finish')
         print(f'  Command {cmd_lsscsi} execute failed')
         logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
                             f'  Command "{cmd_lsscsi}" execute failed')
@@ -135,23 +137,24 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
         return result_cmd
     elif RPL == 'yes':
-        print(f'Replay process of executing command ... {cmd} ...')
+        # print(f'Replay process of executing command ... {cmd} ...')
         db = consts.glo_db()
         db_id, oprt_id = db.find_oprt_id_via_string(
             consts.glo_tsc_id(), unique_str)
-        info_start = db.get_info_start(oprt_id)
-        if info_start:
-            print(info_start)
+
+        # info_start = db.get_info_start(oprt_id)
+        # if info_start:
+        #     print(info_start)
+
         result_cmd = db.get_cmd_result(oprt_id)
         if result_cmd:
             result = eval(result_cmd)
         else:  # 数据库取不到数据
             result = None
-        info_end = db.get_info_finish(oprt_id)
-        if info_end:
-            print(info_end)
+        # info_end = db.get_info_finish(oprt_id)
+        # if info_end:
+        #     print(info_end)
         change_pointer(db_id)
-        # print(f'  Change DB ID to: {db_id}')
         return result
 
 
@@ -364,6 +367,34 @@ def ran_str(num):
 
 
 
-if __name__ == 'main':
-    pass
-    # get_disk_dev()
+def pwl(str, level, oprt_id=None, type=None):
+    rpl = 'no'
+    logger = consts.glo_log()
+    # rpl = consts.glo_rpl()
+    time = '2020/07/20 11:07:06'#特定字符取到oprt_id,根据事务id,oprt_id取到时间
+    str= ' ' * level + str
+    if rpl == 'no':
+        if level == 0:
+            str = '*** '+str+' ***'
+            print(f'{str}'.center(72,'-'))
+        else:
+            print(f'|{str:<70}|')
+            logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
+
+    elif rpl == 'yes':
+        if level == 0:
+            str = '*** '+str+' ***'
+            print(f'{str}'.center(72,'-'))
+        else:
+            print(f'|Re:{time:<20},{str:<70}|')
+
+
+
+
+
+
+if __name__ == '__main__':
+    pwl('3333',0)
+    pwl('3askldjasdasldkjaskdl',1)
+
+

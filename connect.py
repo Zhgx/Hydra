@@ -27,12 +27,11 @@ class ConnSSH(object):
         self.ssh_connect()
 
     def _connect(self):
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', '', '  Start to connect VersaPLX via SSH')
+        oprt_id = s.get_oprt_id()
+        s.pwl('Start to connect via SSH',1,oprt_id,'start')
         self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for SSH connect',
                                  {'host': self._host, 'port': self._port, 'username': self._username,
                                   'password': self._password})
-
         try:
             objSSHClient = paramiko.SSHClient()
             objSSHClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -116,8 +115,8 @@ class ConnTelnet(object):
 
     def _connect(self):
         try:
-            self.logger.write_to_log(
-                'T', 'INFO', 'info', 'start', '', '  Start to connect NetApp via telnet')
+            oprt_id = s.get_oprt_id()
+            s.pwl('Start to connect NetApp via Telnet',1,oprt_id,'start')
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',
                                      {'host': self._host, 'port': self._port, 'username': self._username,
                                       'password': self._password})
@@ -135,8 +134,6 @@ class ConnTelnet(object):
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
         'executr command only on FAS270'
-        oprt_id = s.get_oprt_id()
-        self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
         self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
         time.sleep(0.1)

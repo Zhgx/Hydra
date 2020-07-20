@@ -90,7 +90,6 @@ class HydraArgParse():
         Connect to NetApp Storage, Create LUN and Map to VersaPLX
         '''
         netapp = storage.Storage()
-        print('Start to configure LUN on NetApp Storage')
         netapp.lun_create()
         netapp.lun_map()
         print('------* storage end *------')
@@ -163,6 +162,7 @@ class HydraArgParse():
         for id_, str_ in dict_args.items():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
+            print(f'**** Start working for ID {consts.glo_id()} ****'.center(74, '='))
             if rpl == 'no':
                 self.logger = log.Log(s.get_transaction_id())
                 self.logger.write_to_log(
@@ -173,16 +173,23 @@ class HydraArgParse():
                 tid = self.list_tid[0]
                 self.list_tid.remove(tid)
                 consts.set_glo_tsc_id(tid)
+
+            s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
             self._storage()
+            s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
             self._vplx_drbd()
             self._vplx_crm()
+            s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
             self._host_test()
+            time.sleep(2)
+            print(''.center(74, '-'), '\n')
 
     # @sundry.record_exception
     def prepare_replay(self,args):
         db = consts.glo_db()
         arg_tid = args.tid
         arg_date = args.date
+        print('========== mode replay ============')
         if arg_tid:
             string, id = db.get_string_id(arg_tid)
             if not all([string, id]):
