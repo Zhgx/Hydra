@@ -90,3 +90,56 @@ def glo_log_switch():
 
 def glo_id_list():
     return get_value('ID_LIST')
+
+def get_cmd_debug_sys(debug_folder,host):
+    cmd_debug_sys = [
+            # f'dmesg > {debug_folder}/dmesg.log',
+            f'echo -- date&time: >> {debug_folder}/{host}_sys_info.log',
+            f'date >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- host name: >> {debug_folder}/{host}_sys_info.log',
+            f'hostname >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- uname -a: >> {debug_folder}/{host}_sys_info.log',
+            f'uname -a >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- uname -r: >> {debug_folder}/{host}_sys_info.log',
+            f'uname -r >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- uname -m: >> {debug_folder}/{host}_sys_info.log',
+            f'uname -m >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- CPU Info: >> {debug_folder}/{host}_sys_info.log',
+            f'cat /proc/cpuinfo >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- Memory Info: >> {debug_folder}/{host}_sys_info.log',
+            f'cat /proc/meminfo >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- network setting: >> {debug_folder}/{host}_sys_info.log',
+            f'ifconfig >> {debug_folder}/{host}_sys_info.log',
+            f'echo -- : >> {debug_folder}/{host}_sys_info.log',
+            f'env >> {debug_folder}/{host}_sys_info.log',
+            f'uname -a >> {debug_folder}/{host}_sys_info.log',
+            f'echo --environment: >> {debug_folder}/{host}_sys_info.log',
+            f'env >> {debug_folder}/{host}_sys_info.log',
+            f'echo --dmesg: >> {debug_folder}/{host}_sys_info.log',
+            f'dmesg >> {debug_folder}/{host}_sys_info.log',
+            f'tar cvf {debug_folder}/{host}_syslog.tar /var/log/syslog*'
+        ]
+    return cmd_debug_sys
+
+def get_cmd_debug_drbd(debug_folder, host):
+    cmd_debug_drbd = [
+            f'tar -cvf {debug_folder}/{host}_drbd_conf_file.tar /etc/drbd.d/*',
+            f'drbdadm status >> {debug_folder}/{host}_drbd.log',
+        ]
+    return cmd_debug_drbd
+
+def get_cmd_debug_crm(debug_folder, host):
+    cmd_debug_crm = [
+            f'crm res show >> {debug_folder}/{host}_crm.log'
+        ]
+    return cmd_debug_crm
+
+def get_cmd_debug_stor():
+    cmd_debug = [
+            'lun show',
+            'lun show -m',
+            'iscsi status',
+            'iscsi session show',
+            'iscsi initiator show'
+        ]
+    return cmd_debug

@@ -10,6 +10,8 @@ import host_initiator
 import sundry as s
 import log
 import logdb
+import os
+import subprocess
 
 
 class HydraArgParse():
@@ -44,6 +46,11 @@ class HydraArgParse():
             action="store_true",
             dest="delete",
             help="to confirm delete lun")
+        self.parser.add_argument(
+            '-t',
+            action="store_true",
+            dest="test",
+            help="just for test")
         self.parser.add_argument(
             '-s',
             action="store",
@@ -212,10 +219,37 @@ class HydraArgParse():
             print('replay help')
             return
 
+    def test(self):
+        consts.set_glo_tsc_id(s.ran_str(6))
+        tid = consts.glo_tsc_id()
+        local_debug_folder = f'/tmp/{tid}/'
+        os.mkdir(local_debug_folder)
+
+        vplx_dbg = vplx.DebugLog()
+        print('Start to collect debug log from VersaPLX')
+        vplx_dbg.collect_debug_sys()
+        vplx_dbg.collect_debug_drbd()
+        vplx_dbg.collect_debug_crm()
+        vplx_dbg.get_all_log(local_debug_folder)
+
+        host_dbg = host_initiator.DebugLog()
+        print('Start to collect debug log from Host')
+        host_dbg.collect_debug_sys()
+        host_dbg.get_all_log(local_debug_folder)
+
+        stor_dbg = storage.DebugLog()
+        print('Start to collect debug log from Storage')
+        stor_dbg.get_storage_debug(local_debug_folder)
+
+        print(f'All debug log stor in folder {local_debug_folder}')
+
     def start(self):
         args = self.parser.parse_args()
 
         # uniq_str: The unique string for this test, affects related naming
+        if args.test:
+            self.test()
+            return
         if args.id_range:
             id_list = s.change_id_str_to_list(args.id_range)
             consts.set_glo_id_list(id_list)
@@ -245,6 +279,8 @@ class HydraArgParse():
             return
 
         self.run(self.dict_id_str)
+
+
 
 
 if __name__ == '__main__':
