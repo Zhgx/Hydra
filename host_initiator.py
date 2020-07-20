@@ -62,8 +62,8 @@ class HostTest(object):
         
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
         self._prepare()
 
     def _create_iscsi_session(self):

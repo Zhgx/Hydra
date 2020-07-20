@@ -147,6 +147,13 @@ class LogDB():
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}'"
         return self.sql_fetch_one(sql)
 
+    def get_time_via_str(self, transaction_id , str):
+        # id_now = consts.glo_id()
+        id_now = 110
+        sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and data = '{str}' and id >= {id_now}"
+        return self.sql_fetch_one(sql)
+
+
     def get_logdb(self):
         self.drop_tb()
         self.cur.execute(self.create_table_sql)
@@ -179,6 +186,7 @@ if __name__ == '__main__':
     db = LogDB()
     db.get_logdb()
     # print(db.find_oprt_id_via_string('1594878912', 'V9jGOP2v'))
-    print(db.get_string_id('1594963387'))
+    # print(db.get_string_id('1594963387'))
+    print(db.get_time_via_str('1595209399','    Start to list all SCSI device'))
     # print(db.get_cmd_via_tid('1594879092'))
     # res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')
