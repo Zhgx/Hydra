@@ -5,6 +5,7 @@ import sundry as s
 import logdb
 import consts
 import re
+import subprocess
 
 # global _TID
 
@@ -14,8 +15,17 @@ username = 'root'
 password = 'Feixi@123'
 timeout = 3
 
+class DebugLog(object):
+    def __init__(self):
+        self.telnet_conn = connect.ConnTelnet(
+                host, port, username, password, timeout)
 
-# [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
+    def get_storage_debug(self, debug_folder):
+        cmd_debug = consts.get_cmd_debug_stor()
+        for cmd in cmd_debug:
+            result = self.telnet_conn.execute_command(cmd)
+            with open(f'{debug_folder}/Storage_{host}.log', 'a') as f:
+                f.write(result)
 
 
 class Storage:

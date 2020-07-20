@@ -1,5 +1,5 @@
 #  coding: utf-8
-import sundry
+import random
 import consts
 import logdb
 
@@ -12,6 +12,36 @@ import traceback
 import socket
 from random import shuffle
 import log
+
+
+class DebugLog(object):
+    def __init__(self, ssh_obj, debug_folder):
+        # print(debug_folder)
+        self.dbg_folder = debug_folder
+        self.SSH = ssh_obj
+        self._mk_debug_folder()
+
+    def _mk_debug_folder(self):
+        output = self.SSH.execute_command(f'mkdir {self.dbg_folder}')
+        if output['sts']:
+            pass
+        else:
+            print(f'Can not create folder {self.dbg_folder} to stor debug log')
+            sys.exit()
+
+    def prepare_debug_log(self, cmd_list):
+        for cmd in cmd_list:
+            output = self.SSH.execute_command(cmd)
+            if output['sts']:
+                time.sleep(0.1)
+            else:
+                print(f'Collect log command "{cmd}" execute failed.')
+
+    def get_debug_log(self, local_folder):
+        dbg_file = f'{self.dbg_folder}.tar'
+        self.SSH.execute_command(f'tar cvf {dbg_file} -C {self.dbg_folder} .')
+        self.SSH.download(dbg_file, local_folder)
+
 
 def dp(str, arg):
     print(f'{str}---------------------\n{arg}')
@@ -324,6 +354,14 @@ def find_session(tgt_ip, ssh, func_str, oprt_id):
             print('  iSCSI not login to VersaPLX, Try to login')
             logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
                                 '  ISCSI not login to VersaPLX, Try to login')
+
+def ran_str(num):
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    str_ = ''
+    for i in range(num):
+        str_ += random.choice(chars)
+    return str_
+
 
 
 if __name__ == 'main':

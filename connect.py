@@ -22,7 +22,7 @@ class ConnSSH(object):
         self._timeout = timeout
         self._username = username
         self._password = password
-        self._sftp
+        self._sftp = None
         self.SSHConnection = None
         self.ssh_connect()
 
@@ -42,6 +42,7 @@ class ConnSSH(object):
                                  timeout=self._timeout)
             # 连接成功log记录？
             self.SSHConnection = objSSHClient
+            # self._sftp = paramiko.SFTPClient.from_transport(client)
         except Exception as e:
             self.logger.write_to_log(
                 'F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
@@ -80,7 +81,7 @@ class ConnSSH(object):
         try:
             _download()
         except AttributeError as e:
-            print(f'Download file "{remotepath}" failed with error: {e} )
+            print(f'Download file "{remotepath}" failed with error: {e}')
 
     def upload(self, localpath, remotepath):
         def _upload():
@@ -90,7 +91,7 @@ class ConnSSH(object):
         try:
             _upload()
         except AttributeError as E:
-            print(f'Upload file "{remotepath}" failed with error: {e} )
+            print(f'Upload file "{remotepath}" failed with error: {e}')
 
     def close(self):
         self.SSHConnection.close()
