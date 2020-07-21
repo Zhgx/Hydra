@@ -165,6 +165,7 @@ class Storage:
     #     return lun_to_del_list
 
     def del_all(self, lun_to_del_list):
+        s.pwl('start to delete storage lun',0,'','delete')
         for lun_name in lun_to_del_list:
             self.lun_unmap(lun_name)
             self.lun_destroy(lun_name)

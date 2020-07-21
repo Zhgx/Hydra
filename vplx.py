@@ -313,6 +313,7 @@ class VplxDrbd(object):
                 return True
 
     def del_all(self, drbd_to_del_list):
+        s.pwl('start to delete DRBD resource',0,'','delete')
         if drbd_to_del_list:
             for res_name in drbd_to_del_list:
                 self.drbd_del(res_name)
@@ -415,6 +416,7 @@ class VplxCrm(object):
         #                          f'      Start the iSCSILogicalUnit resource {self.lu_name}')
         result_cmd = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_cmd['sts']:
+            if self.cyclic_check_crm_status(self.lu_name,'Started')
             s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 3, oprt_id, 'finish')
             # print('    ISCSI LUN start successful')
             # self.logger.write_to_log(
@@ -554,6 +556,8 @@ class VplxCrm(object):
     #     return lun_to_del_list
 
     def del_all(self, crm_to_del_list):
+        # print('start to delete crm resource:')
+        s.pwl('start to delete crm resource:',0,'','delete')
         if crm_to_del_list:
             for res_name in crm_to_del_list:
                 self.crm_del(res_name)
