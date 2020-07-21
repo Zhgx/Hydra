@@ -417,10 +417,11 @@ class VplxCrm(object):
                                  f'      Start the iSCSILogicalUnit resource {self.lu_name}')
         result_cmd = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_cmd['sts']:
-            print('    ISCSI LUN start successful')
-            self.logger.write_to_log(
-                'T', 'INFO', 'info', 'finish', '', '    ISCSI LUN start successful')
-            return True
+            if self.cyclic_check_crm_status(self.lu_name, 'Started'):
+                print('    ISCSI LUN start successful')
+                self.logger.write_to_log(
+                    'T', 'INFO', 'info', 'finish', '', '    ISCSI LUN start successful')
+                return True
         else:
             s.pwe('iscsi lun start failed')
 
