@@ -96,12 +96,12 @@ class HostTest(object):
             'T', 'INFO', 'info', 'start', oprt_id, f'    Try mount {dev_name} to "/mnt"')
         result_mount = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_mount['sts']:
-            print(f'    Disk {dev_name} mounted to "/mnt"')
-            self.logger.write_to_log(
-                'T', 'INFO', 'info', 'finish', oprt_id, f'    Disk {dev_name} mounted to "/mnt"')
+            s.pwl(f'Disk {dev_name} mounted to "/mnt',1,oprt_id,'start')
+            # print(f'    Disk {dev_name} mounted to "/mnt"')
+            # self.logger.write_to_log(
+            #     'T', 'INFO', 'info', 'finish', oprt_id, f'    Disk {dev_name} mounted to "/mnt"')
             return True
         else:
-            print(f'    Disk {dev_name} mount to "/mnt" failed')
             s.pwe(f"mount {dev_name} to {mount_point} failed")
 
     def _judge_format(self, string):
@@ -122,9 +122,10 @@ class HostTest(object):
         # self.logger.write_to_log('INFO','info','',f'start to format disk {dev_name} and mount disk {dev_name}')
         cmd = f'mkfs.ext4 {dev_name} -F'
         oprt_id = s.get_oprt_id()
-        print(f'    Start to format {dev_name}')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', oprt_id, f'    Start to format {dev_name}')
+        s.pwl(f'Start to format {dev_name}',1,oprt_id,'')
+        # print(f'    Start to format {dev_name}')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'start', oprt_id, f'    Start to format {dev_name}')
         result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd, oprt_id)
         if result_format['sts']:
             result_format = result_format['rst'].decode('utf-8')
@@ -133,9 +134,10 @@ class HostTest(object):
             else:
                 s.pwe(f'  Format {dev_name} failed')
         else:
-            print(f'  Format command {cmd} execute failed')
-            self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
-                                     f'  Format command "{cmd}" execute failed')
+            s.pwl(f'', 1, oprt_id, '')
+            # print(f'  Format command {cmd} execute failed')
+            # self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
+            #                          f'  Format command "{cmd}" execute failed')
 
     def _get_dd_perf(self, cmd_dd, unique_str):
         '''
@@ -160,26 +162,25 @@ class HostTest(object):
         '''
         Calling method to read&write test
         '''
-        print('  Start speed test ... ... ... ... ... ...')
+        s.pwl(f'Start speed test',1,'','start')
         self.logger.write_to_log(
             'T', 'INFO', 'info', 'start', '', '  Start speed test ... ... ... ... ... ...')
         cmd_dd_write = f'dd if=/dev/zero of={mount_point}/t.dat bs=512k count=16'
         cmd_dd_read = f'dd if={mount_point}/t.dat of=/dev/zero bs=512k count=16'
         # self.logger.write_to_log('INFO', 'info', '', 'start calling method to read&write test')
         write_perf = self._get_dd_perf(cmd_dd_write, unique_str='CwS9LYk0')
-        print(f'    Write Speed: {write_perf}')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'finish', '', f'    Write Speed: {write_perf}')
-        # self.logger.write_to_log('INFO', 'info', '', (f'write speed: {write_perf}'))
+        s.pwl(f'Write Speed: {write_perf}',2,'','finish')
+        # print(f'    Write Speed: {write_perf}')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'finish', '', f'    Write Speed: {write_perf}')
         time.sleep(0.25)
         read_perf = self._get_dd_perf(cmd_dd_read, unique_str='hsjG0miU')
-        print(f'    Read  Speed: {read_perf}')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
-        # self.logger.write_to_log('INFO', 'info', '', (f'read speed: {read_perf}'))
+        s.pwl(f'Read  Speed: {read_perf}',2,'','finish')
+        # print(f'    Read  Speed: {read_perf}')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
 
     def start_test(self):
-        print('Start IO test on initiator host')
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
         self._create_iscsi_session()
         dev_name = get_disk_dev()

@@ -85,7 +85,6 @@ class HydraArgParse():
         netapp = storage.Storage()
         netapp.lun_create()
         netapp.lun_map()
-        print('------* storage end *------')
 
     def _vplx_drbd(self):
         '''
@@ -103,7 +102,6 @@ class HydraArgParse():
         '''
         crm = vplx.VplxCrm()
         crm.crm_cfg()
-        print('------* drbd end *------')
 
     def _host_test(self):
         '''
@@ -112,7 +110,6 @@ class HydraArgParse():
         '''
         host = host_initiator.HostTest()
         host.start_test()
-        print('------* host_test end *------')
 
     def delete_resource(self):
         '''
@@ -150,6 +147,7 @@ class HydraArgParse():
             s.pwe(
                 '\nNo qualified resources to be delete.\n')
 
+    @s.record_exception
     def run(self, dict_args):
         rpl = consts.glo_rpl()
         for id_, str_ in dict_args.items():
@@ -175,14 +173,17 @@ class HydraArgParse():
             s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
             self._host_test()
             time.sleep(2)
-            print(''.center(74, '-'), '\n')
+            if rpl == 'yes':
+                print(''.center(96, '-'), '\n')
+            else:
+                print(''.center(72, '-'), '\n')
 
-    # @sundry.record_exception
+    @s.record_exception
     def prepare_replay(self,args):
         db = consts.glo_db()
         arg_tid = args.tid
         arg_date = args.date
-        print('========== mode replay ============')
+        print('* MODE : REPLAY *')
         if arg_tid:
             string, id = db.get_string_id(arg_tid)
             if not all([string, id]):
