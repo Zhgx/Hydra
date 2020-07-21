@@ -274,7 +274,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         down_result = s.get_ssh_cmd(SSH, unique_str, drbd_down_cmd, oprt_id)
         if down_result['sts']:
-            print(f'  Resource {res_name} DRBD down successfully')
+            print(f'  Down the DRBD resource {res_name} successfully')
             return True
         else:
             s.pwe('drbd down failed')
@@ -288,7 +288,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, drbd_del_cmd, oprt_id)
         if del_result['sts']:
-            print(f'  Removed {res_name} DRBD config file successfully')
+            print(f'  Removed the DRBD resource {res_name} config file successfully')
             return True
         else:
             s.pwe('drbd remove config file fail')
@@ -477,7 +477,7 @@ class VplxCrm(object):
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
         if crm_stop['sts']:
             if self.cyclic_check_crm_status(res_name, 'Stopped'):
-                print(f'  Resource {res_name} crm stopped successfully')
+                print(f'  Stopped the iSCSILogicalUnit resource {res_name} successfully')
                 return True
             else:
                 s.pwe('crm stop failed,exit the program...')
@@ -497,7 +497,7 @@ class VplxCrm(object):
             re_result = s.re_findall(
                 re_delstr, del_result['rst'].decode('utf-8'))
             if len(re_result) == 2:
-                print(f'  Resource {res_name} crm removed succeefully')
+                print(f'  Removed the iSCSILogicalUnit resource {res_name} successfully')
                 return True
             else:
                 s.pwe('crm cof delete failed')

@@ -118,7 +118,7 @@ class Storage:
             unmap_re = r'unmapped from initiator group hydra'
             re_result = s.re_findall(unmap_re, unmap_result)
             if re_result:
-                print(f'  /vol/esxi/{lun_name} unmap successfully')
+                print(f'  Unmap the lun /vol/esxi/{lun_name}  successfully')
                 return True
             else:
                 print(f'can not unmap lun {lun_name}')
@@ -137,7 +137,7 @@ class Storage:
             re_destroy = r'destroyed'
             re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
-                print(f'  /vol/esxi/{lun_name} destroy successfully')
+                print(f'  Destroy the lun /vol/esxi/{lun_name} successfully')
                 return True
             else:
                 print(f'can not destroy lun {lun_name}')
