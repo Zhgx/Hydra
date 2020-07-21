@@ -5,6 +5,7 @@ import time
 import consts
 
 SSH = None
+# DBG_FOLDER = None
 
 
 host = '10.203.1.199'
@@ -48,6 +49,31 @@ def get_disk_dev():
             return disk_dev
         else:
             s.pwe('xxx:vplx,get_disk_dev fail')
+
+class DebugLog(object):
+    def __init__(self):
+        init_ssh()
+        self.tid = consts.glo_tsc_id()
+        self.debug_folder = f'/var/log/{self.tid}_{host}'
+        self.dbg = s.DebugLog(SSH, self.debug_folder)
+    
+    def collect_debug_sys(self):
+        cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, host)
+        self.dbg.prepare_debug_log(cmd_debug_sys)
+
+    def collect_debug_drbd(self):
+        cmd_debug_drbd = consts.get_cmd_debug_drbd(self.debug_folder, host)
+        self.dbg.prepare_debug_log(cmd_debug_drbd)
+
+    def collect_debug_crm(self):
+        cmd_debug_crm = consts.get_cmd_debug_crm(self.debug_folder, host)
+        self.dbg.prepare_debug_log(cmd_debug_crm)
+
+    def get_all_log(self, folder):
+        local_file = f'{folder}/{host}.tar'
+        self.dbg.get_debug_log(local_file)
+
+
 
 
 class VplxDrbd(object):
@@ -277,16 +303,6 @@ class VplxDrbd(object):
         else:
             s.pwe(f'command "{cmd_drbd_status}" execute failed')
 
-    # def get_and_show_drbd_to_del(self):
-    #     '''
-    #     Get all drbds through regular matching
-    #     '''
-    #     # get list of all configured drbds
-    #     drbd_cfgd_list = self._get_all_cfgd_drbd()
-    #     drbd_to_del_list = s.get_to_del_list(drbd_cfgd_list)
-    #     s.prt_res_to_del(drbd_to_del_list)
-    #     return drbd_to_del_list
-
     def drbd_del(self, res_name):
         if self._drbd_down(res_name):
             if self._drbd_del_config(res_name):
@@ -296,7 +312,6 @@ class VplxDrbd(object):
         if drbd_to_del_list:
             for res_name in drbd_to_del_list:
                 self.drbd_del(res_name)
-
 
 class VplxCrm(object):
     def __init__(self):
