@@ -52,6 +52,21 @@ def get_disk_dev():
         else:
             s.pwe('xxx:no new device')
 
+class DebugLog(object):
+    def __init__(self):
+        init_ssh()
+        self.tid = consts.glo_tsc_id()
+        self.debug_folder = f'/var/log/{self.tid}_{host}'
+        self.dbg = s.DebugLog(SSH, self.debug_folder)
+    
+    def collect_debug_sys(self):
+        cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, host)
+        self.dbg.prepare_debug_log(cmd_debug_sys)
+
+    def get_all_log(self, folder):
+        local_file = f'{folder}/{host}.tar'
+        self.dbg.get_debug_log(local_file)
+    
 
 class HostTest(object):
     '''
@@ -62,8 +77,8 @@ class HostTest(object):
         
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
         self._prepare()
 
     def _create_iscsi_session(self):
@@ -197,6 +212,10 @@ class HostTest(object):
 
 if __name__ == "__main__":
     # test = HostTest(21)
+    consts._init()
+    consts.set_glo_tsc_id('789')
+    w = DebugLog()
+    w.collect_debug_sys()
     pass
     # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
     # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda

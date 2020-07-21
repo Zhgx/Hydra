@@ -22,16 +22,16 @@ class ConnSSH(object):
         self._timeout = timeout
         self._username = username
         self._password = password
+        self._sftp = None
         self.SSHConnection = None
-        self._connect()
+        self.ssh_connect()
 
     def _connect(self):
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', '', '  Start to connect VersaPLX via SSH')
+        oprt_id = s.get_oprt_id()
+        s.pwl('Start to connect via SSH',1,oprt_id,'start')
         self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for SSH connect',
                                  {'host': self._host, 'port': self._port, 'username': self._username,
                                   'password': self._password})
-
         try:
             objSSHClient = paramiko.SSHClient()
             objSSHClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -41,6 +41,7 @@ class ConnSSH(object):
                                  timeout=self._timeout)
             # 连接成功log记录？
             self.SSHConnection = objSSHClient
+            # self._sftp = paramiko.SFTPClient.from_transport(client)
         except Exception as e:
             self.logger.write_to_log(
                 'F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
@@ -71,6 +72,26 @@ class ConnSSH(object):
                 'T', 'INFO', 'info', 'start', '', '  Retry connect to VersaPLX via SSH')
             self._connect()
 
+    def download(self, remotepath, localpath):
+        def _download():
+            if self._sftp is None:
+                self._sftp = self.SSHConnection.open_sftp()
+            self._sftp.get(remotepath, localpath)
+        try:
+            _download()
+        except AttributeError as e:
+            print(f'Download file "{remotepath}" failed with error: {e}')
+
+    def upload(self, localpath, remotepath):
+        def _upload():
+            if self._sftp is None:
+                self._sftp = self.SSHConnection.open_sftp()
+            self._sftp.put(localpath, remotepath)
+        try:
+            _upload()
+        except AttributeError as E:
+            print(f'Upload file "{remotepath}" failed with error: {e}')
+
     def close(self):
         self.SSHConnection.close()
         self.logger.write_to_log(
@@ -94,8 +115,8 @@ class ConnTelnet(object):
 
     def _connect(self):
         try:
-            self.logger.write_to_log(
-                'T', 'INFO', 'info', 'start', '', '  Start to connect NetApp via telnet')
+            oprt_id = s.get_oprt_id()
+            s.pwl('Start to connect NetApp via Telnet',1,oprt_id,'start')
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',
                                      {'host': self._host, 'port': self._port, 'username': self._username,
                                       'password': self._password})
@@ -113,8 +134,6 @@ class ConnTelnet(object):
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
         'executr command only on FAS270'
-        oprt_id = s.get_oprt_id()
-        self.logger.write_to_log('T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
         self.telnet.read_until(b'fas270>').decode()
         self.telnet.write(cmd.encode().strip() + b'\r')
         time.sleep(0.1)

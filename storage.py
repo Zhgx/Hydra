@@ -5,6 +5,7 @@ import sundry as s
 import logdb
 import consts
 import re
+import subprocess
 
 # global _TID
 
@@ -14,8 +15,17 @@ username = 'root'
 password = 'Feixi@123'
 timeout = 3
 
+class DebugLog(object):
+    def __init__(self):
+        self.telnet_conn = connect.ConnTelnet(
+                host, port, username, password, timeout)
 
-# [time],[transaction_id],[display],[type_level1],[type_level2],[d1],[d2],[data]
+    def get_storage_debug(self, debug_folder):
+        cmd_debug = consts.get_cmd_debug_stor()
+        for cmd in cmd_debug:
+            result = self.telnet_conn.execute_command(cmd)
+            with open(f'{debug_folder}/Storage_{host}.log', 'a') as f:
+                f.write(result)
 
 
 class Storage:
@@ -25,8 +35,6 @@ class Storage:
 
     def __init__(self):
         self.logger = consts.glo_log()
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', '', 'Start to configure LUN on NetApp Storage')
         self.ID = consts.glo_id()
         self.STR = consts.glo_str()
         self.ID_LIST = consts.glo_id_list()
@@ -48,17 +56,12 @@ class Storage:
         elif self.rpl == 'yes':
             db = consts.glo_db()
             db_id, oprt_id = db.find_oprt_id_via_string(self.TID, unique_str)
-            info_start = db.get_info_start(oprt_id)
-            if info_start:
-                print(info_start)
-            # print(db.get_info_start(oprt_id))
-            # print(f'  DB ID go to: {db_id}')
-            # print(f'  get opration ID: {oprt_id}')
-            # result_cmd = db.get_cmd_result(oprt_id)
-            # print(db.get_info_finish(oprt_id))
-            info_end = db.get_info_finish(oprt_id)
-            if info_end:
-                print(info_end)
+            # info_start = db.get_info_start(oprt_id)
+            # if info_start:
+            #     print(info_start)
+            # info_end = db.get_info_finish(oprt_id)
+            # if info_end:
+            #     print(info_end)
             s.change_pointer(db_id)
             # print(f'  Change DB ID to: {db_id}')
             return True
@@ -71,13 +74,13 @@ class Storage:
         unique_str = 'jMPFwXy2'
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
         info_msg = f'create lun, name: {self.lun_name}'
-        print(f'  Start to {info_msg}')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        # prt_and_log(f'  Start to {info_msg}')
+        s.pwl(f'Start to {info_msg}', 2, oprt_id, 'start')
+        # print(f'  Start to {info_msg}')# 正常打印
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        print(f'  Create LUN {self.lun_name} successful')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'finish', oprt_id, f'  Create LUN {self.lun_name} successful')
+        s.pwl(f'Succeed in creating LUN {self.lun_name}',2,oprt_id,'finish')
 
     def lun_map(self):
         '''
@@ -87,13 +90,15 @@ class Storage:
         unique_str = '1lvpO6N5'
         info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
-        print(f'  Start to {info_msg}')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        # print(f'  Start to {info_msg}')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
+        s.pwl(f'  Start to {info_msg}',2,oprt_id,'start')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        print(f'  Finish with {info_msg}')
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
+        # print(f'  Finish with {info_msg}')
+        # self.logger.write_to_log(
+        #     'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
+        s.pwl('Finish mapping LUN {self.lun_name} to VersaPLX', 2, oprt_id, 'finish')
 
     def lun_create_verify(self):
         pass

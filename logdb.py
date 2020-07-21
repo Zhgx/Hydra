@@ -107,7 +107,7 @@ class LogDB():
     def find_oprt_id_via_string(self, transaction_id, string):
         id_now = consts.glo_log_id()
         # id_now = 1
-        sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id > {id_now} and transaction_id = '{transaction_id}'"
+        sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id >= {id_now} and transaction_id = '{transaction_id}'"
         id_and_oprt_id = self.sql_fetch_one(sql)
         # sql = f"SELECT describe2 FROM logtable WHERE id = '{db_id}' "
         # oprt_id = self.sql_fetch_one(sql)
@@ -147,6 +147,13 @@ class LogDB():
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}'"
         return self.sql_fetch_one(sql)
 
+    def get_time_via_str(self, transaction_id , str):
+        # id_now = consts.glo_id()
+        id_now = 110
+        sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and data = '{str}' and id >= {id_now}"
+        return self.sql_fetch_one(sql)
+
+
     def get_logdb(self):
         self.drop_tb()
         self.cur.execute(self.create_table_sql)
@@ -178,6 +185,8 @@ class LogDB():
 if __name__ == '__main__':
     db = LogDB()
     db.get_logdb()
-    print(db.find_oprt_id_via_string('1594877888', 'odEvZtfr'))
-    print(db.get_cmd_via_tid('1594879092'))
+    # print(db.find_oprt_id_via_string('1594878912', 'V9jGOP2v'))
+    # print(db.get_string_id('1594963387'))
+    print(db.get_time_via_str('1595209399','    Start to list all SCSI device'))
+    # print(db.get_cmd_via_tid('1594879092'))
     # res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')

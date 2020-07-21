@@ -1,5 +1,5 @@
 #  coding: utf-8
-import sundry
+import random
 import consts
 import logdb
 
@@ -12,6 +12,36 @@ import traceback
 import socket
 from random import shuffle
 import log
+
+
+class DebugLog(object):
+    def __init__(self, ssh_obj, debug_folder):
+        # print(debug_folder)
+        self.dbg_folder = debug_folder
+        self.SSH = ssh_obj
+        self._mk_debug_folder()
+
+    def _mk_debug_folder(self):
+        output = self.SSH.execute_command(f'mkdir {self.dbg_folder}')
+        if output['sts']:
+            pass
+        else:
+            print(f'Can not create folder {self.dbg_folder} to stor debug log')
+            sys.exit()
+
+    def prepare_debug_log(self, cmd_list):
+        for cmd in cmd_list:
+            output = self.SSH.execute_command(cmd)
+            if output['sts']:
+                time.sleep(0.1)
+            else:
+                print(f'Collect log command "{cmd}" execute failed.')
+
+    def get_debug_log(self, local_folder):
+        dbg_file = f'{self.dbg_folder}.tar'
+        self.SSH.execute_command(f'tar cvf {dbg_file} -C {self.dbg_folder} .')
+        self.SSH.download(dbg_file, local_folder)
+
 
 def dp(str, arg):
     print(f'{str}---------------------\n{arg}')
@@ -56,15 +86,17 @@ def scsi_rescan(ssh, mode):
 
 def get_lsscsi(ssh, func_str, oprt_id):
     logger = consts.glo_log()
-    print('    Start to list all SCSI device')
-    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
-                        '    Start to list all SCSI device')
+    # print('    Start to list all SCSI device')
+    # logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
+    #                     '    Start to list all SCSI device')
+    pwl('Start to get the list of all SCSI device',2,oprt_id,'start')
     cmd_lsscsi = 'lsscsi'
     # result_lsscsi = SSH.execute_command(cmd_lsscsi)
     result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi, oprt_id)
     if result_lsscsi['sts']:
         return result_lsscsi['rst'].decode('utf-8')
     else:
+        # pwl(f'Command {cmd_lsscsi} execute failed',2,oprt_id,'finish')
         print(f'  Command {cmd_lsscsi} execute failed')
         logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
                             f'  Command "{cmd_lsscsi}" execute failed')
@@ -105,23 +137,24 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
         return result_cmd
     elif RPL == 'yes':
-        print(f'Replay process of executing command ... {cmd} ...')
+        # print(f'Replay process of executing command ... {cmd} ...')
         db = consts.glo_db()
         db_id, oprt_id = db.find_oprt_id_via_string(
             consts.glo_tsc_id(), unique_str)
-        info_start = db.get_info_start(oprt_id)
-        if info_start:
-            print(info_start)
+
+        # info_start = db.get_info_start(oprt_id)
+        # if info_start:
+        #     print(info_start)
+
         result_cmd = db.get_cmd_result(oprt_id)
         if result_cmd:
             result = eval(result_cmd)
         else:  # 数据库取不到数据
             result = None
-        info_end = db.get_info_finish(oprt_id)
-        if info_end:
-            print(info_end)
+        # info_end = db.get_info_finish(oprt_id)
+        # if info_end:
+        #     print(info_end)
         change_pointer(db_id)
-        # print(f'  Change DB ID to: {db_id}')
         return result
 
 
@@ -201,7 +234,7 @@ def print_format(list_name):
 
 def prt_res_to_del(str_,res_list):
     print(f'{str_:<15} to be delete:')
-    print('-----------------------------------------------')
+    print('-------------------------------------------------------------')
     if res_list:
         for i in range(len(res_list)):
             res_name = res_list[i]
@@ -325,7 +358,43 @@ def find_session(tgt_ip, ssh, func_str, oprt_id):
             logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
                                 '  ISCSI not login to VersaPLX, Try to login')
 
+def ran_str(num):
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    str_ = ''
+    for i in range(num):
+        str_ += random.choice(chars)
+    return str_
 
-if __name__ == 'main':
-    pass
-    # get_disk_dev()
+
+
+def pwl(str, level, oprt_id=None, type=None):
+    rpl = 'no'
+    logger = consts.glo_log()
+    # rpl = consts.glo_rpl()
+    time = '2020/07/20 11:07:06'#特定字符取到oprt_id,根据事务id,oprt_id取到时间
+    str= ' ' * level + str
+    if rpl == 'no':
+        if level == 0:
+            str = '*** '+str+' ***'
+            print(f'{str}'.center(72,'-'))
+        else:
+            print(f'|{str:<70}|')
+            logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
+
+    elif rpl == 'yes':
+        if level == 0:
+            str = '*** '+str+' ***'
+            print(f'{str}'.center(72,'-'))
+        else:
+            print(f'|Re:{time:<20},{str:<70}|')
+
+
+
+
+
+
+if __name__ == '__main__':
+    pwl('3333',0)
+    pwl('3askldjasdasldkjaskdl',1)
+
+

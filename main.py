@@ -10,6 +10,8 @@ import host_initiator
 import sundry as s
 import log
 import logdb
+import os
+import subprocess
 
 
 class HydraArgParse():
@@ -45,6 +47,11 @@ class HydraArgParse():
             dest="delete",
             help="to confirm delete lun")
         self.parser.add_argument(
+            '-t',
+            action="store_true",
+            dest="test",
+            help="just for test")
+        self.parser.add_argument(
             '-s',
             action="store",
             dest="uniq_str",
@@ -66,7 +73,7 @@ class HydraArgParse():
         parser_replay.add_argument(
             '-t',
             '--transactionid',
-            dest='transactionid',
+            dest='tid',
             metavar='',
             help='transaction id')
 
@@ -83,7 +90,6 @@ class HydraArgParse():
         Connect to NetApp Storage, Create LUN and Map to VersaPLX
         '''
         netapp = storage.Storage()
-        print('Start to configure LUN on NetApp Storage')
         netapp.lun_create()
         netapp.lun_map()
         print('------* storage end *------')
@@ -156,6 +162,7 @@ class HydraArgParse():
         for id_, str_ in dict_args.items():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
+            print(f'**** Start working for ID {consts.glo_id()} ****'.center(74, '='))
             if rpl == 'no':
                 self.logger = log.Log(s.get_transaction_id())
                 self.logger.write_to_log(
@@ -166,14 +173,23 @@ class HydraArgParse():
                 tid = self.list_tid[0]
                 self.list_tid.remove(tid)
                 consts.set_glo_tsc_id(tid)
+
+            s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
             self._storage()
+            s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
             self._vplx_drbd()
             self._vplx_crm()
+            s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
             self._host_test()
+            time.sleep(2)
+            print(''.center(74, '-'), '\n')
 
     # @sundry.record_exception
-    def prepare_replay(arg_tid, arg_data):
+    def prepare_replay(self,args):
         db = consts.glo_db()
+        arg_tid = args.tid
+        arg_date = args.date
+        print('========== mode replay ============')
         if arg_tid:
             string, id = db.get_string_id(arg_tid)
             if not all([string, id]):
@@ -185,24 +201,55 @@ class HydraArgParse():
             self.dict_id_str.update({id: string})
 
             # self.replay_run(args.transactionid)
-        elif arg_data:
+        elif arg_date:
             self.list_tid = db.get_transaction_id_via_date(
-                arg_data[0], arg_data[1])
-            for tid in self.list_tid:
+                arg_date[0], arg_date[1])
+            lst_tid = self.list_tid[:]
+            for tid in lst_tid:
                 string, id = db.get_string_id(tid)
                 if string and id:
                     self.dict_id_str.update({id: string})
                 else:
+                    self.list_tid.remove(tid)
                     cmd = db.get_cmd_via_tid(tid)
                     print(f'事务:{tid} 不满足replay条件，所执行的命令为：python3 {cmd}')
+                    s.dp('after remove one', self.list_tid)
+
         else:
             print('replay help')
             return
+
+    def test(self):
+        consts.set_glo_tsc_id(s.ran_str(6))
+        tid = consts.glo_tsc_id()
+        local_debug_folder = f'/tmp/{tid}/'
+        os.mkdir(local_debug_folder)
+
+        vplx_dbg = vplx.DebugLog()
+        print('Start to collect debug log from VersaPLX')
+        vplx_dbg.collect_debug_sys()
+        vplx_dbg.collect_debug_drbd()
+        vplx_dbg.collect_debug_crm()
+        vplx_dbg.get_all_log(local_debug_folder)
+
+        host_dbg = host_initiator.DebugLog()
+        print('Start to collect debug log from Host')
+        host_dbg.collect_debug_sys()
+        host_dbg.get_all_log(local_debug_folder)
+
+        stor_dbg = storage.DebugLog()
+        print('Start to collect debug log from Storage')
+        stor_dbg.get_storage_debug(local_debug_folder)
+
+        print(f'All debug log stor in folder {local_debug_folder}')
 
     def start(self):
         args = self.parser.parse_args()
 
         # uniq_str: The unique string for this test, affects related naming
+        if args.test:
+            self.test()
+            return
         if args.id_range:
             id_list = s.change_id_str_to_list(args.id_range)
             consts.set_glo_id_list(id_list)
@@ -218,7 +265,7 @@ class HydraArgParse():
             consts.set_glo_rpl('yes')
             consts.set_glo_log_switch('no')
             logdb.prepare_db()
-            self.prepare_replay()
+            self.prepare_replay(args)
 
         elif args.uniq_str and args.id_range:
             uniq_str = consts.glo_str()
@@ -232,6 +279,8 @@ class HydraArgParse():
             return
 
         self.run(self.dict_id_str)
+
+
 
 
 if __name__ == '__main__':
