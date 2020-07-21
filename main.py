@@ -22,15 +22,14 @@ class HydraArgParse():
 
     def __init__(self):
         consts._init()
-        self.logger = self.init_log()
+        #-m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
+        self.transaction_id = s.get_transaction_id()
+        self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
         self.argparse_init()
         self.list_tid = None # for replay
         self.log_user_input()
         self.dict_id_str = {}
-
-    def init_log(self):
-        return log.Log(s.get_transaction_id())
 
     def log_user_input(self):
         if sys.argv:
@@ -127,9 +126,9 @@ class HydraArgParse():
         stor = storage.Storage()
         host = host_initiator.HostTest()
 
-        tgt_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
-        if tgt_to_del_list:
-            s.prt_res_to_del('\ncrm resource', tgt_to_del_list)
+        crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
+        if crm_to_del_list:
+            s.prt_res_to_del('\ncrm resource', crm_to_del_list)
 
         drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
         if drbd_to_del_list:
@@ -142,8 +141,11 @@ class HydraArgParse():
         if tgt_to_del_list or drbd_to_del_list or lun_to_del_list:
             answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
             if answer == 'yes' or answer == 'y':
+                s.pwl('Start to delete CRM resource')
                 crm.del_all(tgt_to_del_list)
+                s.pwl('Start to delete DRBD resource')
                 drbd.del_all(drbd_to_del_list)
+                s.pwl('Start to delete Storage LUN')
                 stor.del_all(lun_to_del_list)
                 # remove all deleted disk device on vplx and host
                 crm.vplx_rescan_r()
@@ -163,7 +165,8 @@ class HydraArgParse():
             consts.set_glo_str(str_)
             print(f'**** Start working for ID {consts.glo_id()} ****'.center(format_width, '='))
             if rpl == 'no':
-                self.logger = log.Log(s.get_transaction_id())
+                self.transaction_id = s.get_transaction_id()
+                self.logger = log.Log(self.transaction_id)
                 self.logger.write_to_log(
                     'F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.glo_id()}')
                 self.logger.write_to_log(
@@ -197,7 +200,7 @@ class HydraArgParse():
             if not all([string, id]):
                 cmd = db.get_cmd_via_tid(arg_tid)
                 print(
-                    f'事务:{arg_tid} 不满足replay条件，所执行的命令为：python3 {cmd}')
+                    f'事务:{arg_tid} 不满足replay条件，所执行的命令为：{cmd}')
                 return
             consts.set_glo_tsc_id(arg_tid)
             self.dict_id_str.update({id: string})
@@ -214,35 +217,13 @@ class HydraArgParse():
                 else:
                     self.list_tid.remove(tid)
                     cmd = db.get_cmd_via_tid(tid)
-                    print(f'事务:{tid} 不满足replay条件，所执行的命令为：python3 {cmd}')
+
+                    print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
+                    # s.dp('after remove one', self.list_tid)
 
         else:
             print('replay help')
             return
-
-    def test(self):
-        consts.set_glo_tsc_id(s.ran_str(6))
-        tid = consts.glo_tsc_id()
-        local_debug_folder = f'/tmp/{tid}/'
-        os.mkdir(local_debug_folder)
-
-        vplx_dbg = vplx.DebugLog()
-        print('Start to collect debug log from VersaPLX')
-        vplx_dbg.collect_debug_sys()
-        vplx_dbg.collect_debug_drbd()
-        vplx_dbg.collect_debug_crm()
-        vplx_dbg.get_all_log(local_debug_folder)
-
-        host_dbg = host_initiator.DebugLog()
-        print('Start to collect debug log from Host')
-        host_dbg.collect_debug_sys()
-        host_dbg.get_all_log(local_debug_folder)
-
-        stor_dbg = storage.DebugLog()
-        print('Start to collect debug log from Storage')
-        stor_dbg.get_storage_debug(local_debug_folder)
-
-        print(f'All debug log stor in folder {local_debug_folder}')
 
     def start(self):
         args = self.parser.parse_args()

@@ -98,6 +98,7 @@ class VplxDrbd(object):
         self._prepare()
 
     def _create_iscsi_session(self):
+        #-m:是不是s.find_session部分就不需要记录太详细?在外面记录
         self.logger.write_to_log(
             f'T', 'INFO', 'info', 'start', '', f'  Discover iSCSI session for {Netapp_ip}')
         if not s.find_session(Netapp_ip, SSH, 'V9jGOP1i', s.get_oprt_id()):
@@ -119,6 +120,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
+        #-m:是否要这么简单粗暴?
         if self.rpl == 'yes':
             return
         self._create_iscsi_session()
@@ -135,7 +137,8 @@ class VplxDrbd(object):
                    rf'\ \ \ \ \ \ \ \ meta-disk internal\;',
                    r'\ \ \ \}',
                    r'}']
-
+        if self.rpl == 'yes':
+            return
         self.logger.write_to_log(
             'F', 'DATA', 'value', 'list', 'content of drbd config file', context)
         unique_str = 'UsKyYtYm1'
@@ -153,7 +156,6 @@ class VplxDrbd(object):
             if echo_result['sts']:
                 continue
             else:
-
                 s.pwe('fail to prepare drbd config file..')
 
         s.pwl(f'Create the DRBD config file "{self.res_name}.res"',2,'','finish')
@@ -194,7 +196,9 @@ class VplxDrbd(object):
         s.pwl(f'Start to bring up DRBD resource "{self.res_name}"', 3, oprt_id, 'start')
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result['sts']:
-            s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"',4,oprt_id,'finish') #-v 3->4
+
+            s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"',4,oprt_id,'finish')
+
             return True
 
     def _drbd_primary(self):
@@ -211,14 +215,6 @@ class VplxDrbd(object):
             return True
         else:
             s.pwe(f'drbd resource {self.res_name} primary failed')
-        # drbd_primary = SSH.execute_command(primary_cmd)
-        # if drbd_primary['sts']:
-        #     print(f'{self.res_name} primary success')
-        #     self.logger.write_to_log('T', 'INFO', 'info', 'finish', '', f'      {self.res_name} synchronize successfully')
-        #     # self.logger.write_to_log('INFO','info','',(f'{self.res_name} primary success'))
-        #     return True
-        # else:
-        #     s.pwe(self.logger,f'drbd resource {self.res_name} primary failed')
 
     def drbd_cfg(self):
         s.pwl('Start to configure DRBD resource',2,'','start')
@@ -233,6 +229,7 @@ class VplxDrbd(object):
         '''
         oprt_id = s.get_oprt_id()
         cmd = f'drbdadm status {self.res_name}'
+        #-m:这个start是否需要?
         s.pwl(f'Start to check DRBD resource {self.res_name} status',3,oprt_id,'start')
         result = s.get_ssh_cmd(SSH, 'By91GFxC', cmd, oprt_id)
         if result['sts']:
@@ -242,12 +239,14 @@ class VplxDrbd(object):
             if re_result:
                 status = re_result[0]
                 if status == 'UpToDate':
-                    s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"',4,oprt_id,'finish') #-v 3->4
+
+                    s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"',4,oprt_id,'finish')
+
                     return True
                 else:
-                    s.pwe(f'{self.res_name} DRBD verification failed')
+                    s.pwe(f'{self.res_name} DRBD verification failed',4
             else:
-                s.pwe(f'{self.res_name} DRBD does not exist')
+                s.pwe(f'{self.res_name} DRBD does not exist',4)
 
     def _drbd_down(self, res_name):
         '''
