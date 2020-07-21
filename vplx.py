@@ -426,6 +426,7 @@ class VplxCrm(object):
             s.pwe('iscsi lun start failed')
 
     def crm_cfg(self):
+        #a:print语句
         s.pwl('Start to configure crm resource', 2, '', 'start')
         if self._crm_create():
             if self._crm_setting():
@@ -437,6 +438,7 @@ class VplxCrm(object):
         '''
         Check the crm resource status
         '''
+        #a:
         unique_str = 'UqmUytK3'
         crm_show_cmd = f'crm res show {res_name}'
         oprt_id = s.get_oprt_id()
@@ -494,6 +496,7 @@ class VplxCrm(object):
         crm_del_cmd = f'crm cof delete {res_name}'
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, crm_del_cmd, oprt_id)
+        #a:delete_result为error
         if del_result:
             re_delstr = 'deleted'
             re_result = s.re_findall(
