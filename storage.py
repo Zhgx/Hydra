@@ -74,9 +74,8 @@ class Storage:
         oprt_id = s.get_oprt_id()
         unique_str = 'jMPFwXy2'
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
-        info_msg = f'create lun, name: {self.lun_name}'
-        # prt_and_log(f'  Start to {info_msg}')
-        s.pwl(f'Start to {info_msg}', 2, oprt_id, 'start')
+        info_msg = f'Start to create lun, name: {self.lun_name}'
+        s.pwl(f'{info_msg}', 2, oprt_id, 'start')
         # print(f'  Start to {info_msg}')# 正常打印
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
@@ -99,8 +98,7 @@ class Storage:
         # print(f'  Finish with {info_msg}')
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
-        s.pwl(
-            'Finish mapping LUN {self.lun_name} to VersaPLX', 2, oprt_id, 'finish')
+        s.pwl(f'Finish mapping LUN {self.lun_name} to VersaPLX', 2, oprt_id, 'finish')
 
     def lun_create_verify(self):
         pass

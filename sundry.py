@@ -368,25 +368,34 @@ def ran_str(num):
 
 
 def pwl(str, level, oprt_id=None, type=None):
-    rpl = 'no'
-    logger = consts.glo_log()
-    # rpl = consts.glo_rpl()
-    time = '2020/07/20 11:07:06'#特定字符取到oprt_id,根据事务id,oprt_id取到时间
-    str= ' ' * level + str
+    # rpl = 'no'
+    rpl = consts.glo_rpl()
+    str_ = '  ' * level + str
     if rpl == 'no':
+        logger = consts.glo_log()
         if level == 0:
             str = '*** '+str+' ***'
-            print(f'{str}'.center(72,'-'))
+            print(f'{str_}'.center(72,'-'))
         else:
-            print(f'|{str:<70}|')
+            print(f'|{str_:<70}|')
             logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
 
     elif rpl == 'yes':
+        db = consts.glo_db()
+        time = db.get_time_via_str(consts.glo_tsc_id(),str)
+        if not time:
+            time = ''
+
+        # if unique_str:
+        #     time = db.get_time_via_unique_str(consts.glo_tsc_id(), unique_str)
+        # else:
+        #     time = ''
+
         if level == 0:
             str = '*** '+str+' ***'
-            print(f'{str}'.center(72,'-'))
+            print(f'{str_}'.center(96,'-'))
         else:
-            print(f'|Re:{time:<20},{str:<70}|')
+            print(f'|Re:{time:<20} {str_:<70}|')
 
 
 
