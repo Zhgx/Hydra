@@ -15,10 +15,11 @@ username = 'root'
 password = 'Feixi@123'
 timeout = 3
 
+
 class DebugLog(object):
     def __init__(self):
         self.telnet_conn = connect.ConnTelnet(
-                host, port, username, password, timeout)
+            host, port, username, password, timeout)
 
     def get_storage_debug(self, debug_folder):
         cmd_debug = consts.get_cmd_debug_stor()
@@ -80,7 +81,7 @@ class Storage:
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        s.pwl(f'Succeed in creating LUN {self.lun_name}',2,oprt_id,'finish')
+        s.pwl(f'Succeed in creating LUN {self.lun_name}', 2, oprt_id, 'finish')
 
     def lun_map(self):
         '''
@@ -93,12 +94,13 @@ class Storage:
         # print(f'  Start to {info_msg}')
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
-        s.pwl(f'  Start to {info_msg}',2,oprt_id,'start')
+        s.pwl(f'  Start to {info_msg}', 2, oprt_id, 'start')
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         # print(f'  Finish with {info_msg}')
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
-        s.pwl('Finish mapping LUN {self.lun_name} to VersaPLX', 2, oprt_id, 'finish')
+        s.pwl(
+            'Finish mapping LUN {self.lun_name} to VersaPLX', 2, oprt_id, 'finish')
 
     def lun_create_verify(self):
         pass
@@ -118,7 +120,7 @@ class Storage:
             unmap_re = r'unmapped from initiator group hydra'
             re_result = s.re_findall(unmap_re, unmap_result)
             if re_result:
-                print(f'/vol/esxi/{lun_name} unmap succeed')
+                print(f'  /vol/esxi/{lun_name} unmap successfully')
                 return True
             else:
                 print(f'can not unmap lun {lun_name}')
@@ -137,7 +139,7 @@ class Storage:
             re_destroy = r'destroyed'
             re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
-                print(f'/vol/esxi/{lun_name} destroy succeed')
+                print(f'  /vol/esxi/{lun_name} destroy successfully')
                 return True
             else:
                 print(f'can not destroy lun {lun_name}')
@@ -147,7 +149,8 @@ class Storage:
     def get_all_cfgd_lun(self):
         # get list of all configured luns
         cmd_lun_show = 'lun show'
-        show_result = self.ex_telnet_cmd('2lYpiKm3', cmd_lun_show, s.get_oprt_id())
+        show_result = self.ex_telnet_cmd(
+            '2lYpiKm3', cmd_lun_show, s.get_oprt_id())
         if show_result:
             re_lun = f'/vol/esxi/(\w*_[0-9]{{1,3}})'
             lun_cfgd_list = s.re_findall(re_lun, show_result)

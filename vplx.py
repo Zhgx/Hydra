@@ -7,6 +7,7 @@ import os
 import re
 import logdb
 import consts
+import log
 
 # global SSH
 SSH = None
@@ -64,13 +65,14 @@ def get_disk_dev():
         else:
             s.pwe('xxx:vplx,get_disk_dev fail')
 
+
 class DebugLog(object):
     def __init__(self):
         init_ssh()
         self.tid = consts.glo_tsc_id()
         self.debug_folder = f'/var/log/{self.tid}_{host}'
         self.dbg = s.DebugLog(SSH, self.debug_folder)
-    
+
     def collect_debug_sys(self):
         cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, host)
         self.dbg.prepare_debug_log(cmd_debug_sys)
@@ -86,8 +88,6 @@ class DebugLog(object):
     def get_all_log(self, folder):
         local_file = f'{folder}/{host}.tar'
         self.dbg.get_debug_log(local_file)
-
-
 
 
 class VplxDrbd(object):
@@ -170,7 +170,8 @@ class VplxDrbd(object):
 
                 s.pwe('fail to prepare drbd config file..')
 
-        s.pwl(f'Create the DRBD config file "{self.res_name}.res"',2,'','finish')
+        s.pwl(
+            f'Create the DRBD config file "{self.res_name}.res"', 2, '', 'finish')
         # print(f'  Config file "{self.res_name}.res" created')
         # self.logger.write_to_log('T', 'INFO', 'info', 'finish', '',
         #                          f'      Create DRBD config file "{self.res_name}.res" done')
@@ -236,7 +237,7 @@ class VplxDrbd(object):
     def drbd_cfg(self):
         self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
                                  f'      Start to initial synchronization for {self.res_name}')
-        s.pwl('Start to configure DRBD resource',2,'','start')
+        s.pwl('Start to configure DRBD resource', 2, '', 'start')
         # print('Start to config DRBD resource...')
         #
         # self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
@@ -262,7 +263,8 @@ class VplxDrbd(object):
             if re_result:
                 status = re_result[0]
                 if status == 'UpToDate':
-                    print(f'  Resource {self.res_name} DRBD check successfully')
+                    print(
+                        f'  Resource {self.res_name} DRBD check successfully')
                     self.logger.write_to_log('T', 'INFO', 'info', 'finish', '',
                                              f'  Resource {self.res_name} DRBD check successfully')
                     # self.logger.write_to_log('INFO','info','',(f'{self.res_name} DRBD check successful'))
@@ -281,6 +283,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         down_result = s.get_ssh_cmd(SSH, unique_str, drbd_down_cmd, oprt_id)
         if down_result['sts']:
+            print(f'  Resource {res_name} DRBD down successfully')
             return True
         else:
             s.pwe('drbd down failed')
@@ -294,6 +297,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, drbd_del_cmd, oprt_id)
         if del_result['sts']:
+            print(f'  Removed {res_name} DRBD config file successfully')
             return True
         else:
             s.pwe('drbd remove config file fail')
@@ -301,7 +305,8 @@ class VplxDrbd(object):
     def get_all_cfgd_drbd(self):
         # get list of all configured crm res
         cmd_drbd_status = 'drbdadm status'
-        show_result = s.get_ssh_cmd(SSH, 'UikYgtM1', cmd_drbd_status, s.get_oprt_id())
+        show_result = s.get_ssh_cmd(
+            SSH, 'UikYgtM1', cmd_drbd_status, s.get_oprt_id())
         # s.dp('drbd show ',show_result)
         if show_result['sts']:
             re_drbd = f'res_\w*_[0-9]{{1,3}}'
@@ -320,6 +325,7 @@ class VplxDrbd(object):
         if drbd_to_del_list:
             for res_name in drbd_to_del_list:
                 self.drbd_del(res_name)
+
 
 class VplxCrm(object):
     def __init__(self):
@@ -426,19 +432,7 @@ class VplxCrm(object):
                     time.sleep(0.5)
                     return True
 
-    def _crm_status_check(self, res_name, status):
-        cmd_crm_show = f'crm res show {res_name}'
-        result_crm_show = s.get_ssh_cmd(SSH, 'UqmUytK3', crm_show_cmd, s.get_oprt_id())
-        if status == 'running':
-            re_running = f'resource {self.res_name} is running on'
-            if s.re_findall(re_running, result_crm_show):
-                return True
-        if status == 'stopped':
-            re_stopped = f'resource {self.res_name} is stopped'  ##################
-            if s.re_findall(re_running, result_crm_show):
-                return True
-
-    def _crm_verify(self, res_name):
+    def _crm_status_check(self, res_name):
         '''
         Check the crm resource status
         '''
@@ -447,26 +441,29 @@ class VplxCrm(object):
         oprt_id = s.get_oprt_id()
         verify_result = s.get_ssh_cmd(SSH, unique_str, crm_show_cmd, oprt_id)
         if verify_result['sts'] == 1:
-            return {'status': 'Started'}
-        if verify_result['sts'] == 0:
-            return {'status': 'Stopped'}
+            re_start = f'resource {res_name} is running on'
+            if s.re_findall(re_start, verify_result['rst'].decode('utf-8')):
+                return {'status': 'Started'}
+        elif verify_result['sts'] == 0:
+            re_stopped = f'resource {res_name} is NOT running'
+            if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
+                return {'status': 'Stopped'}
+            else:
+                s.pwe(f'crm resource {res_name} not found')
         else:
             s.pwe('crm show failed')
 
-    def crm_status(self, res_name, status):
+    def cyclic_check_crm_status(self, res_name, status):
         '''
         Determine crm resource status is started/stopped
         '''
         n = 0
         while n < 10:
             n += 1
-            crm_verify = self._crm_verify(res_name)
+            crm_verify = self._crm_status_check(res_name)
             if crm_verify['status'] == status:
-                print(f'{res_name} is {status}')
                 return True
             else:
-                print(
-                    f'{res_name} is {crm_verify["status"]}, Wait a moment...')
                 time.sleep(1.5)
         else:
             return False
@@ -480,7 +477,8 @@ class VplxCrm(object):
         oprt_id = s.get_oprt_id()
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
         if crm_stop['sts']:
-            if self.crm_status(res_name, 'Stopped'):
+            if self.cyclic_check_crm_status(res_name, 'Stopped'):
+                print(f'  Resource {res_name} crm stopped successfully')
                 return True
             else:
                 s.pwe('crm stop failed,exit the program...')
@@ -495,11 +493,12 @@ class VplxCrm(object):
         crm_del_cmd = f'crm cof delete {res_name}'
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, crm_del_cmd, oprt_id)
-        if del_result['sts']:
+        if del_result:
             re_delstr = 'deleted'
             re_result = s.re_findall(
                 re_delstr, del_result['rst'].decode('utf-8'))
             if len(re_result) == 2:
+                print(f'  Resource {res_name} crm removed succeefully')
                 return True
             else:
                 s.pwe('crm cof delete failed')
@@ -514,7 +513,7 @@ class VplxCrm(object):
     #     oprt_id = s.get_oprt_id()
     #     res_show_result = s.get_ssh_cmd(SSH, unique_str, res_show_cmd, oprt_id)
     #     if res_show_result['sts']:
-    #         re_show = 
+    #         re_show =
     #         list_of_all_crm = s.re_findall(
     #             re_show, res_show_result['rst'].decode('utf-8'))
     #         s.dp('out_str',res_show_result['rst'].decode('utf-8'))
@@ -538,7 +537,8 @@ class VplxCrm(object):
     def get_all_cfgd_res(self):
         # get list of all configured crm res
         cmd_crm_res_show = 'crm res show'
-        show_result = s.get_ssh_cmd(SSH, 'IpJhGfVc4', cmd_crm_res_show, s.get_oprt_id())
+        show_result = s.get_ssh_cmd(
+            SSH, 'IpJhGfVc4', cmd_crm_res_show, s.get_oprt_id())
         if show_result['sts']:
             re_crm_res = f'res_\w*_[0-9]{{1,3}}'
             show_result = show_result['rst'].decode('utf-8')
@@ -567,6 +567,14 @@ class VplxCrm(object):
 
 
 if __name__ == '__main__':
-    #     test_crm = VplxCrm('72', 'luntest')
-    #     test_crm.discover_new_lun()
-    pass
+    logger = log.Log(s.get_transaction_id())
+    consts._init()
+    consts.set_glo_log(logger)
+    consts.set_glo_id('')
+    consts.set_glo_id_list('')
+    consts.set_glo_str('luntest')
+    consts.set_glo_rpl('no')
+    test_crm = VplxCrm()
+    test_crm._crm_status_check('res_ttt_2')
+
+    # pass
