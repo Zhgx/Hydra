@@ -28,7 +28,7 @@ class ConnSSH(object):
 
     def _connect(self):
         oprt_id = s.get_oprt_id()
-        s.pwl('Start to connect via SSH',1,oprt_id,'start')
+        s.pwl(f'Start to connect {host} via SSH',1,oprt_id,'start')
         self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for SSH connect',
                                  {'host': self._host, 'port': self._port, 'username': self._username,
                                   'password': self._password})
@@ -48,8 +48,6 @@ class ConnSSH(object):
             s.pwe(f'  Connect to {self._host} failed with error: {e}')
 
     def execute_command(self, command):
-        # oprt_id = s.get_oprt_id()
-        # self.logger.write_to_log('T','OPRT','cmd','ssh',oprt_id,command)
         stdin, stdout, stderr = self.SSHConnection.exec_command(command)
         data = stdout.read()
         if len(data) > 0:
@@ -58,8 +56,9 @@ class ConnSSH(object):
         err = stderr.read()
         if len(err) > 0:
             output = {'sts': 0, 'rst': err}
-            self.logger.write_to_log(
-                'T', 'INFO', 'warning', 'failed', '', f'  Command "{command}" execute failed')
+            #-m:这里应该记录error信息吧,至于执行失败,是外面调用的时候判断.
+            # self.logger.write_to_log(
+            #     'T', 'INFO', 'warning', 'failed', '', f'Command "{command}" execute failed')
             return output
         if data == b'':
             output = {'sts': 1, 'rst': data}
@@ -117,6 +116,7 @@ class ConnTelnet(object):
         try:
             oprt_id = s.get_oprt_id()
             s.pwl('Start to connect NetApp via Telnet',1,oprt_id,'start')
+            #-m:DATA,Telnet,connect,dict
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',
                                      {'host': self._host, 'port': self._port, 'username': self._username,
                                       'password': self._password})

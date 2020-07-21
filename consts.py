@@ -19,7 +19,6 @@ def get_value(key, dft_val = None):
     except KeyError:
         return dft_val
 
-
 def set_glo_log(value):
     set_value('LOG', value)
 

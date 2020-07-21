@@ -35,14 +35,6 @@ class Log(object):
 
     def __init__(self, transaction_id):
         self.transaction_id = transaction_id
-        # self.log_switch = consts.get_value('LOG_SWITCH')
-        # self.time = None
-        # self.type1 = None
-        # self.type2 = None
-        # self.d1 = None
-        # self.d2 = None
-
-        # t1:data t2:ssh d1:host
 
     def logger_create(self):
         logger_hydra = logging.getLogger('hydra')
