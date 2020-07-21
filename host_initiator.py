@@ -159,18 +159,26 @@ class HostTest(object):
         '''
         cmd = f'mkfs.ext4 {dev_name} -F'
         oprt_id = s.get_oprt_id()
-        s.pwl(f'Start to format {dev_name}',1,oprt_id,'')
+
+        s.pwl(f'Start to format {dev_name}',1,oprt_id,'start')
+
         result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd, oprt_id)
         if result_format['sts']:
             result_format = result_format['rst'].decode('utf-8')
             if self._judge_format(result_format):
                 return True
             else:
-                #-m:s.pwe 同样需要level,显示level,警告level应该是一样的
+
                 s.pwe(f'Format {dev_name} failed')
         else:
+            s.pwl(f'Format command {cmd} execute failed', 1, oprt_id, 'finish')
+
+                #-m:s.pwe 同样需要level,显示level,警告level应该是一样的
+                s.pwe(f'Format {dev_name} failed')
+
             #-m:如果失败,则退出
-            s.pwe()
+
+
             # print(f'  Format command {cmd} execute failed')
             # self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
             #                          f'  Format command "{cmd}" execute failed')
@@ -193,7 +201,7 @@ class HostTest(object):
                 'F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
             return dd_perf
         else:
-            s.pwe('  Can not get test result')
+            s.pwe('Can not get test result')
 
     def get_test_perf(self):
         '''

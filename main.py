@@ -156,13 +156,14 @@ class HydraArgParse():
             s.pwe(
                 '\nNo qualified resources to be delete.\n')
 
-    @s.record_exception
+    # @s.record_exception
     def run(self, dict_args):
         rpl = consts.glo_rpl()
+        format_width = 96 if rpl == 'yes' else 74
         for id_, str_ in dict_args.items():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
-            print(f'**** Start working for ID {consts.glo_id()} ****'.center(74, '='))
+            print(f'**** Start working for ID {consts.glo_id()} ****'.center(format_width, '='))
             if rpl == 'no':
                 self.transaction_id = s.get_transaction_id()
                 self.logger = log.Log(self.transaction_id)
@@ -182,13 +183,13 @@ class HydraArgParse():
             self._vplx_crm()
             s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
             self._host_test()
-            time.sleep(2)
-            if rpl == 'yes':
-                print(''.center(96, '-'), '\n')
-            else:
-                print(''.center(72, '-'), '\n')
+            print(''.center(format_width, '-'), '\n') #-v
+            # if rpl == 'yes':
+            #     print(''.center(96, '-'), '\n')
+            # else:
+            #     print(''.center(72, '-'), '\n')
+            time.sleep(2) #-v
 
-    @s.record_exception
     def prepare_replay(self,args):
         db = consts.glo_db()
         arg_tid = args.tid
@@ -216,6 +217,7 @@ class HydraArgParse():
                 else:
                     self.list_tid.remove(tid)
                     cmd = db.get_cmd_via_tid(tid)
+
                     print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
                     # s.dp('after remove one', self.list_tid)
 

@@ -91,12 +91,12 @@ class Storage:
         '''
         oprt_id = s.get_oprt_id()
         unique_str = '1lvpO6N5'
-        info_msg = f'map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
+        info_msg = f'Start to map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}' #-v + Start to
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
         # print(f'  Start to {info_msg}')
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
-        s.pwl(f'  Start to {info_msg}',2,oprt_id,'start')
+        s.pwl(f'{info_msg}',2,oprt_id,'start') #-v 删除空格、Start to
         self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         # print(f'  Finish with {info_msg}')
         # self.logger.write_to_log(
