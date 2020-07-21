@@ -2,7 +2,6 @@
 import random
 import consts
 import logdb
-
 import sys
 import re
 import time
@@ -12,6 +11,7 @@ import traceback
 import socket
 from random import shuffle
 import log
+import connect
 
 
 class DebugLog(object):
@@ -61,34 +61,29 @@ def change_id_str_to_list(id_str):
 
 
 def scsi_rescan(ssh, mode):
-    logger = consts.glo_log()
-    oprt_id = get_oprt_id()
     if mode == 'n':
         cmd = '/usr/bin/rescan-scsi-bus.sh'
-        logger.write_to_log('T', 'INFO', 'info', 'start',
-                            oprt_id, '    Start to scan SCSI device normal')
+        pwl('Start to scan SCSI device normal',3,'','start')
     elif mode == 'r':
         cmd = '/usr/bin/rescan-scsi-bus.sh -r'
-        logger.write_to_log('T', 'INFO', 'info', 'start',
-                            oprt_id, '    Start to scan SCSI device with remove')
+        pwl('Start to scan SCSI device with remove',3,'','start')
     elif mode == 'a':
         cmd = '/usr/bin/rescan-scsi-bus.sh -a'
-        logger.write_to_log('T', 'INFO', 'info', 'start',
-                            oprt_id, '    Start to scan SCSI device deeply')
-    result = get_ssh_cmd(ssh, 'N6YwGtRJ', cmd, oprt_id)
-    if result['sts']:
-        return True
+        pwl('Start to scan SCSI device deeply',4,'','start')
+
+    #-v 不记录log的话，就无法判断命令是否执行正确,replay时直接返回True
+    if consts.glo_rpl() == 'no':
+        result = ssh.execute_command(cmd)
+        if result['sts']:
+            return True
+        else:
+            pwl('Scan SCSI device failed',3,'','finish')
     else:
-        print('  Scan SCSI device failed')
-        logger.write_to_log('T', 'INFO', 'warning', 'failed',
-                            oprt_id, '  Scan SCSI device failed')
+        return True
 
 
 def get_lsscsi(ssh, func_str, oprt_id):
     logger = consts.glo_log()
-    # print('    Start to list all SCSI device')
-    # logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
-    #                     '    Start to list all SCSI device')
     pwl('Start to get the list of all SCSI device',2,oprt_id,'start')
     cmd_lsscsi = 'lsscsi'
     # result_lsscsi = SSH.execute_command(cmd_lsscsi)
@@ -137,36 +132,29 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         logger.write_to_log('F', 'DATA', 'cmd', 'ssh', oprt_id, result_cmd)
         return result_cmd
     elif RPL == 'yes':
-        # print(f'Replay process of executing command ... {cmd} ...')
         db = consts.glo_db()
-        db_id, oprt_id = db.find_oprt_id_via_string(
+        db_id ,oprt_id = db.find_oprt_id_via_string(
             consts.glo_tsc_id(), unique_str)
-
-        # info_start = db.get_info_start(oprt_id)
-        # if info_start:
-        #     print(info_start)
-
         result_cmd = db.get_cmd_result(oprt_id)
-        if result_cmd:
-            result = eval(result_cmd)
-        else:  # 数据库取不到数据
+        if db_id and oprt_id:
+            if result_cmd:
+                result = eval(result_cmd)
+        else:
             result = None
-        # info_end = db.get_info_finish(oprt_id)
-        # if info_end:
-        #     print(info_end)
         change_pointer(db_id)
         return result
 
 
-def pwe(print_str):
+def pwe(str,level = 0): #-v 修改，添加level
     """
     print, write to log and exit.
     :param logger: Logger object for logging
     :param print_str: Strings to be printed and recorded
     """
+    print_str = '  ' * level + str
     logger = consts.glo_log()
-    print(print_str)
-    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
+    print(f'*{print_str:<70}*')
+    logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
     sys.exit()
 
 def pwce(print_str):
@@ -179,7 +167,7 @@ def pwce(print_str):
     logger = consts.glo_log()
     print(print_str)
     logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
-    log_file = clct_env(consts.glo_tid())
+    log_file = clct_env(consts.glo_tsc_id()) # -v
     logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to file /var/log/{log_file}')
     sys.exit()
 
@@ -332,7 +320,7 @@ def iscsi_login(tgt_ip, ssh, func_str, oprt_id):
                                 '', f'  iSCSI login to {tgt_ip} successful')
             return True
         else:
-            pwe(f'  iSCSI login to {tgt_ip} failed')
+            pwe(f'iSCSI login to {tgt_ip} failed')
 
 
 def find_session(tgt_ip, ssh, func_str, oprt_id):

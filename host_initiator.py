@@ -137,19 +137,16 @@ class HostTest(object):
         # self.logger.write_to_log('INFO','info','',f'start to format disk {dev_name} and mount disk {dev_name}')
         cmd = f'mkfs.ext4 {dev_name} -F'
         oprt_id = s.get_oprt_id()
-        s.pwl(f'Start to format {dev_name}',1,oprt_id,'')
-        # print(f'    Start to format {dev_name}')
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'start', oprt_id, f'    Start to format {dev_name}')
+        s.pwl(f'Start to format {dev_name}',1,oprt_id,'start')
         result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd, oprt_id)
         if result_format['sts']:
             result_format = result_format['rst'].decode('utf-8')
             if self._judge_format(result_format):
                 return True
             else:
-                s.pwe(f'  Format {dev_name} failed')
+                s.pwe(f'Format {dev_name} failed')
         else:
-            s.pwl(f'', 1, oprt_id, '')
+            s.pwl(f'Format command {cmd} execute failed', 1, oprt_id, 'finish')
             # print(f'  Format command {cmd} execute failed')
             # self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
             #                          f'  Format command "{cmd}" execute failed')
@@ -171,7 +168,7 @@ class HostTest(object):
                 'F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
             return dd_perf
         else:
-            s.pwe('  Can not get test result')
+            s.pwe('Can not get test result')
 
     def get_test_perf(self):
         '''

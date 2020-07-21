@@ -39,13 +39,12 @@ class ConnSSH(object):
                                  username=self._username,
                                  password=self._password,
                                  timeout=self._timeout)
-            # 连接成功log记录？
             self.SSHConnection = objSSHClient
             # self._sftp = paramiko.SFTPClient.from_transport(client)
         except Exception as e:
             self.logger.write_to_log(
                 'F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
-            s.pwe(f'  Connect to {self._host} failed with error: {e}')
+            s.pwe(f'Connect to {self._host} failed with error: {e}')
 
     def execute_command(self, command):
         # oprt_id = s.get_oprt_id()
@@ -129,7 +128,7 @@ class ConnTelnet(object):
         except Exception as e:
             self.logger.write_to_log(
                 'F', 'DATA', 'debug', 'exception', 'telnet connect', str(traceback.format_exc()))
-            s.pwe(f'  Connect to {self._host} failed with error: {e}')
+            s.pwe(f'Connect to {self._host} failed with error: {e}')
 
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
