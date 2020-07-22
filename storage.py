@@ -55,7 +55,7 @@ class Storage:
                 'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
             result = self.telnet_conn.execute_command(cmd)
             #-m:log DATA telnet 
-            logger.write_to_log(result)
+            # logger.write_to_log(result)
             return result
 
         elif self.rpl == 'yes':
@@ -123,14 +123,12 @@ class Storage:
             unmap_re = r'unmapped from initiator group hydra'
             re_result = s.re_findall(unmap_re, unmap_result)
             if re_result:
-# A
-                print(f'  Unmap the lun /vol/esxi/{lun_name}  successfully')
-
+                s.pwl(f'Unmap the lun /vol/esxi/{lun_name}  successfully',2)
                 return True
             else:
                 #-m:只有在出错之后才打印和记录,不过不退出.正常完成的不记录
-                s.prt(f'can not unmap lun {lun_name}')
-                # print(f'can not unmap lun {lun_name}')
+                # s.prt(f'can not unmap lun {lun_name}')
+                print(f'can not unmap lun {lun_name}')
         else:
             print('unmap command execute failed')
 
@@ -146,8 +144,7 @@ class Storage:
             re_destroy = r'destroyed'
             re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
-
-                print(f'  Destroy the lun /vol/esxi/{lun_name} successfully')
+                s.pwl(f'Destroy the lun /vol/esxi/{lun_name} successfully',2)
 
                 return True
             else:
@@ -176,9 +173,9 @@ class Storage:
     #     return lun_to_del_list
 
     def del_all(self, lun_to_del_list):
-        s.pwl('start to delete storage lun',0,'','delete')
+        # s.pwl('start to delete storage lun',0,'','delete')
         for lun_name in lun_to_del_list:
-            s.pwl(f'Deleting LUN "{lun_name}"')
+            s.pwl(f'Deleting LUN {lun_name}',1)
             self.lun_unmap(lun_name)
             self.lun_destroy(lun_name)
 

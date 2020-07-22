@@ -55,12 +55,12 @@ def get_disk_dev():
     else:
         scsi_id = consts.glo_id()
         #-m:需要增加显示level,和警告level
-        s.pwl('No disk with SCSI ID {scsi_id} found, scan again...')
+        s.pwl('No disk with SCSI ID {scsi_id} found, scan again...',2)
         s.scsi_rescan(SSH, 'a')
         disk_dev = _find_new_disk()
         if disk_dev:
             #-m:
-            s.pwl('找到了')
+            s.pwl('找到了',2)
             return disk_dev
         else:
             #-m:真的就要退出了,这里.
@@ -110,7 +110,7 @@ class HostTest(object):
             else:
                 s.pwe(f'can not login to {vplx_ip}')
         else:
-            s.pwl('ISSCsi  Already  loged in')
+            s.pwl('ISSCsi  Already  loged in',1)
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -174,7 +174,7 @@ class HostTest(object):
             s.pwl(f'Format command {cmd} execute failed', 1, oprt_id, 'finish')
 
                 #-m:s.pwe 同样需要level,显示level,警告level应该是一样的
-                s.pwe(f'Format {dev_name} failed')
+            s.pwe(f'Format {dev_name} failed')
 
             #-m:如果失败,则退出
 
@@ -227,7 +227,7 @@ class HostTest(object):
 
     def start_test(self):
         # self.logger.write_to_log('INFO', 'info', '', 'start to test')
-        s.pwl('start iscsi login')
+        s.pwl('start iscsi login',2)
         self._create_iscsi_session()
         dev_name = get_disk_dev()
         if self.format(dev_name):
@@ -237,6 +237,12 @@ class HostTest(object):
                 s.pwe(f'Device {dev_name} mount failed')
         else:
             s.pwe(f'Device {dev_name} format failed')
+
+    def host_rescan_r(self):
+        '''
+        vplx rescan after delete
+        '''
+        s.scsi_rescan(SSH, 'r')
 
 
 if __name__ == "__main__":

@@ -138,14 +138,14 @@ class HydraArgParse():
         if lun_to_del_list:
             s.prt_res_to_del('\nstorage lun', lun_to_del_list)
 
-        if tgt_to_del_list or drbd_to_del_list or lun_to_del_list:
+        if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
             answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
             if answer == 'yes' or answer == 'y':
-                s.pwl('Start to delete CRM resource')
-                crm.del_all(tgt_to_del_list)
-                s.pwl('Start to delete DRBD resource')
+                s.pwl('Start to delete CRM resource',0)
+                crm.del_all(crm_to_del_list)
+                s.pwl('Start to delete DRBD resource',0)
                 drbd.del_all(drbd_to_del_list)
-                s.pwl('Start to delete Storage LUN')
+                s.pwl('Start to delete Storage LUN',0)
                 stor.del_all(lun_to_del_list)
                 # remove all deleted disk device on vplx and host
                 crm.vplx_rescan_r()

@@ -154,7 +154,7 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
             result = eval(result_cmd)
         else:  # 数据库取不到数据
             #-m:数据库取不到数据的话,外面调用部分是如何处理的?
-            s.pwl()
+            # s.pwl()
 
             result = None
         change_pointer(db_id)
@@ -378,9 +378,9 @@ def pwl(str, level, oprt_id=None, type=None):
             print(f'|{str_:<70}|')
             logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
 
-            print(f'|-{str_:<68}-|')
-            print(f'|-*{str_:<66}*-|')
-            print(f'|-***{str_:<62}***-|')
+            # print(f'|-{str_:<68}-|')
+            # print(f'|-*{str_:<66}*-|')
+            # print(f'|-***{str_:<62}***-|')
 
     elif rpl == 'yes':
         db = consts.glo_db()

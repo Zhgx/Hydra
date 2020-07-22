@@ -31,7 +31,7 @@ def init_ssh():
 def _find_new_disk():
     result_lsscsi = s.get_lsscsi(SSH, 'D37nG6Yi', s.get_oprt_id())
     re_string = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    all_disk = s.get_all_scsi_disk(re_string, result_lsscsi)
+    all_disk = s.re_findall(re_string, result_lsscsi)
     disk_dev = s.get_the_disk_with_lun_id(all_disk)
     if disk_dev:
         return disk_dev
@@ -258,7 +258,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         down_result = s.get_ssh_cmd(SSH, unique_str, drbd_down_cmd, oprt_id)
         if down_result['sts']:
-            print(f'  Down the DRBD resource {res_name} successfully')
+            s.pwl(f'Down the DRBD resource {res_name} successfully',2)
             return True
         else:
             s.pwe('drbd down failed')
@@ -272,7 +272,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, drbd_del_cmd, oprt_id)
         if del_result['sts']:
-            print(f'  Removed the DRBD resource {res_name} config file successfully')
+            s.pwl(f'Removed the DRBD resource {res_name} config file successfully',2)
             return True
         else:
             s.pwe('drbd remove config file fail')
@@ -292,12 +292,13 @@ class VplxDrbd(object):
             s.pwe(f'command "{cmd_drbd_status}" execute failed')
 
     def drbd_del(self, res_name):
+        s.pwl(f'Deleting DRBD resource {res_name}',1)
         if self._drbd_down(res_name):
             if self._drbd_del_config(res_name):
                 return True
 
     def del_all(self, drbd_to_del_list):
-        s.pwl('start to delete DRBD resource',0,'','delete')
+        # s.pwl('start to delete DRBD resource',0,'','delete')
         if drbd_to_del_list:
             for res_name in drbd_to_del_list:
                 self.drbd_del(res_name)
@@ -407,7 +408,6 @@ class VplxCrm(object):
             s.pwe('iscsi lun start failed')
 
     def crm_cfg(self):
-        #a:print语句
         s.pwl('Start to configure crm resource', 2, '', 'start')
         if self._crm_create():
             if self._crm_setting():
@@ -462,7 +462,7 @@ class VplxCrm(object):
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
         if crm_stop['sts']:
             if self.cyclic_check_crm_status(res_name, 'Stopped'):
-                print(f'  Stopped the iSCSILogicalUnit resource {res_name} successfully')
+                s.pwl(f'Stopped the iSCSILogicalUnit resource {res_name} successfully',2)
                 return True
             else:
                 s.pwe('crm stop failed,exit the program...')
@@ -483,12 +483,13 @@ class VplxCrm(object):
             re_result = s.re_findall(
                 re_delstr, del_result['rst'].decode('utf-8'))
             if len(re_result) == 2:
-                print(f'  Removed the iSCSILogicalUnit resource {res_name} successfully')
+                s.pwl(f'Removed the iSCSILogicalUnit resource {res_name} successfully',2)
                 return True
             else:
                 s.pwe('crm cof delete failed')
 
     def crm_del(self, res_name):
+        s.pwl(f'Deleting crm resource {res_name}',1)
         if self._crm_stop(res_name):
             if self._crm_del(res_name):
                 return True
@@ -540,8 +541,7 @@ class VplxCrm(object):
     #     return lun_to_del_list
 
     def del_all(self, crm_to_del_list):
-        # print('start to delete crm resource:')
-        s.pwl('start to delete crm resource',0,'','delete')
+        # s.pwl('start to delete crm resource',0,'','delete')
         if crm_to_del_list:
             for res_name in crm_to_del_list:
                 self.crm_del(res_name)
