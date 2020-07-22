@@ -1,5 +1,6 @@
 # coding:utf-8
 
+
 def _init():  # 初始化
     global _global_dict
     _global_dict = {}
@@ -18,7 +19,6 @@ def get_value(key, dft_val = None):
         return _global_dict[key]
     except KeyError:
         return dft_val
-
 
 def set_glo_log(value):
     set_value('LOG', value)
@@ -143,3 +143,4 @@ def get_cmd_debug_stor():
             'iscsi initiator show'
         ]
     return cmd_debug
+
