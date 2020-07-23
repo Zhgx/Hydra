@@ -3,8 +3,6 @@ import random
 import consts
 import logdb
 
-import sundry as s
-
 import sys
 import re
 import time
@@ -58,7 +56,7 @@ def change_id_str_to_list(id_str):
     id_range_list = [int(i) for i in id_str.split(',')]
     if len(id_range_list) not in [1,2]:
         #-m:提示格式
-        pwe('please verify id format')
+        pwe('Please verify id format',2,2)
     elif len(id_range_list) == 1:
         id_ = id_range_list[0]
         id_list = [id_]
@@ -72,21 +70,20 @@ def change_id_str_to_list(id_str):
 def scsi_rescan(ssh, mode):
     if mode == 'n':
         cmd = '/usr/bin/rescan-scsi-bus.sh'
-        pwl('Start to scan SCSI device normal',3,'','start')
+        pwl('Start to scan SCSI device with normal way',3,'','start')
     elif mode == 'r':
         cmd = '/usr/bin/rescan-scsi-bus.sh -r'
-        pwl('Start to scan SCSI device with remove',3,'','start')
+        pwl('Start to scan SCSI device after removing disk',1,'','start')
     elif mode == 'a':
         cmd = '/usr/bin/rescan-scsi-bus.sh -a'
-        pwl('Start to scan SCSI device deeply',4,'','start')
+        pwl('Start to scan SCSI device in depth',3,'','start')
 
-    #-v 不记录log的话，就无法判断命令是否执行正确,replay时直接返回True
     if consts.glo_rpl() == 'no':
         result = ssh.execute_command(cmd)
         if result['sts']:
             return True
         else:
-            pwl('Scan SCSI device failed',3,'','finish')
+            pwl('Scan SCSI device failed',4,'','finish')
     else:
         return True
 
@@ -94,7 +91,7 @@ def scsi_rescan(ssh, mode):
 
 def get_lsscsi(ssh, func_str, oprt_id):
     logger = consts.glo_log()
-    pwl('Start to get the list of all SCSI device',2,oprt_id,'start')
+    pwl('Start to get the list of all SCSI device',3,oprt_id,'start')
     cmd_lsscsi = 'lsscsi'
     result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi, oprt_id)
     if result_lsscsi['sts']:
@@ -137,7 +134,6 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
     global RPL
     RPL = consts.glo_rpl()
     if RPL == 'no':
-        #-m:是为了通过Uni_str找oprt ID?
         logger.write_to_log('F', 'DATA', 'STR', unique_str, '', oprt_id)
         logger.write_to_log('T', 'OPRT', 'cmd', 'ssh', oprt_id, cmd)
         result_cmd = ssh_obj.execute_command(cmd)
@@ -145,36 +141,18 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         return result_cmd
     elif RPL == 'yes':
         db = consts.glo_db()
-
-        #-m:via用法不对应该用with
         db_id, oprt_id = db.find_oprt_id_via_string(
             consts.glo_tsc_id(), unique_str)
         result_cmd = db.get_cmd_result(oprt_id)
         if result_cmd:
             result = eval(result_cmd)
-        else:  # 数据库取不到数据
-            #-m:数据库取不到数据的话,外面调用部分是如何处理的?
-            # s.pwl()
-
+        else:
+            # pwl(f'Failed to execute command:{cmd}',4)
             result = None
-        change_pointer(db_id)
+        if db_id:
+            change_pointer(db_id)
         return result
 
-
-def pwe(str,level = 0): #-v 修改，添加level
-    """
-    print, write to log and exit.
-    :param logger: Logger object for logging
-    :param print_str: Strings to be printed and recorded
-    """
-    print_str = '  ' * level + str
-    logger = consts.glo_log()
-
-    #-m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    print(print_str)
-    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
-
-    sys.exit()
 
 def pwce(print_str, log_folder):
     """
@@ -201,8 +179,8 @@ def _compare(name, name_list):
 
 def get_to_del_list(name_list):
     '''
-    
-        #-m:mattie
+    Get the list of the resource which will be deleted.
+    : Get the resource according to the unique_string and unique_id，and check whether it is exist.
     '''
     uni_str = consts.glo_str()
     id_list = consts.glo_id_list()
@@ -310,50 +288,40 @@ def re_findall(re_string, tgt_string):
     return re_result
 
 
-def iscsi_login(tgt_ip, ssh, func_str, oprt_id):
+def iscsi_login(tgt_ip, ssh):
     '''
     Discover iSCSI login session, if no, login to vplx
     '''
-    logger = consts.glo_log()
+    func_str = 'rgjfYl3K'
+    oprt_id = get_oprt_id()
     cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
     result_iscsi_login = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
     if result_iscsi_login['sts']:
         result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
         re_string = f'Login to.*portal: ({tgt_ip}).*successful'
         if re_findall(re_string, result_iscsi_login):
-            #-m:
-            print(f'  iSCSI login to {tgt_ip} successful')
-            logger.write_to_log('T', 'INFO', 'info', 'finish',
-                                '', f'  iSCSI login to {tgt_ip} successful')
+            pwl(f'iSCSI login to {tgt_ip} successful',3,'','finish')
             return True
         else:
-            pwe(f'iSCSI login to {tgt_ip} failed')
+            pwe(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
 
 #-m:string 和 oprt id 不用传递过来,在内部定义即可
-def find_session(tgt_ip, ssh, func_str, oprt_id):
+def find_session(tgt_ip, ssh):
     '''
     Execute the command and check up the status of session
     '''
-    logger = consts.glo_log()
-    # self.logger.write_to_log('INFO', 'info', '', 'start to execute the command and check up the status of session')
+    func_str = 'V9jGOP1i'
+    oprt_id = get_oprt_id()
     cmd = 'iscsiadm -m session'
-    #-m:
-    logger.write_to_log('T', 'INFO', 'info', 'start', oprt_id,
-                        '    Execute the command and check up the status of session')
     result_session = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-    if result_session['sts']:
-        result_session = result_session['rst'].decode('utf-8')
-        re_session = re.compile(f'tcp:.*({tgt_ip}):.*')
-        if re_findall(re_session, result_session):
-            # print('    iSCSI already login to VersaPLX')
-            #-m:s.pwl
-            logger.write_to_log('T', 'INFO', 'info', 'finish',
-                                oprt_id, f'    ISCSI already login to {tgt_ip}')
-            return True
-        else:
-            print('  iSCSI not login to VersaPLX, Try to login')
-            logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
-                                '  ISCSI not login to VersaPLX, Try to login')
+    if result_session:
+        if result_session['sts']:
+            result_session = result_session['rst'].decode('utf-8')
+            re_session = f'tcp:.*({tgt_ip}):.*'
+            if re_findall(re_session, result_session):
+                return True
+    else:
+        raise consts.ReplayExit
 
 # def ran_str(num):
 #     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -363,47 +331,75 @@ def find_session(tgt_ip, ssh, func_str, oprt_id):
 #     return str_
 
 
-#-m:, warning_level
-#-m:def prt(msg_level, warning_level)
-def pwl(str, level, oprt_id=None, type=None):
-    # rpl = 'no'
+def prt(str, level=0, warning_level=0):
+    warning_str = '*' * warning_level
+    indent_str = '  ' * level + str
     rpl = consts.glo_rpl()
-    str_ = '  ' * level + str
+
     if rpl == 'no':
-        logger = consts.glo_log()
         if level == 0:
-            str = '*** '+str+' ***'
-            print(f'{str_}'.center(72,'-'))
+            indent_str = '** ' + str + ' **'
+            print(f'{indent_str:-^80}')
         else:
-            print(f'|{str_:<70}|')
-            logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
+            print(f'|{warning_str:<4}{indent_str:<70}{warning_str:>4}|')
 
-            # print(f'|-{str_:<68}-|')
-            # print(f'|-*{str_:<66}*-|')
-            # print(f'|-***{str_:<62}***-|')
+    else:
+        if warning_level == 'exception':
+            print('REASON'.center(96, '-'))
+            print(str)
+            print(f'{"":-^96}','\n')
+            return
 
-    elif rpl == 'yes':
         db = consts.glo_db()
         time = db.get_time_via_str(consts.glo_tsc_id(),str)
         if not time:
             time = ''
 
-        # if unique_str:
-        #     time = db.get_time_via_unique_str(consts.glo_tsc_id(), unique_str)
-        # else:
-        #     time = ''
-
         if level == 0:
-            str = '*** '+str+' ***'
-            print(f'{str_}'.center(96,'-'))
+            indent_str = '** ' + str + ' **'
+            print(f'{indent_str:-^105}')
         else:
-            print(f'|Re:{time:<20} {str_:<70}|')
+            print(f'|{warning_str:<4} Re:{time:<20} {indent_str:<70}{warning_str:>4}|')
 
+
+
+
+
+def pwl(str, level, oprt_id=None, type=None):
+    # rpl = 'no'
+    rpl = consts.glo_rpl()
+    if rpl == 'no':
+        logger = consts.glo_log()
+        prt(str,level)
+        logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
+
+    elif rpl == 'yes':
+        prt(str,level)
+
+
+
+
+def pwe(str,level,warning_level):
+    """
+    print, write to log and exit.
+    :param logger: Logger object for logging
+    :param print_str: Strings to be printed and recorded
+    """
+    logger = consts.glo_log()
+
+    #-m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
+    prt(str,level,warning_level)
+    if warning_level == 1:
+        logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
+    elif warning_level == 2:
+        logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
+        sys.exit()
 
 
 
 if __name__ == '__main__':
-    pwl('3333',0)
-    pwl('3askldjasdasldkjaskdl',1)
+    pass
+    # pwl('3333',0)
+    # pwl('3askldjasdasldkjaskdl',1)
 
 
