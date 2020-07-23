@@ -339,12 +339,12 @@ def find_session(tgt_ip, ssh, func_str, oprt_id):
             logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
                                 '  ISCSI not login to VersaPLX, Try to login')
 
-# def ran_str(num):
-#     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-#     str_ = ''
-#     for i in range(num):
-#         str_ += random.choice(chars)
-#     return str_
+def ran_str(num):
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    str_ = ''
+    for i in range(num):
+        str_ += random.choice(chars)
+    return str_
 
 
 #-m:, warning_level

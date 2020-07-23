@@ -255,7 +255,7 @@ class VplxDrbd(object):
                     # self.logger.write_to_log('INFO','info','',(f'{self.res_name} DRBD check successful'))
                     return True
                 else:
-                    s.pwe(f'{self.res_name} DRBD verification failed',4
+                    s.pwe(f'{self.res_name} DRBD verification failed',4)
             else:
                 s.pwe(f'{self.res_name} DRBD does not exist',4)
 
