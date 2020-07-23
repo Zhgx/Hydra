@@ -161,8 +161,9 @@ class LogDB():
         sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and id >= {id_now} and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
-    def get_exception(self,transaction_id):
-        # id_now = consts.glo_id()
+    def get_exception_(self,transaction_id):
+        # id_now = consts.glo_log_id()
+        # print(id_now)
         id_now = 1
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}' and describe1 = 'exception' and id >= {id_now}"
         return self.sql_fetch_one(sql)
@@ -204,7 +205,9 @@ if __name__ == '__main__':
     # print(db.get_string_id('1594963387'))
     # print(db.get_time_via_unique_str('1595209399','jMPFwXy2'))
     # print(db.get_time_via_str('1595209399','123213'))
-    print(db.get_exception('1595296861'))
+    # print(db.get_exception('1595296861'))
+    # print(db.get_cmd_result(''))
+    print(db.get_time_via_str('1595396085','Start iscsi login'))
     # print(db.get_time_via_str('1595295584','Start to create lun, name: log_test_203'))
     # print(db.get_cmd_via_tid('1594879092'))
     # res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')
