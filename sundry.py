@@ -332,7 +332,8 @@ def find_session(tgt_ip, ssh):
 
 
 def prt(str, level=0, warning_level=0):
-    warning_str = '*' * warning_level
+    if isinstance(warning_level,int):
+        warning_str = '*' * warning_level
     indent_str = '  ' * level + str
     rpl = consts.glo_rpl()
 
@@ -346,9 +347,9 @@ def prt(str, level=0, warning_level=0):
 
     else:
         if warning_level == 'exception':
-            print('REASON'.center(96, '-'))
+            print(' exception infomation '.center(105, '*'))
             print(str)
-            print(f'{"":-^96}','\n')
+            print(f'{" exception infomation ":*^105}','\n')
             return
 
         db = consts.glo_db()
@@ -396,6 +397,16 @@ def pwe(str,level,warning_level):
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
         sys.exit()
 
+
+def handle_exception():
+    db = consts.glo_db()
+    exception_info = db.get_exception_info(consts.glo_tsc_id())
+    if exception_info:
+        prt('The transaction was interrupted because of an exception',1,warning_level=2)
+        prt(exception_info, warning_level='exception')
+        raise consts.ReplayExit
+    else:
+        prt('Unable to get data from the database',3,1)
 
 
 if __name__ == '__main__':

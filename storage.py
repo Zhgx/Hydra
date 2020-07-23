@@ -53,10 +53,12 @@ class Storage:
         elif self.rpl == 'yes':
             db = consts.glo_db()
             db_id, oprt_id = db.find_oprt_id_via_string(self.TID, unique_str)
-
             if db_id:
                 s.change_pointer(db_id)
-            return True
+            result_cmd = db.get_cmd_result(oprt_id)
+            if result_cmd:
+                return True
+
 
     def lun_create(self):
         '''
@@ -67,11 +69,11 @@ class Storage:
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
         info_msg = f'Start to create LUN, LUN name: {self.lun_name},LUN ID: {self.ID}'
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
-        # print(f'  Start to {info_msg}')# 正常打印
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
-        self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        s.pwl(f'Succeed in creating LUN {self.lun_name}',3,oprt_id,'finish')
+        result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        if result:
+            s.pwl(f'Succeed in creating LUN {self.lun_name}',3,oprt_id,'finish')
+        else:
+            s.handle_exception()
 
     def lun_map(self):
         '''
@@ -79,17 +81,14 @@ class Storage:
         '''
         oprt_id = s.get_oprt_id()
         unique_str = '1lvpO6N5'
-        info_msg = f'Start to map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}' #-v + Start to
+        info_msg = f'Start to map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
-        # print(f'  Start to {info_msg}')
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
-        s.pwl(f'{info_msg}',2,oprt_id,'start') #-v 删除空格、Start to
-        self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        # print(f'  Finish with {info_msg}')
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
-        s.pwl(f'Finish mapping LUN {self.lun_name} to VersaPLX', 3, oprt_id, 'finish')
+        s.pwl(f'{info_msg}',2,oprt_id,'start')
+        result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        if result:
+            s.pwl(f'Finish mapping LUN {self.lun_name} to VersaPLX', 3, oprt_id, 'finish')
+        else:
+            s.handle_exception()
 
     def lun_create_verify(self):
         pass
@@ -158,7 +157,7 @@ class Storage:
 
     def del_all(self, lun_to_del_list):
         for lun_name in lun_to_del_list:
-            s.pwl(f'Deleting LUN "{lun_name}"')
+            s.pwl(f'Deleting LUN "{lun_name}"',2,'','start')
             self.lun_unmap(lun_name)
             self.lun_destroy(lun_name)
 

@@ -173,9 +173,7 @@ class VplxDrbd(object):
             else:
                 s.pwe(f'Failed to initialize resource {self.res_name}',4,2)
         else:
-            db = consts.glo_db()
-            s.prt(db.get_exception_(consts.glo_tsc_id()),warning_level='exception')
-            raise consts.ReplayExit
+            s.handle_exception()
 
     def _drbd_up(self):
         '''
@@ -186,11 +184,14 @@ class VplxDrbd(object):
         cmd = f'drbdadm up {self.res_name}'
         s.pwl(f'Start to bring up DRBD resource "{self.res_name}"', 3, oprt_id, 'start')
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result['sts']:
-            s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"',4,oprt_id,'finish')
-            return True
+        if result:
+            if result['sts']:
+                s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"',4,oprt_id,'finish')
+                return True
+            else:
+                s.pwe(f'Failed to bring up resource {self.res_name}', 4, 2)
         else:
-            s.pwe(f'Failed to bring up resource {self.res_name}', 4, 2)
+            s.handle_exception()
 
     def _drbd_primary(self):
         '''
@@ -201,11 +202,14 @@ class VplxDrbd(object):
         cmd = f'drbdadm primary --force {self.res_name}'
         s.pwl(f'Start to initial synchronization for "{self.res_name}"',3,oprt_id,'start')
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result['sts']:
-            s.pwl(f'Succeed in synchronizing DRBD resource "{self.res_name}"',4,oprt_id,'finish') #-v 3->4
-            return True
+        if result:
+            if result['sts']:
+                s.pwl(f'Succeed in synchronizing DRBD resource "{self.res_name}"',4,oprt_id,'finish')
+                return True
+            else:
+                s.pwe(f'Failed to synchronize resource {self.res_name}',4,2)
         else:
-            s.pwe(f'Failed to synchronize resource {self.res_name}',4,2)
+            s.handle_exception()
 
     def drbd_cfg(self):
         s.pwl('Start to configure DRBD resource',2,'','start')
@@ -239,7 +243,7 @@ class VplxDrbd(object):
                 else:
                     s.pwe(f'DRBD {self.res_name} does not exist',4,2)
         else:
-            raise consts.ReplayExit
+            s.handle_exception()
 
     def _drbd_down(self, res_name):
         '''
@@ -321,7 +325,7 @@ class VplxCrm(object):
             else:
                 s.pwe(f'Failed to create iSCSILogicaLUnit "{self.lu_name}"',4,2)
         else:
-            return
+            s.handle_exception()
 
     def _setting_col(self):
         '''
@@ -332,11 +336,14 @@ class VplxCrm(object):
         cmd = f'crm conf colocation {self.colocation_name} inf: {self.lu_name} {TARGET_NAME}'
         s.pwl(f'Start to set up colocation of iSCSILogicalUnit "{self.lu_name}"',3,oprt_id,'start')
         result_crm = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_crm['sts']:
-            s.pwl(f'Succeed in set colocation of "{self.lu_name}"', 4, oprt_id, 'finish')
-            return True
+        if result_crm:
+            if result_crm['sts']:
+                s.pwl(f'Succeed in set colocation of "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwe(f'Failde to set colocation of "{self.lu_name}"',4,2)
         else:
-            s.pwe(f'Failde to set colocation of "{self.lu_name}"',4,2)
+            s.handle_exception()
 
     def _setting_order(self):
         '''
@@ -347,11 +354,14 @@ class VplxCrm(object):
         cmd = f'crm conf order {self.order_name} {TARGET_NAME} {self.lu_name}'
         s.pwl(f'Start to set up order of iSCSILogicalUnit "{self.lu_name}"',3,oprt_id,'start')
         result_crm = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_crm['sts']:
-            s.pwl(f'Succeed in set order of "{self.lu_name}"', 4, oprt_id, 'finish')
-            return True
+        if result_crm:
+            if result_crm['sts']:
+                s.pwl(f'Succeed in set order of "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwe(f'Failde to set order of "{self.lu_name}"',4,2)
         else:
-            s.pwe(f'Failde to set order of "{self.lu_name}"',4,2)
+            s.handle_exception()
 
     def _crm_setting(self):
         if self._setting_col():
@@ -367,11 +377,14 @@ class VplxCrm(object):
         cmd = f'crm res start {self.lu_name}'
         s.pwl(f'Start up the iSCSILogicalUnit resource "{self.lu_name}"',3,oprt_id,'start')
         result_cmd = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_cmd['sts']:
-            s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
-            return True
+        if result_cmd:
+            if result_cmd['sts']:
+                s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwe(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"',4,2)
         else:
-            s.pwe(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"',4,2)
+            s.handle_exception()
 
     def crm_cfg(self):
         s.pwl('Start to configure crm resource', 2, '', 'start')

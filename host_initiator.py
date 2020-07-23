@@ -118,8 +118,7 @@ class HostTest(object):
             else:
                 s.pwe(f"Failed to mount {dev_name} to {MOUNT_POINT}",3,2)
         else:
-            #pass
-            raise consts.ReplayExit
+            s.handle_exception()
 
     def _judge_format(self, string):
         '''
@@ -140,14 +139,17 @@ class HostTest(object):
         s.pwl(f'Start to format {dev_name}',2,oprt_id,'start')
 
         result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd, oprt_id)
-        if result_format['sts']:
-            result_format = result_format['rst'].decode('utf-8')
-            if self._judge_format(result_format):
-                return True
+        if result_format:
+            if result_format['sts']:
+                result_format = result_format['rst'].decode('utf-8')
+                if self._judge_format(result_format):
+                    return True
+                else:
+                    s.pwe(f'Failed to format {dev_name}',3,2)
             else:
-                s.pwe(f'Failed to format {dev_name}',3,2)
+                s.pwe(f'Failed to execute command:{cmd}', 3,2)
         else:
-            s.pwe(f'Failed to execute command:{cmd}', 3,2)
+            s.handle_exception()
 
 
     def _get_dd_perf(self, cmd_dd, unique_str):
