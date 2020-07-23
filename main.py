@@ -12,6 +12,7 @@ import log
 import logdb
 import os
 import subprocess
+import debug_log
 
 
 class HydraArgParse():
@@ -230,7 +231,7 @@ class HydraArgParse():
 
         # uniq_str: The unique string for this test, affects related naming
         if args.test:
-            self.test()
+            debug_log.collect_debug_log()
             return
         if args.id_range:
             id_list = s.change_id_str_to_list(args.id_range)

@@ -323,12 +323,12 @@ def find_session(tgt_ip, ssh):
     else:
         raise consts.ReplayExit
 
-# def ran_str(num):
-#     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-#     str_ = ''
-#     for i in range(num):
-#         str_ += random.choice(chars)
-#     return str_
+def ran_str(num):
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    str_ = ''
+    for i in range(num):
+        str_ += random.choice(chars)
+    return str_
 
 
 def prt(str, level=0, warning_level=0):
