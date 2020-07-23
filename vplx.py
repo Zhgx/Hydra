@@ -57,7 +57,7 @@ class DebugLog(object):
     def __init__(self):
         init_ssh()
         self.tid = consts.glo_tsc_id()
-        self.debug_folder = f'/var/log/{self.tid}_{host}'
+        self.debug_folder = f'/var/log/{self.tid}'
         self.dbg = s.DebugLog(SSH, self.debug_folder)
 
     def collect_debug_sys(self):
@@ -171,7 +171,7 @@ class VplxDrbd(object):
                 s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"',4,oprt_id,'finish')
                 return True
             else:
-                s.pwe(f'Failed to initialize resource {self.res_name}',4,2)
+                s.pwce(f'Failed to initialize resource {self.res_name}',4,2)
         else:
             s.handle_exception()
 
@@ -191,7 +191,7 @@ class VplxDrbd(object):
             else:
                 s.pwe(f'Failed to bring up resource {self.res_name}', 4, 2)
         else:
-            s.handle_exception()
+            s.handle_exception(f'Failed to bring up resource {self.res_name}',)
 
     def _drbd_primary(self):
         '''

@@ -26,7 +26,7 @@ class ConnSSH(object):
 
     def _connect(self):
         oprt_id = s.get_oprt_id()
-        s.pwl(f'Start to connect {self._host} via SSH',1,oprt_id,'start')
+        s.pwl(f'Start to connect {self._host} via SSH',2,oprt_id,'start')
         self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for SSH connect',
                                  {'host': self._host, 'port': self._port, 'username': self._username,
                                   'password': self._password})
@@ -109,7 +109,7 @@ class ConnTelnet(object):
         try:
             oprt_id = s.get_oprt_id()
 
-            s.pwl('Start to connect NetApp via Telnet',1,oprt_id,'start')
+            s.pwl('Start to connect NetApp via Telnet',2,oprt_id,'start')
             #-m:DATA,Telnet,connect,dict
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',
                                      {'host': self._host, 'port': self._port, 'username': self._username,
