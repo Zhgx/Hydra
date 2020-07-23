@@ -1,34 +1,30 @@
 # coding:utf-8
-
 import connect
-import re
 import time
 import sundry as s
 import consts
 
 SSH = None
-# RPL = consts.get_rpl()
 
-#-m:全局变量应该大写吧?
-vplx_ip = '10.203.1.199'
-host = '10.203.1.200'
-port = '22'
-user = 'root'
-password = 'password'
-timeout = 3
-mount_point = '/mnt'
+VPLX_IP = '10.203.1.199'
+HOST = '10.203.1.200'
+PORT = '22'
+USER = 'root'
+PASSWORD = 'password'
+TIMEOUT = 3
+MOUNT_POINT = '/mnt'
 
 
 def init_ssh():
     global SSH
     if not SSH:
-        SSH = connect.ConnSSH(host, port, user, password, timeout)
+        SSH = connect.ConnSSH(HOST, PORT, USER, PASSWORD, TIMEOUT)
     else:
         pass
 
 
 def umount_mnt():
-    SSH.execute_command(f'umount {mount_point}')
+    SSH.execute_command(f'umount {MOUNT_POINT}')
 
 
 def _find_new_disk():
@@ -38,47 +34,39 @@ def _find_new_disk():
     disk_dev = s.get_the_disk_with_lun_id(all_disk)
     if disk_dev:
         return disk_dev
-    else:
-        s.pwe()
 
-#    scan
-#      meizhaodao, scan again
-#    scan
-#      zhaodaole 
 
 #-m:这里要注意replay的时候这边程序的调用过程.re-rescan之后又尽心过了一次_find_new_disk(),日志应该需要跳转到下一条lsscsi结果.注意指针及时移动
 def get_disk_dev():
     s.scsi_rescan(SSH, 'n')
     disk_dev = _find_new_disk()
     if disk_dev:
+        s.pwl(f'Succeed in getting disk device {disk_dev} with id {consts.glo_id()}', 3, '', 'finish')
         return disk_dev
     else:
         scsi_id = consts.glo_id()
-        #-m:需要增加显示level,和警告level
-        s.pwl('No disk with SCSI ID {scsi_id} found, scan again...',2)
+        s.pwl(f'No disk with SCSI ID {scsi_id} found, scan again...',3,'','start')
         s.scsi_rescan(SSH, 'a')
         disk_dev = _find_new_disk()
         if disk_dev:
-            #-m:
-            s.pwl('找到了',2)
+            s.pwl('Found the disk successfully',4,'','finish')
             return disk_dev
         else:
-            #-m:真的就要退出了,这里.
-            s.pwe('xxx:no new device')
+            s.pwe('No disk found, exit the program',4,2)
 
 class DebugLog(object):
     def __init__(self):
         init_ssh()
         self.tid = consts.glo_tsc_id()
-        self.debug_folder = f'/var/log/{self.tid}_{host}'
+        self.debug_folder = f'/var/log/{self.tid}_{HOST}'
         self.dbg = s.DebugLog(SSH, self.debug_folder)
     
     def collect_debug_sys(self):
-        cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, host)
+        cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, HOST)
         self.dbg.prepare_debug_log(cmd_debug_sys)
 
     def get_all_log(self, folder):
-        local_file = f'{folder}/{host}.tar'
+        local_file = f'{folder}/{HOST}.tar'
         self.dbg.get_debug_log(local_file)
     
 
@@ -88,29 +76,22 @@ class HostTest(object):
     '''
 
     def __init__(self):
-        
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'start', '', 'Start to Format and do some IO test on Host')
         self._prepare()
 
     def _create_iscsi_session(self):
         #-m:这里应该有一个较高级别的说明现在在干啥.至于哪里需要这个函数的string,哪里不需要,我也晕了,需要确认一下
-        self.logger.write_to_log(
-            f'T', 'INFO', 'info', 'start', '', f'  Discover iSCSI session for {vplx_ip}')
-        if not s.find_session(vplx_ip, SSH, 'V9jGOP2v', s.get_oprt_id()):
-            #-m:这里大概也要说明一下现在的情况,not log in,然后再start log in
-            # self.logger.write_to_log(
-            #     f'T', 'INFO', 'info', 'start', '', f'Login to {vplx_ip}')
-            if s.iscsi_login(vplx_ip, SSH, 'rgjfYl5K', s.get_oprt_id()):
-                #-m:要打印一下连上了.
-                s.pwl('ISSCsi   loged in success')
-                pass
+        s.pwl('Check up the status of session', 2, '', 'start')
+        if not s.find_session(VPLX_IP, SSH):
+            s.pwl(f'No session found, start to login to {VPLX_IP}',3,'','start')
+            if s.iscsi_login(VPLX_IP, SSH):
+                s.pwl(f'Succeed in logining to {VPLX_IP}',4,'','finish')
             else:
-                s.pwe(f'can not login to {vplx_ip}')
+                s.pwe(f'Can not login to {VPLX_IP}',4,2)
         else:
-            s.pwl('ISSCsi  Already  loged in',1)
+            s.pwl(f'ISCSI has logged in {VPLX_IP}',3,'','finish')
+
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -118,8 +99,8 @@ class HostTest(object):
             umount_mnt()
             # self._create_iscsi_session()
         if self.rpl == 'yes':
-            #-m:理清楚 rpl时候有没有调用ssh连接
-            s.find_session(vplx_ip, SSH, 'V9jGOP2v', s.get_oprt_id())
+            pass
+            # s.find_session(VPLX_IP, SSH)
 
     def _mount(self, dev_name):
         '''
@@ -127,20 +108,18 @@ class HostTest(object):
         '''
         oprt_id = s.get_oprt_id()
         unique_str = '6CJ5opVX'
-        cmd = f'mount {dev_name} {mount_point}'
-        #-m:
-        self.logger.write_to_log(
-            'T', 'INFO', 'info', 'start', oprt_id, f'Try mount {dev_name} to "/mnt"')
+        cmd = f'mount {dev_name} {MOUNT_POINT}'
+        s.pwl(f'Start trying to mount {dev_name} to {MOUNT_POINT}',2,oprt_id,'start')
         result_mount = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_mount['sts']:
-            #-m:这个不是start,绝对不是,不能乱...finish
-            s.pwl(f'Disk {dev_name} mounted to "/mnt',1,oprt_id,'start')
-            # print(f'    Disk {dev_name} mounted to "/mnt"')
-            # self.logger.write_to_log(
-            #     'T', 'INFO', 'info', 'finish', oprt_id, f'    Disk {dev_name} mounted to "/mnt"')
-            return True
+        if result_mount:
+            if result_mount['sts']:
+                s.pwl(f'Disk {dev_name} mounted to {MOUNT_POINT}',3,oprt_id,'finish')
+                return True
+            else:
+                s.pwe(f"Failed to mount {dev_name} to {MOUNT_POINT}",3,2)
         else:
-            s.pwe(f"mount {dev_name} to {mount_point} failed")
+            #pass
+            raise consts.ReplayExit
 
     def _judge_format(self, string):
         '''
@@ -150,8 +129,6 @@ class HostTest(object):
         re_resulgt = s.re_findall(re_string, string)
         if len(re_resulgt) == 4:
             return True
-        else:
-            s.pwe('format failed')
 
     def format(self, dev_name):
         '''
@@ -160,7 +137,7 @@ class HostTest(object):
         cmd = f'mkfs.ext4 {dev_name} -F'
         oprt_id = s.get_oprt_id()
 
-        s.pwl(f'Start to format {dev_name}',1,oprt_id,'start')
+        s.pwl(f'Start to format {dev_name}',2,oprt_id,'start')
 
         result_format = s.get_ssh_cmd(SSH, '7afztNL6', cmd, oprt_id)
         if result_format['sts']:
@@ -168,20 +145,10 @@ class HostTest(object):
             if self._judge_format(result_format):
                 return True
             else:
-
-                s.pwe(f'Format {dev_name} failed')
+                s.pwe(f'Failed to format {dev_name}',3,2)
         else:
-            s.pwl(f'Format command {cmd} execute failed', 1, oprt_id, 'finish')
+            s.pwe(f'Failed to execute command:{cmd}', 3,2)
 
-                #-m:s.pwe 同样需要level,显示level,警告level应该是一样的
-            s.pwe(f'Format {dev_name} failed')
-
-            #-m:如果失败,则退出
-
-
-            # print(f'  Format command {cmd} execute failed')
-            # self.logger.write_to_log('T', 'INFO', 'warning', 'failed', '',
-            #                          f'  Format command "{cmd}" execute failed')
 
     def _get_dd_perf(self, cmd_dd, unique_str):
         '''
@@ -191,52 +158,42 @@ class HostTest(object):
         result_dd = result_dd['rst'].decode('utf-8')
         re_performance = r'.*s, ([0-9.]* [A-Z]B/s)'
         re_result = s.re_findall(re_performance, result_dd)
-        oprt_id = s.get_oprt_id()
-        #-m:删除findll 的 oprt id
-        self.logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {
-                                 re_performance: result_dd})
+        # 正则相关的暂时不做记录
+        # self.logger.write_to_log('T', 'OPRT', 'regular', 'findall', oprt_id, {
+        #                          re_performance: result_dd})
         if re_result:
             dd_perf = re_result[0]
-            self.logger.write_to_log(
-                'F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
+            # self.logger.write_to_log(
+            #     'F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
             return dd_perf
         else:
-            s.pwe('Can not get test result')
+            s.pwe('Can not get test result',3,2)
 
     def get_test_perf(self):
         '''
         Calling method to read&write test
         '''
-        s.pwl(f'Start speed test',1,'','start')
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'start', '', 'Start speed test ... ...')
-        cmd_dd_write = f'dd if=/dev/zero of={mount_point}/t.dat bs=512k count=16'
-        cmd_dd_read = f'dd if={mount_point}/t.dat of=/dev/zero bs=512k count=16'
-        # self.logger.write_to_log('INFO', 'info', '', 'start calling method to read&write test')
+        s.pwl(f'Start speed test',2,'','start')
+        cmd_dd_write = f'dd if=/dev/zero of={MOUNT_POINT}/t.dat bs=512k count=16'
+        cmd_dd_read = f'dd if={MOUNT_POINT}/t.dat of=/dev/zero bs=512k count=16'
         write_perf = self._get_dd_perf(cmd_dd_write, unique_str='CwS9LYk0')
-        s.pwl(f'Write Speed: {write_perf}',2,'','finish')
-        # print(f'    Write Speed: {write_perf}')
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'finish', '', f'    Write Speed: {write_perf}')
+        s.pwl(f'Write Speed: {write_perf}',3,'','finish')
         time.sleep(0.25)
         read_perf = self._get_dd_perf(cmd_dd_read, unique_str='hsjG0miU')
-        s.pwl(f'Read  Speed: {read_perf}',2,'','finish')
-        # print(f'    Read  Speed: {read_perf}')
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'finish', '', f'    Read  Speed: {read_perf}')
+        s.pwl(f'Read  Speed: {read_perf}',3,'','finish')
 
     def start_test(self):
-        # self.logger.write_to_log('INFO', 'info', '', 'start to test')
-        s.pwl('start iscsi login',2)
+        # s.pwl('Start iscsi login',2,'','start')
         self._create_iscsi_session()
+        s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         dev_name = get_disk_dev()
         if self.format(dev_name):
             if self._mount(dev_name):
                 self.get_test_perf()
             else:
-                s.pwe(f'Device {dev_name} mount failed')
+                s.pwe(f'Failed to mount device {dev_name}',3,2)
         else:
-            s.pwe(f'Device {dev_name} format failed')
+            s.pwe(f'Failed to format device {dev_name}',3,2)
 
     def host_rescan_r(self):
         '''

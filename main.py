@@ -147,19 +147,21 @@ class HydraArgParse():
                 drbd.del_all(drbd_to_del_list)
                 s.pwl('Start to delete Storage LUN',0)
                 stor.del_all(lun_to_del_list)
+                s.pwl('Start to remove all deleted disk device on vplx and host',0)
                 # remove all deleted disk device on vplx and host
                 crm.vplx_rescan_r()
                 host.host_rescan_r()
+                print(f'{"":-^80}','\n')
             else:
-                s.pwe('User canceled deleting proccess ...')
+                s.pwe('User canceled deleting proccess ...',2,2)
         else:
             s.pwe(
-                '\nNo qualified resources to be delete.\n')
+                '\nNo qualified resources to be delete.\n',2,2)
 
     # @s.record_exception
     def run(self, dict_args):
         rpl = consts.glo_rpl()
-        format_width = 96 if rpl == 'yes' else 74
+        format_width = 105 if rpl == 'yes' else 80
         for id_, str_ in dict_args.items():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
@@ -167,6 +169,7 @@ class HydraArgParse():
             if rpl == 'no':
                 self.transaction_id = s.get_transaction_id()
                 self.logger = log.Log(self.transaction_id)
+                consts.set_glo_log(self.logger)
                 self.logger.write_to_log(
                     'F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.glo_id()}')
                 self.logger.write_to_log(
@@ -175,20 +178,19 @@ class HydraArgParse():
                 tid = self.list_tid[0]
                 self.list_tid.remove(tid)
                 consts.set_glo_tsc_id(tid)
-
-            s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
-            self._storage()
-            s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
-            self._vplx_drbd()
-            self._vplx_crm()
-            s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
-            self._host_test()
-            print(''.center(format_width, '-'), '\n') #-v
-            # if rpl == 'yes':
-            #     print(''.center(96, '-'), '\n')
-            # else:
-            #     print(''.center(72, '-'), '\n')
-            time.sleep(2) #-v
+            try:
+                s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
+                self._storage()
+                s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
+                self._vplx_drbd()
+                self._vplx_crm()
+                s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
+                self._host_test()
+                print(f'{"":-^{format_width}}','\n')
+                time.sleep(2)
+            except consts.ReplayExit:
+                print(f'{"":-^{format_width}}','\n')
+                continue
 
     def prepare_replay(self,args):
         db = consts.glo_db()

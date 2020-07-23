@@ -1,7 +1,11 @@
 # coding:utf-8
 
+class ReplayExit(Exception):
+    "replay时，输出日志中的异常信息后，此次replay事务也随之停止"
+    pass
 
-def _init():  # 初始化
+
+def _init():
     global _global_dict
     _global_dict = {}
     _global_dict['LOG_ID'] = 0
