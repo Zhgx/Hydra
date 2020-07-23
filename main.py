@@ -156,7 +156,7 @@ class HydraArgParse():
             s.pwe(
                 '\nNo qualified resources to be delete.\n',2,2)
 
-    # @s.record_exception
+    @s.record_exception
     def run(self, dict_args):
         rpl = consts.glo_rpl()
         format_width = 105 if rpl == 'yes' else 80
@@ -250,13 +250,11 @@ class HydraArgParse():
             self.prepare_replay(args)
 
         elif args.uniq_str and args.id_range:
-            uniq_str = consts.glo_str()
             id_list = consts.glo_id_list()
             for id_ in id_list:
                 self.dict_id_str.update({id_: args.uniq_str})
 
         else:
-            # self.logger.write_to_log('INFO','info','','print_help')
             self.parser.print_help()
             return
 
