@@ -12,6 +12,7 @@ import log
 import logdb
 import os
 import subprocess
+import debug_log
 
 
 class HydraArgParse():
@@ -24,6 +25,7 @@ class HydraArgParse():
         consts._init()
         #-m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
         self.transaction_id = s.get_transaction_id()
+        consts.set_glo_tsc_id(self.transaction_id)
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
         consts.set_glo_tsc_id(self.transaction_id)
@@ -235,7 +237,7 @@ class HydraArgParse():
 
         # uniq_str: The unique string for this test, affects related naming
         if args.test:
-            self.test()
+            debug_log.collect_debug_log()
             return
         if args.id_range:
             id_list = s.change_id_str_to_list(args.id_range)

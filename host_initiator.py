@@ -58,7 +58,7 @@ class DebugLog(object):
     def __init__(self):
         init_ssh()
         self.tid = consts.glo_tsc_id()
-        self.debug_folder = f'/var/log/{self.tid}_{HOST}'
+        self.debug_folder = f'/var/log/{self.tid}'
         self.dbg = s.DebugLog(SSH, self.debug_folder)
     
     def collect_debug_sys(self):

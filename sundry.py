@@ -31,7 +31,7 @@ class DebugLog(object):
         if output['sts']:
             pass
         else:
-            print(f'Can not create folder {self.dbg_folder} to stor debug log')
+            prt(f'Can not create folder {self.dbg_folder} to stor debug log',3,2)
             sys.exit()
 
     def prepare_debug_log(self, cmd_list):
@@ -40,7 +40,7 @@ class DebugLog(object):
             if output['sts']:
                 time.sleep(0.1)
             else:
-                print(f'Collect log command "{cmd}" execute failed.')
+                prt(f'Collect log command "{cmd}" execute failed.',3,2)
 
     def get_debug_log(self, local_folder):
         dbg_file = f'{self.dbg_folder}.tar'
@@ -322,12 +322,12 @@ def find_session(tgt_ip, ssh):
     else:
         raise consts.ReplayExit
 
-# def ran_str(num):
-#     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-#     str_ = ''
-#     for i in range(num):
-#         str_ += random.choice(chars)
-#     return str_
+def ran_str(num):
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    str_ = ''
+    for i in range(num):
+        str_ += random.choice(chars)
+    return str_
 
 
 def prt(str, level=0, warning_level=0):
@@ -340,6 +340,7 @@ def prt(str, level=0, warning_level=0):
 
     if rpl == 'no':
         if level == 0:
+            print()
             indent_str = '** ' + str + ' **'
             print(f'{indent_str:-^80}')
         else:
@@ -379,10 +380,7 @@ def pwl(str, level, oprt_id=None, type=None):
     elif rpl == 'yes':
         prt(str,level)
 
-
-
-
-def pwe(str,level,warning_level):
+def prt_log(str,level,warning_level):
     """
     print, write to log and exit.
     :param logger: Logger object for logging
@@ -421,7 +419,24 @@ def pwe(str,level,warning_level):
         logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
     elif warning_level == 2:
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
-        print(f'{"":-^{format_width}}', '\n')
+        # debug_log.collect_debug_log()
+        # sys.exit()
+
+
+def pwe(str,level,warning_level):
+    prt_log(str,level,warning_level)
+    if warning_level == 2:
+        sys.exit()
+
+def pwce(str,level,warning_level):
+    """
+    print, write to log and exit.
+    :param logger: Logger object for logging
+    :param print_str: Strings to be printed and recorded
+    """
+    prt_log(str,level,warning_level)
+    debug_log.collect_debug_log()
+    if warning_level == 2:
         sys.exit()
 
 
