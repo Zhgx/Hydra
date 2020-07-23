@@ -26,6 +26,7 @@ class HydraArgParse():
         self.transaction_id = s.get_transaction_id()
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
+        consts.set_glo_tsc_id(self.transaction_id)
         self.argparse_init()
         self.list_tid = None # for replay
         self.log_user_input()
@@ -168,6 +169,7 @@ class HydraArgParse():
                 self.transaction_id = s.get_transaction_id()
                 self.logger = log.Log(self.transaction_id)
                 consts.set_glo_log(self.logger)
+                consts.set_glo_tsc_id(self.transaction_id)
                 self.logger.write_to_log(
                     'F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.glo_id()}')
                 self.logger.write_to_log(
@@ -179,13 +181,15 @@ class HydraArgParse():
             try:
                 s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
                 self._storage()
+                time.sleep(1.5)
                 s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
                 self._vplx_drbd()
                 self._vplx_crm()
+                time.sleep(1.5)
                 s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
                 self._host_test()
                 print(f'{"":-^{format_width}}','\n')
-                time.sleep(2)
+                time.sleep(1.5)
             except consts.ReplayExit:
                 print(f'{"":-^{format_width}}','\n')
                 continue
@@ -195,6 +199,7 @@ class HydraArgParse():
         arg_tid = args.tid
         arg_date = args.date
         print('* MODE : REPLAY *')
+        time.sleep(1.5)
         if arg_tid:
             string, id = db.get_string_id(arg_tid)
             if not all([string, id]):

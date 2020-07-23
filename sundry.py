@@ -147,7 +147,6 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         if result_cmd:
             result = eval(result_cmd)
         else:
-            # pwl(f'Failed to execute command:{cmd}',4)
             result = None
         if db_id:
             change_pointer(db_id)
@@ -334,6 +333,8 @@ def find_session(tgt_ip, ssh):
 def prt(str, level=0, warning_level=0):
     if isinstance(warning_level,int):
         warning_str = '*' * warning_level
+    else:
+        warning_str = ''
     indent_str = '  ' * level + str
     rpl = consts.glo_rpl()
 
@@ -390,11 +391,37 @@ def pwe(str,level,warning_level):
     logger = consts.glo_log()
 
     #-m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    prt(str,level,warning_level)
+    rpl = consts.glo_rpl()
+    format_width = 80
+    if rpl == 'yes':
+        format_width = 105
+        db = consts.glo_db()
+        oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
+        prt(str + f'.oprt_id:{oprt_id}', level, warning_level)
+        result_cmd = db.get_cmd_result(oprt_id)
+        if result_cmd:
+            result = eval(result_cmd)
+        else:
+            result = None
+        if result:
+            fail_reason = result['rst'].decode()
+        else:
+            fail_reason = 'Unknown mistake'
+        print(' wrong reason '.center(105, '*'))
+        print(fail_reason)
+        print(f'{" wrong reason ":*^105}')
+    elif rpl == 'no':
+        prt(str, level, warning_level)
+
+    # format_width = 105 if rpl == 'yes' else 80
+    # db = consts.glo_db()
+    # oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
+    # prt(str+f'oprt_id:{oprt_id}',level,warning_level)
     if warning_level == 1:
         logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
     elif warning_level == 2:
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
+        print(f'{"":-^{format_width}}', '\n')
         sys.exit()
 
 
@@ -406,7 +433,9 @@ def handle_exception():
         prt(exception_info, warning_level='exception')
         raise consts.ReplayExit
     else:
-        prt('Unable to get data from the database',3,1)
+        oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(),consts.glo_log_id())
+        prt(f'Unable to get data from the database.oprt_id:{oprt_id}',3,2)
+        raise consts.ReplayExit
 
 
 if __name__ == '__main__':
