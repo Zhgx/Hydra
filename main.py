@@ -25,6 +25,7 @@ class HydraArgParse():
         consts._init()
         #-m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
         self.transaction_id = s.get_transaction_id()
+        consts.set_glo_tsc_id(self.transaction_id)
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
         self.argparse_init()
