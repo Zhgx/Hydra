@@ -108,6 +108,7 @@ class ConnTelnet(object):
     def _connect(self):
         try:
             oprt_id = s.get_oprt_id()
+
             s.pwl('Start to connect NetApp via Telnet',1,oprt_id,'start')
             #-m:DATA,Telnet,connect,dict
             self.logger.write_to_log('F', 'DATA', 'value', 'dict', 'data for telnet connect',

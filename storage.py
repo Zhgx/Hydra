@@ -9,10 +9,11 @@ username = 'root'
 password = 'Feixi@123'
 timeout = 3
 
+
 class DebugLog(object):
     def __init__(self):
         self.telnet_conn = connect.ConnTelnet(
-                host, port, username, password, timeout)
+            host, port, username, password, timeout)
 
     def get_storage_debug(self, debug_folder):
         cmd_debug = consts.get_cmd_debug_stor()
@@ -108,7 +109,8 @@ class Storage:
             unmap_re = r'unmapped from initiator group hydra'
             re_result = s.re_findall(unmap_re, unmap_result)
             if re_result:
-                # print(f'/vol/esxi/{lun_name} unmap succeed')
+                print(f'  Unmap the lun /vol/esxi/{lun_name}  successfully')
+
                 return True
             else:
                 #-m:只有在出错之后才打印和记录,不过不退出.正常完成的不记录
@@ -129,7 +131,9 @@ class Storage:
             re_destroy = r'destroyed'
             re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
-                # print(f'/vol/esxi/{lun_name} destroy succeed')
+
+                print(f'  Destroy the lun /vol/esxi/{lun_name} successfully')
+
                 return True
             else:
                 print(f'can not destroy lun {lun_name}')
@@ -139,7 +143,8 @@ class Storage:
     def get_all_cfgd_lun(self):
         # get list of all configured luns
         cmd_lun_show = 'lun show'
-        show_result = self.ex_telnet_cmd('2lYpiKm3', cmd_lun_show, s.get_oprt_id())
+        show_result = self.ex_telnet_cmd(
+            '2lYpiKm3', cmd_lun_show, s.get_oprt_id())
         if show_result:
             re_lun = f'/vol/esxi/(\w*_[0-9]{{1,3}})'
             lun_cfgd_list = s.re_findall(re_lun, show_result)
@@ -156,6 +161,7 @@ class Storage:
     #     return lun_to_del_list
 
     def del_all(self, lun_to_del_list):
+        s.pwl('start to delete storage lun',0,'','delete')
         for lun_name in lun_to_del_list:
             s.pwl(f'Deleting LUN "{lun_name}"',2,'','start')
             self.lun_unmap(lun_name)
