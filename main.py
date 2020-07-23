@@ -23,13 +23,13 @@ class HydraArgParse():
 
     def __init__(self):
         consts._init()
-        #-m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
+        # -m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
         self.transaction_id = s.get_transaction_id()
         consts.set_glo_tsc_id(self.transaction_id)
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
         self.argparse_init()
-        self.list_tid = None # for replay
+        self.list_tid = None  # for replay
         self.log_user_input()
         self.dict_id_str = {}
 
@@ -143,20 +143,20 @@ class HydraArgParse():
         if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
             answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
             if answer == 'yes' or answer == 'y':
-                s.pwl('Start to delete CRM resource',2)
+                s.pwl('Start to delete CRM resource', 2)
                 crm.del_all(crm_to_del_list)
-                s.pwl('Start to delete DRBD resource',2)
+                s.pwl('Start to delete DRBD resource', 2)
                 drbd.del_all(drbd_to_del_list)
-                s.pwl('Start to delete Storage LUN',2)
+                s.pwl('Start to delete Storage LUN', 2)
                 stor.del_all(lun_to_del_list)
                 # remove all deleted disk device on vplx and host
                 crm.vplx_rescan_r()
                 host.host_rescan_r()
             else:
-                s.pwe('User canceled deleting proccess ...',2,2)
+                s.pwe('User canceled deleting proccess ...', 2, 2)
         else:
             s.pwe(
-                '\nNo qualified resources to be delete.\n',2,2)
+                '\nNo qualified resources to be delete.\n', 2, 2)
 
     @s.record_exception
     def run(self, dict_args):
@@ -179,20 +179,20 @@ class HydraArgParse():
                 self.list_tid.remove(tid)
                 consts.set_glo_tsc_id(tid)
             try:
-                s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
+                s.pwl('Start to configure LUN on NetApp Storage', 0, s.get_oprt_id(), 'start')
                 self._storage()
-                s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
+                s.pwl('Start to configure DRDB resource and CRM resource on VersaPLX', 0, s.get_oprt_id(), 'start')
                 self._vplx_drbd()
                 self._vplx_crm()
-                s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
+                s.pwl('Start to format，write and read the LUN on Host', 0, s.get_oprt_id(), 'start')
                 self._host_test()
-                print(f'{"":-^{format_width}}','\n')
+                print(f'{"":-^{format_width}}', '\n')
                 time.sleep(2)
             except consts.ReplayExit:
-                print(f'{"":-^{format_width}}','\n')
+                print(f'{"":-^{format_width}}', '\n')
                 continue
 
-    def prepare_replay(self,args):
+    def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
         arg_date = args.date
@@ -261,8 +261,6 @@ class HydraArgParse():
             return
 
         self.run(self.dict_id_str)
-
-
 
 
 if __name__ == '__main__':
