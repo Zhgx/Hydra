@@ -68,11 +68,9 @@ class Storage:
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
         info_msg = f'Start to create LUN, LUN name: {self.lun_name},LUN ID: {self.ID}'
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
-        # print(f'  Start to {info_msg}')# 正常打印
-        # self.logger.write_to_log(
-        #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
-        self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        s.pwl(f'Succeed in creating LUN {self.lun_name}',3,oprt_id,'finish')
+        create_result=self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        if create_result=='':
+            s.pwl(f'Succeed in creating LUN {self.lun_name}',3,oprt_id,'finish')
 
     def lun_map(self):
         '''
@@ -86,18 +84,21 @@ class Storage:
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'start', oprt_id, f'  Start to {info_msg}')
 
-        s.pwl(f'{info_msg}',2,oprt_id,'start') #-v 删除空格、Start to
-        self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        s.pwl(f'{info_msg}',2,oprt_id,'start') 
+        map_result=self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        if map_result:
+            re_string=f'LUN /vol/esxi/{self.lun_name} was mapped to initiator group hydra={self.ID}'
+            re_result=s.re_findall(re_string,map_result)
+            if re_result:
+                s.pwl(f'Finish mapping LUN {self.lun_name} to VersaPLX', 3, oprt_id, 'finish')
+            else:
+                s.pwe('',2,1)
+
         # print(f'  Finish with {info_msg}')
         # self.logger.write_to_log(
         #     'T', 'INFO', 'info', 'finish', oprt_id, f'  Finish with {info_msg}')
-        s.pwl(f'Finish mapping LUN {self.lun_name} to VersaPLX', 3, oprt_id, 'finish')
+            
 
-    def lun_create_verify(self):
-        pass
-
-    def lun_map_verify(self):
-        pass
 
     def lun_unmap(self, lun_name):
         '''

@@ -165,7 +165,7 @@ class VplxDrbd(object):
 
         init_result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         re_drbd = 'New drbd meta data block successfully created'
-        if init_result:
+        if init_result['sts']:
             re_result = s.re_findall(re_drbd, init_result['rst'].decode())
             if re_result:
                 s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"',4,oprt_id,'finish')
@@ -174,7 +174,7 @@ class VplxDrbd(object):
                 s.pwe(f'Failed to initialize resource {self.res_name}',4,2)
         else:
             db = consts.glo_db()
-            s.prt(db.get_exception_(consts.glo_tsc_id()),warning_level='exception')
+            s.prt(db.get_exception_info(consts.glo_tsc_id()),warning_level='exception')
             raise consts.ReplayExit
 
     def _drbd_up(self):

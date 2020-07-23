@@ -161,7 +161,7 @@ class LogDB():
         sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and id >= {id_now} and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
-    def get_exception_(self,transaction_id):
+    def get_exception_info(self,transaction_id):
         # id_now = consts.glo_log_id()
         # print(id_now)
         id_now = 1
