@@ -143,23 +143,6 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         return result
 
 
-def pwce(print_str, log_folder):
-    """
-    print, write to log and exit.
-    :param logger: Logger object for logging
-    :param print_str: Strings to be printed and recorded
-    :param print_str: Strings to be printed and recorded
-    """
-    logger = consts.glo_log()
-    # -m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    print(print_str)
-    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
-
-    debug_log_folder = debug_log.collect_debug_log()
-    logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to folder {debug_log_folder}')
-
-    sys.exit()
-
 
 def _compare(name, name_list):
     if name in name_list:
@@ -392,37 +375,26 @@ def prt_log(str, level, warning_level):
         db = consts.glo_db()
         oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
         prt(str + f'.oprt_id:{oprt_id}', level, warning_level)
-        result_cmd = db.get_cmd_result(oprt_id)
-        if result_cmd:
-            result = eval(result_cmd)
-        else:
-            result = None
-        if result:
-            fail_reason = result['rst'].decode()
-        else:
-            fail_reason = 'Unknown mistake'
-        print(' wrong reason '.center(105, '*'))
-        print(fail_reason)
-        print(f'{" wrong reason ":*^105}')
     elif rpl == 'no':
         prt(str, level, warning_level)
-
-    # format_width = 105 if rpl == 'yes' else 80
-    # db = consts.glo_db()
-    # oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
-    # prt(str+f'oprt_id:{oprt_id}',level,warning_level)
 
     if warning_level == 1:
         logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
     elif warning_level == 2:
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
+        print(f'{"":-^{format_width}}','\n')
         # sys.exit()
 
 
 def pwe(str, level, warning_level):
+    rpl = consts.glo_rpl()
     prt_log(str, level, warning_level)
+
     if warning_level == 2:
-        sys.exit()
+        if rpl == 'no':
+            sys.exit()
+        else:
+            raise consts.ReplayExit
 
 
 def pwce(str, level, warning_level):
@@ -431,12 +403,15 @@ def pwce(str, level, warning_level):
     :param logger: Logger object for logging
     :param print_str: Strings to be printed and recorded
     """
-
+    rpl = consts.glo_rpl()
     prt_log(str,level,warning_level)
     if consts.glo_rpl() == 'no':
         debug_log.collect_debug_log()
     if warning_level == 2:
-        sys.exit()
+        if rpl == 'no':
+            sys.exit()
+        else:
+            raise consts.ReplayExit
 
 
 def handle_exception(str='',level=0,warning_level=0):

@@ -86,6 +86,7 @@ class HydraArgParse():
             metavar='',
             nargs=2,
             help='date')
+        self.parser_replay = parser_replay
 
     def _storage(self):
         '''
@@ -152,11 +153,11 @@ class HydraArgParse():
                 stor.del_all(lun_to_del_list)
                 # remove all deleted disk device on vplx and host
                 crm.vplx_rescan_r()
-                host.host_rescan_r()
+                host.host_resca_r()
             else:
-                s.pwce('User canceled deleting proccess ...', 2, 2)
+                s.pwe('User canceled deleting proccess ...', 2, 2)
         else:
-            s.pwce(
+            s.pwe(
                 '\nNo qualified resources to be delete.\n', 2, 2)
 
     @s.record_exception
@@ -211,7 +212,7 @@ class HydraArgParse():
                 return
             consts.set_glo_tsc_id(arg_tid)
             self.dict_id_str.update({id: string})
-
+            print(f'Transaction to be executed: {arg_tid}')
             # self.replay_run(args.transactionid)
         elif arg_date:
             self.list_tid = db.get_transaction_id_via_date(
@@ -224,12 +225,10 @@ class HydraArgParse():
                 else:
                     self.list_tid.remove(tid)
                     cmd = db.get_cmd_via_tid(tid)
-
                     print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
-                    # s.dp('after remove one', self.list_tid)
-
+            print(f'Transaction to be executed: {" ".join(self.list_tid)}')
         else:
-            print('replay help')
+            self.parser_replay.print_help()
             return
 
     def start(self):
