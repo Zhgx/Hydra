@@ -50,7 +50,7 @@ def get_disk_dev():
             s.pwl('Found the disk successfully',4,'','finish')
             return disk_dev
         else:
-            s.pwe('No disk found, exit the program',4,2)
+            s.pwce('No disk found, exit the program',4,2)
 
 
 class DebugLog(object):
@@ -102,7 +102,7 @@ class VplxDrbd(object):
             if s.iscsi_login(NETAPP_IP, SSH):
                 s.pwl(f'Succeed in logining to {NETAPP_IP}', 4,'finish')
             else:
-                s.pwe(f'Can not login to {NETAPP_IP}',4,2)
+                s.pwce(f'Can not login to {NETAPP_IP}',4,2)
         else:
             s.pwl(f'ISCSI has logged in {NETAPP_IP}',3,'','finish')
 
@@ -149,7 +149,7 @@ class VplxDrbd(object):
             if echo_result['sts']:
                 continue
             else:
-                s.pwe('Fail to prepare drbd config file..',3,2)
+                s.pwce('Fail to prepare drbd config file..',3,2)
 
         s.pwl(f'Succeed in creating DRBD config file "{self.res_name}.res"',3,'','finish')
 
@@ -189,9 +189,9 @@ class VplxDrbd(object):
                 s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"',4,oprt_id,'finish')
                 return True
             else:
-                s.pwe(f'Failed to bring up resource {self.res_name}', 4, 2)
+                s.pwce(f'Failed to bring up resource {self.res_name}', 4, 2)
         else:
-            s.handle_exception(f'Failed to bring up resource {self.res_name}',)
+            s.handle_exception()
 
     def _drbd_primary(self):
         '''
@@ -207,7 +207,7 @@ class VplxDrbd(object):
                 s.pwl(f'Succeed in synchronizing DRBD resource "{self.res_name}"',4,oprt_id,'finish')
                 return True
             else:
-                s.pwe(f'Failed to synchronize resource {self.res_name}',4,2)
+                s.pwce(f'Failed to synchronize resource {self.res_name}',4,2)
         else:
             s.handle_exception()
 
@@ -239,9 +239,9 @@ class VplxDrbd(object):
 
                         return True
                     else:
-                        s.pwe(f'Failed to check {self.res_name} DRBD',4,2)
+                        s.pwce(f'Failed to check {self.res_name} DRBD',4,2)
                 else:
-                    s.pwe(f'DRBD {self.res_name} does not exist',4,2)
+                    s.pwce(f'DRBD {self.res_name} does not exist',4,2)
         else:
             s.handle_exception()
 
@@ -257,7 +257,7 @@ class VplxDrbd(object):
             print(f'  Down the DRBD resource {res_name} successfully')
             return True
         else:
-            s.pwe(f'Failed to stop DRBD {res_name}',4,2)
+            s.pwce(f'Failed to stop DRBD {res_name}',4,2)
 
     def _drbd_del_config(self, res_name):
         '''
@@ -271,7 +271,7 @@ class VplxDrbd(object):
             print(f'  Removed the DRBD resource {res_name} config file successfully')
             return True
         else:
-            s.pwe('drbd remove config file fail',4,2)
+            s.pwce('drbd remove config file fail',4,2)
 
     def get_all_cfgd_drbd(self):
         # get list of all configured crm res
@@ -283,7 +283,7 @@ class VplxDrbd(object):
             drbd_cfgd_list = s.re_findall(re_drbd, show_result)
             return drbd_cfgd_list
         else:
-            s.pwe(f'command "{cmd_drbd_status}" execute failed',3,2)
+            s.pwce(f'command "{cmd_drbd_status}" execute failed',3,2)
 
     def drbd_del(self, res_name):
         if self._drbd_down(res_name):
@@ -327,7 +327,7 @@ class VplxCrm(object):
                 s.pwl(f'Succeed in creating iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failed to create iSCSILogicaLUnit "{self.lu_name}"',4,2)
+                s.pwce(f'Failed to create iSCSILogicaLUnit "{self.lu_name}"',4,2)
         else:
             s.handle_exception()
 
@@ -345,7 +345,7 @@ class VplxCrm(object):
                 s.pwl(f'Succeed in set colocation of "{self.lu_name}"', 4, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failde to set colocation of "{self.lu_name}"',4,2)
+                s.pwce(f'Failde to set colocation of "{self.lu_name}"',4,2)
         else:
             s.handle_exception()
 
@@ -363,7 +363,7 @@ class VplxCrm(object):
                 s.pwl(f'Succeed in set order of "{self.lu_name}"', 4, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failde to set order of "{self.lu_name}"',4,2)
+                s.pwce(f'Failde to set order of "{self.lu_name}"',4,2)
         else:
             s.handle_exception()
 
@@ -386,7 +386,7 @@ class VplxCrm(object):
                 s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"',4,2)
+                s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"',4,2)
         else:
             s.handle_exception()
 
@@ -429,9 +429,9 @@ class VplxCrm(object):
             if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
                 return {'status': 'Stopped'}
             else:
-                s.pwe(f'crm resource {res_name} not found')
+                s.pwe(f'crm resource {res_name} not found',4,1)
         else:
-            s.pwe('Failed to show crm',4,2)
+            s.pwce('Failed to show crm',4,2)
 
     def cyclic_check_crm_status(self, res_name, status):
         '''
@@ -461,9 +461,9 @@ class VplxCrm(object):
                 print(f'  Stopped the iSCSILogicalUnit resource {res_name} successfully')
                 return True
             else:
-                s.pwe('crm stop failed,exit the program...',3,2)
+                s.pwce('crm stop failed,exit the program...',3,2)
         else:
-            s.pwe('crm stop failed',3,2)
+            s.pwce('crm stop failed',3,2)
 
     def _crm_del(self, res_name):
         '''
@@ -482,7 +482,7 @@ class VplxCrm(object):
                 print(f'  Removed the iSCSILogicalUnit resource {res_name} successfully')
                 return True
             else:
-                s.pwe('crm cof delete failed',3,2)
+                s.pwce('crm cof delete failed',3,2)
 
     def crm_del(self, res_name):
         if self._crm_stop(res_name):

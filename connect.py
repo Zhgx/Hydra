@@ -41,7 +41,7 @@ class ConnSSH(object):
         except Exception as e:
             self.logger.write_to_log(
                 'F', 'DATA', 'debug', 'exception', 'ssh connect', str(traceback.format_exc()))
-            s.pwe(f'Connect to {self._host} failed with error: {e}',2,2)
+            s.pwce(f'Connect to {self._host} failed with error: {e}',2,2)
 
     def execute_command(self, command):
         stdin, stdout, stderr = self.SSHConnection.exec_command(command)
@@ -123,7 +123,7 @@ class ConnTelnet(object):
         except Exception as e:
             self.logger.write_to_log(
                 'F', 'DATA', 'debug', 'exception', 'telnet connect', str(traceback.format_exc()))
-            s.pwe(f'Connect to {self._host} failed with error: {e}',2,2)
+            s.pwce(f'Connect to {self._host} failed with error: {e}',2,2)
 
     # 定义exctCMD函数,用于执行命令
     def execute_command(self, cmd):
