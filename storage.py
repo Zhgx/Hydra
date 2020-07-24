@@ -60,7 +60,6 @@ class Storage:
             if result_cmd:
                 return True
 
-
     def lun_create(self):
         '''
         Create LUN with 10M bytes in size
@@ -68,11 +67,11 @@ class Storage:
         oprt_id = s.get_oprt_id()
         unique_str = 'jMPFwXy2'
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
-        info_msg = f'Start to create LUN, LUN name: {self.lun_name},LUN ID: {self.ID}'
+        info_msg = f'Start to create LUN, LUN name: "{self.lun_name}",LUN ID: "{self.ID}"'
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
         result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         if result:
-            s.pwl(f'Succeed in creating LUN {self.lun_name}',3,oprt_id,'finish')
+            s.pwl(f'Succeed in creating LUN "{self.lun_name}"', 3, oprt_id, 'finish')
         else:
             s.handle_exception()
 
@@ -82,12 +81,12 @@ class Storage:
         '''
         oprt_id = s.get_oprt_id()
         unique_str = '1lvpO6N5'
-        info_msg = f'Start to map LUN, LUN name: {self.lun_name}, LUN ID: {self.ID}'
+        info_msg = f'Start to map LUN, LUN name: "{self.lun_name}", LUN ID: "{self.ID}"'
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
-        s.pwl(f'{info_msg}',2,oprt_id,'start')
+        s.pwl(f'{info_msg}', 2, oprt_id, 'start')
         result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         if result:
-            s.pwl(f'Finish mapping LUN {self.lun_name} to VersaPLX', 3, oprt_id, 'finish')
+            s.pwl(f'Finish mapping LUN "{self.lun_name}" to VersaPLX', 3, oprt_id, 'finish')
         else:
             s.handle_exception()
 
@@ -113,7 +112,7 @@ class Storage:
 
                 return True
             else:
-                #-m:只有在出错之后才打印和记录,不过不退出.正常完成的不记录
+                # -m:只有在出错之后才打印和记录,不过不退出.正常完成的不记录
                 s.prt(f'can not unmap lun {lun_name}')
                 # print(f'can not unmap lun {lun_name}')
         else:
@@ -161,9 +160,9 @@ class Storage:
     #     return lun_to_del_list
 
     def del_all(self, lun_to_del_list):
-        s.pwl('start to delete storage lun',0,'','delete')
+        s.pwl('start to delete storage lun', 0, '', 'delete')
         for lun_name in lun_to_del_list:
-            s.pwl(f'Deleting LUN "{lun_name}"',2,'','start')
+            s.pwl(f'Deleting LUN "{lun_name}"', 2, '', 'start')
             self.lun_unmap(lun_name)
             self.lun_destroy(lun_name)
 
