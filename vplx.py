@@ -290,6 +290,7 @@ class VplxDrbd(object):
     def del_all(self, drbd_to_del_list):
         # s.pwl('start to delete DRBD resource',0,'','delete')
         if drbd_to_del_list:
+            s.pwl('Start to delete DRBD resource',0)
             for res_name in drbd_to_del_list:
                 self.drbd_del(res_name)
 
@@ -526,6 +527,7 @@ class VplxCrm(object):
     def del_all(self, crm_to_del_list):
         # s.pwl('start to delete crm resource',0,'','delete')
         if crm_to_del_list:
+            s.pwl('Start to delete CRM resource',0)
             for res_name in crm_to_del_list:
                 self.crm_del(res_name)
 

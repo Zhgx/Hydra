@@ -141,11 +141,8 @@ class HydraArgParse():
         if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
             answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
             if answer == 'yes' or answer == 'y':
-                s.pwl('Start to delete CRM resource',0)
                 crm.del_all(crm_to_del_list)
-                s.pwl('Start to delete DRBD resource',0)
                 drbd.del_all(drbd_to_del_list)
-                s.pwl('Start to delete Storage LUN',0)
                 stor.del_all(lun_to_del_list)
                 s.pwl('Start to remove all deleted disk device on vplx and host',0)
                 # remove all deleted disk device on vplx and host
@@ -155,8 +152,8 @@ class HydraArgParse():
             else:
                 s.pwe('User canceled deleting proccess ...',2,2)
         else:
-            s.pwe(
-                '\nNo qualified resources to be delete.\n',2,2)
+            print()
+            s.pwe('No qualified resources to be delete.',2,2)
 
     # @s.record_exception
     def run(self, dict_args):
