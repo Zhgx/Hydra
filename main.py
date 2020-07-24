@@ -154,9 +154,9 @@ class HydraArgParse():
                 crm.vplx_rescan_r()
                 host.host_rescan_r()
             else:
-                s.pwe('User canceled deleting proccess ...',2,2)
+                s.pwce('User canceled deleting proccess ...',2,2)
         else:
-            s.pwe(
+            s.pwce(
                 '\nNo qualified resources to be delete.\n',2,2)
 
     @s.record_exception

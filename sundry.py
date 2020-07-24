@@ -56,7 +56,7 @@ def change_id_str_to_list(id_str):
     id_range_list = [int(i) for i in id_str.split(',')]
     if len(id_range_list) not in [1,2]:
         #-m:提示格式
-        pwe('Please verify id format',2,2)
+        pwce('Please verify id format',2,2)
     elif len(id_range_list) == 1:
         id_ = id_range_list[0]
         id_list = [id_]
@@ -283,7 +283,7 @@ def iscsi_login(tgt_ip, ssh):
                 pwl(f'iSCSI login to {tgt_ip} successful',3,'','finish')
                 return True
             else:
-                pwe(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
+                pwce(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
 
     else:
         return
