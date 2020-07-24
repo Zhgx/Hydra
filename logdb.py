@@ -172,6 +172,10 @@ class LogDB():
         sql = f"SELECT describe1,data FROM logtable WHERE transaction_id = '{transaction_id}' ORDER BY id DESC"
         return self.sql_fetch_one(sql)
 
+    def get_oprt_id_via_db_id(self,transaction_id,db_id):
+        sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}' and id = {db_id}"
+        return self.sql_fetch_one(sql)
+
 
 
 
@@ -214,6 +218,7 @@ if __name__ == '__main__':
     # print(db.get_cmd_result(''))
     # print(db.get_time_via_str('1595396085','Start iscsi login'))
     print(db.get_last_one('1595409897'))
+    # print(db.get_oprt_id_via_db_id(''))
     # print(db.get_time_via_str('1595295584','Start to create lun, name: log_test_203'))
     # print(db.get_cmd_via_tid('1594879092'))
     # res = db.get_transaction_id_via_date('2021/07/13 13:45:57','2021/07/13 13:51:55')

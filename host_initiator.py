@@ -52,7 +52,7 @@ def get_disk_dev():
             s.pwl('Found the disk successfully', 4, '', 'finish')
             return disk_dev
         else:
-            s.pwe('No disk found, exit the program', 4, 2)
+            s.pwce('No disk found, exit the program', 4, 2)
 
 
 class DebugLog(object):
@@ -89,7 +89,7 @@ class HostTest(object):
             if s.iscsi_login(VPLX_IP, SSH):
                 s.pwl(f'Succeed in logining to {VPLX_IP}', 4, '', 'finish')
             else:
-                s.pwe(f'Can not login to {VPLX_IP}', 4, 2)
+                s.pwce(f'Can not login to {VPLX_IP}', 4, 2)
         else:
             s.pwl(f'ISCSI has logged in {VPLX_IP}', 3, '', 'finish')
 
@@ -116,7 +116,7 @@ class HostTest(object):
                 s.pwl(f'Disk "{dev_name}" mounted to "{MOUNT_POINT}"', 3, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failed to mount "{dev_name}" to "{MOUNT_POINT}"', 3, 2)
+                s.pwce(f'Failed to mount "{dev_name}" to "{MOUNT_POINT}"', 3, 2)
         else:
             s.handle_exception()
 
@@ -147,7 +147,7 @@ class HostTest(object):
                 else:
                     s.pwe(f'Failed to format "{dev_name}"', 3, 2)
             else:
-                s.pwe(f'Failed to execute command:"{cmd}"', 3, 2)
+                s.pwce(f'Failed to execute command:"{cmd}"', 3, 2)
         else:
             s.handle_exception()
 
@@ -168,7 +168,7 @@ class HostTest(object):
             #     'F', 'DATA', 'regular', 'findall', oprt_id, dd_perf)
             return dd_perf
         else:
-            s.pwe('Can not get test result', 3, 2)
+            s.pwce('Can not get test result', 3, 2)
 
     def get_test_perf(self):
         '''
@@ -192,9 +192,9 @@ class HostTest(object):
             if self._mount(dev_name):
                 self.get_test_perf()
             else:
-                s.pwe(f'Failed to mount device "{dev_name}"', 3, 2)
+                s.pwce(f'Failed to mount device "{dev_name}"', 3, 2)
         else:
-            s.pwe(f'Failed to format device "{dev_name}"', 3, 2)
+            s.pwce(f'Failed to format device "{dev_name}"', 3, 2)
 
 
 if __name__ == "__main__":

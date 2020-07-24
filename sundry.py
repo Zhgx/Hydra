@@ -55,9 +55,9 @@ def dp(str, arg):
 def change_id_str_to_list(id_str):
     id_list = []
     id_range_list = [int(i) for i in id_str.split(',')]
+    
     if len(id_range_list) not in [1, 2]:
-        # -m:提示格式
-        pwe('Please verify id format', 2, 2)
+        pwce('Please verify id format', 2, 2)
     elif len(id_range_list) == 1:
         id_ = id_range_list[0]
         id_list = [id_]
@@ -89,22 +89,17 @@ def scsi_rescan(ssh, mode):
 
 
 def get_lsscsi(ssh, func_str, oprt_id):
-    logger = consts.glo_log()
-    pwl('Start to get the list of all SCSI device', 3, oprt_id, 'start')
+    pwl('Start to get the list of all SCSI device',3,oprt_id,'start')
     cmd_lsscsi = 'lsscsi'
     result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi, oprt_id)
-    if result_lsscsi['sts']:
-        return result_lsscsi['rst'].decode('utf-8')
+    if result_lsscsi:
+        if result_lsscsi['sts']:
+            return result_lsscsi['rst'].decode('utf-8')
+        else:
+            pwe(f'Failed to excute Command "{cmd_lsscsi}"',4,1)
     else:
-        pwe(f'Failed to execute command "{cmd_lsscsi}"', 4, 1)
-        # print(f'  Command {cmd_lsscsi} execute failed')
-        # logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
-        #                     f'  Command "{cmd_lsscsi}" execute failed')
+        handle_exception()
 
-
-# -m:这代码蠢不,..看你们有没有人指出来
-# def get_all_scsi_disk(re_string, lsscsi_result):
-#     return re_findall(re_string, lsscsi_result)
 
 
 def get_the_disk_with_lun_id(all_disk):
@@ -142,7 +137,6 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         if result_cmd:
             result = eval(result_cmd)
         else:
-            # pwl(f'Failed to execute command:{cmd}',4)
             result = None
         if db_id:
             change_pointer(db_id)
@@ -293,14 +287,19 @@ def iscsi_login(tgt_ip, ssh):
     oprt_id = get_oprt_id()
     cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
     result_iscsi_login = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-    if result_iscsi_login['sts']:
-        result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
-        re_string = f'Login to.*portal: ({tgt_ip}).*successful'
-        if re_findall(re_string, result_iscsi_login):
-            pwl(f'iSCSI login to {tgt_ip} successful', 3, '', 'finish')
-            return True
-        else:
-            pwe(f'Failed to iSCSI login to {tgt_ip}', 3, warning_level=2)
+
+    if result_iscsi_login:
+        if result_iscsi_login['sts']:
+            result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
+            re_string = f'Login to.*portal: ({tgt_ip}).*successful'
+            if re_findall(re_string, result_iscsi_login):
+                pwl(f'iSCSI login to {tgt_ip} successful',3,'','finish')
+                return True
+            else:
+                pwce(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
+
+    else:
+        return
 
 
 # -m:string 和 oprt id 不用传递过来,在内部定义即可
@@ -319,7 +318,7 @@ def find_session(tgt_ip, ssh):
             if re_findall(re_session, result_session):
                 return True
     else:
-        raise consts.ReplayExit
+        return
 
 
 def ran_str(num):
@@ -333,6 +332,8 @@ def ran_str(num):
 def prt(str, level=0, warning_level=0):
     if isinstance(warning_level, int):
         warning_str = '*' * warning_level
+    else:
+        warning_str = ''
     indent_str = '  ' * level + str
     title_str = '---- ' + str + ' '
     rpl = consts.glo_rpl()
@@ -383,13 +384,38 @@ def prt_log(str, level, warning_level):
     """
     logger = consts.glo_log()
 
-    # -m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    prt(str, level, warning_level)
+    #-m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
+    rpl = consts.glo_rpl()
+    format_width = 80
+    if rpl == 'yes':
+        format_width = 105
+        db = consts.glo_db()
+        oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
+        prt(str + f'.oprt_id:{oprt_id}', level, warning_level)
+        result_cmd = db.get_cmd_result(oprt_id)
+        if result_cmd:
+            result = eval(result_cmd)
+        else:
+            result = None
+        if result:
+            fail_reason = result['rst'].decode()
+        else:
+            fail_reason = 'Unknown mistake'
+        print(' wrong reason '.center(105, '*'))
+        print(fail_reason)
+        print(f'{" wrong reason ":*^105}')
+    elif rpl == 'no':
+        prt(str, level, warning_level)
+
+    # format_width = 105 if rpl == 'yes' else 80
+    # db = consts.glo_db()
+    # oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
+    # prt(str+f'oprt_id:{oprt_id}',level,warning_level)
+
     if warning_level == 1:
         logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
     elif warning_level == 2:
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
-        # debug_log.collect_debug_log()
         # sys.exit()
 
 
@@ -405,21 +431,30 @@ def pwce(str, level, warning_level):
     :param logger: Logger object for logging
     :param print_str: Strings to be printed and recorded
     """
-    prt_log(str, level, warning_level)
-    debug_log.collect_debug_log()
+
+    prt_log(str,level,warning_level)
+    if consts.glo_rpl() == 'no':
+        debug_log.collect_debug_log()
     if warning_level == 2:
         sys.exit()
 
 
-def handle_exception():
-    db = consts.glo_db()
-    exception_info = db.get_exception_info(consts.glo_tsc_id())
-    if exception_info:
-        prt('The transaction was interrupted because of an exception', 1, warning_level=2)
-        prt(exception_info, warning_level='exception')
-        raise consts.ReplayExit
+def handle_exception(str='',level=0,warning_level=0):
+    rpl = consts.glo_rpl()
+    if rpl == 'yes':
+        db = consts.glo_db()
+        exception_info = db.get_exception_info(consts.glo_tsc_id())
+        if exception_info:
+            prt('The transaction was interrupted because of an exception',1,warning_level=2)
+            prt(exception_info, warning_level='exception')
+            raise consts.ReplayExit
+        else:
+            oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(),consts.glo_log_id())
+            prt(f'Unable to get data from the database.oprt_id:{oprt_id}',3,2)
+            raise consts.ReplayExit
+
     else:
-        prt('Unable to get data from the database', 3, 1)
+        pwce(str,level,warning_level)
 
 
 if __name__ == '__main__':
