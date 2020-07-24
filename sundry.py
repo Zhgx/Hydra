@@ -2,7 +2,6 @@
 import random
 import consts
 import logdb
-
 import sys
 import re
 import time
@@ -73,7 +72,7 @@ def scsi_rescan(ssh, mode):
         pwl('Start to scan SCSI device with normal way', 3, '', 'start')
     elif mode == 'r':
         cmd = '/usr/bin/rescan-scsi-bus.sh -r'
-        pwl('Start to scan SCSI device after removing disk', 3, '', 'start')
+        pwl('Start to scan SCSI device after removing disk', 2, '', 'start')
     elif mode == 'a':
         cmd = '/usr/bin/rescan-scsi-bus.sh -a'
         pwl('Start to scan SCSI device in depth', 3, '', 'start')
@@ -142,23 +141,6 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
             change_pointer(db_id)
         return result
 
-
-def pwce(print_str, log_folder):
-    """
-    print, write to log and exit.
-    :param logger: Logger object for logging
-    :param print_str: Strings to be printed and recorded
-    :param print_str: Strings to be printed and recorded
-    """
-    logger = consts.glo_log()
-    # -m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    print(print_str)
-    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
-
-    debug_log_folder = debug_log.collect_debug_log()
-    logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to folder {debug_log_folder}')
-
-    sys.exit()
 
 
 def _compare(name, name_list):
@@ -345,7 +327,6 @@ def prt(str, level=0, warning_level=0):
         else:
             print(f'|{warning_str:<4}{indent_str:<70}{warning_str:>4}|')
 
-
     else:
         if warning_level == 'exception':
             print(' exception infomation '.center(105, '*'))
@@ -423,7 +404,6 @@ def pwe(str, level, warning_level):
     prt_log(str, level, warning_level)
     if warning_level == 2:
         sys.exit()
-
 
 def pwce(str, level, warning_level):
     """
