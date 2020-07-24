@@ -12,6 +12,7 @@ import log
 import logdb
 import os
 import subprocess
+import debug_log
 
 
 class HydraArgParse():
@@ -22,12 +23,14 @@ class HydraArgParse():
 
     def __init__(self):
         consts._init()
-        #-m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
+        # -m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
         self.transaction_id = s.get_transaction_id()
+        consts.set_glo_tsc_id(self.transaction_id)
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
+        consts.set_glo_tsc_id(self.transaction_id)
         self.argparse_init()
-        self.list_tid = None # for replay
+        self.list_tid = None  # for replay
         self.log_user_input()
         self.dict_id_str = {}
 
@@ -150,12 +153,12 @@ class HydraArgParse():
                 host.host_rescan_r()
                 print(f'{"":-^80}','\n')
             else:
-                s.pwe('User canceled deleting proccess ...',2,2)
+                s.pwe('User canceled deleting proccess ...', 2, 2)
         else:
             print()
-            s.pwe('No qualified resources to be delete.',2,2)
+            s.pwe('No qualified resources to be delete.', 2, 2)
 
-    # @s.record_exception
+    @s.record_exception
     def run(self, dict_args):
         rpl = consts.glo_rpl()
         format_width = 105 if rpl == 'yes' else 80
@@ -167,6 +170,7 @@ class HydraArgParse():
                 self.transaction_id = s.get_transaction_id()
                 self.logger = log.Log(self.transaction_id)
                 consts.set_glo_log(self.logger)
+                consts.set_glo_tsc_id(self.transaction_id)
                 self.logger.write_to_log(
                     'F', 'DATA', 'STR', 'Start a new trasaction', '', f'{consts.glo_id()}')
                 self.logger.write_to_log(
@@ -176,24 +180,27 @@ class HydraArgParse():
                 self.list_tid.remove(tid)
                 consts.set_glo_tsc_id(tid)
             try:
-                s.pwl('Start to configure LUN on NetApp Storage',0,s.get_oprt_id(),'start')
+                s.pwl('Start to configure LUN on NetApp Storage', 0, s.get_oprt_id(), 'start')
                 self._storage()
-                s.pwl('Start to configure DRDB resource and crm resource on VersaPLX',0,s.get_oprt_id(),'start')
+                time.sleep(1.5)
+                s.pwl('Start to configure DRDB resource and CRM resource on VersaPLX', 0, s.get_oprt_id(), 'start')
                 self._vplx_drbd()
                 self._vplx_crm()
-                s.pwl('Start to Format and do some IO test on Host',0,s.get_oprt_id(),'start')
+                time.sleep(1.5)
+                s.pwl('Start to format，write and read the LUN on Host', 0, s.get_oprt_id(), 'start')
                 self._host_test()
                 print(f'{"":-^{format_width}}','\n')
-                time.sleep(2)
+                time.sleep(1.5)
             except consts.ReplayExit:
-                print(f'{"":-^{format_width}}','\n')
+                print(f'{"":-^{format_width}}', '\n')
                 continue
 
-    def prepare_replay(self,args):
+    def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
         arg_date = args.date
         print('* MODE : REPLAY *')
+        time.sleep(1.5)
         if arg_tid:
             string, id = db.get_string_id(arg_tid)
             if not all([string, id]):
@@ -229,7 +236,7 @@ class HydraArgParse():
 
         # uniq_str: The unique string for this test, affects related naming
         if args.test:
-            self.test()
+            debug_log.collect_debug_log()
             return
         if args.id_range:
             id_list = s.change_id_str_to_list(args.id_range)
@@ -249,19 +256,15 @@ class HydraArgParse():
             self.prepare_replay(args)
 
         elif args.uniq_str and args.id_range:
-            uniq_str = consts.glo_str()
             id_list = consts.glo_id_list()
             for id_ in id_list:
                 self.dict_id_str.update({id_: args.uniq_str})
 
         else:
-            # self.logger.write_to_log('INFO','info','','print_help')
             self.parser.print_help()
             return
 
         self.run(self.dict_id_str)
-
-
 
 
 if __name__ == '__main__':

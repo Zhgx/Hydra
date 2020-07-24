@@ -7,7 +7,6 @@ import log
 
 SSH = None
 
-
 host = '10.203.1.199'
 port = 22
 user = 'root'
@@ -27,6 +26,7 @@ def init_ssh():
     else:
         pass
 
+
 def _find_new_disk():
     result_lsscsi = s.get_lsscsi(SSH, 'D37nG6Yi', s.get_oprt_id())
     re_string = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
@@ -40,24 +40,24 @@ def get_disk_dev():
     s.scsi_rescan(SSH, 'n')
     disk_dev = _find_new_disk()
     if disk_dev:
-        s.pwl(f'Succeed in getting disk device {disk_dev} with id {consts.glo_id()}', 3, '', 'finish')
+        s.pwl(f'Succeed in getting disk device "{disk_dev}" with id {consts.glo_id()}', 3, '', 'finish')
         return disk_dev
     else:
         s.scsi_rescan(SSH, 'a')
-        s.pwl(f'No disk with SCSI ID {consts.glo_id()} found, scan again...',3,'','start')
+        s.pwl(f'No disk with SCSI ID "{consts.glo_id()}" found, scan again...', 3, '', 'start')
         disk_dev = _find_new_disk()
         if disk_dev:
-            s.pwl('Found the disk successfully',4,'','finish')
+            s.pwl('Found the disk successfully', 4, '', 'finish')
             return disk_dev
         else:
-            s.pwe('No disk found, exit the program',4,2)
+            s.pwce('No disk found, exit the program', 4, 2)
 
 
 class DebugLog(object):
     def __init__(self):
         init_ssh()
         self.tid = consts.glo_tsc_id()
-        self.debug_folder = f'/var/log/{self.tid}_{host}'
+        self.debug_folder = f'/var/log/{self.tid}'
         self.dbg = s.DebugLog(SSH, self.debug_folder)
 
     def collect_debug_sys(self):
@@ -96,31 +96,32 @@ class VplxDrbd(object):
         self._prepare()
 
     def _create_iscsi_session(self):
-        s.pwl('Check up the status of session',2,'','start')
+        s.pwl('Check up the status of session', 2, '', 'start')
         if not s.find_session(NETAPP_IP, SSH):
-            s.pwl(f'No session found, start to login to {NETAPP_IP}',3,'','start')
+            s.pwl(f'No session found, start to login to {NETAPP_IP}', 3, '', 'start')
             if s.iscsi_login(NETAPP_IP, SSH):
-                s.pwl(f'Succeed in logining to {NETAPP_IP}', 4,'finish')
+                s.pwl(f'Succeed in logining to {NETAPP_IP}', 4, 'finish')
             else:
-                s.pwe(f'Can not login to {NETAPP_IP}',4,2)
+                s.pwce(f'Can not login to {NETAPP_IP}', 4, 2)
+
         else:
-            s.pwl(f'ISCSI has logged in {NETAPP_IP}',3,'','finish')
+            s.pwl(f'ISCSI has logged in {NETAPP_IP}', 3, '', 'finish')
 
     def _prepare(self):
         if self.rpl == 'no':
             init_ssh()
-
 
     def prepare_config_file(self):
         '''
         Prepare DRDB resource config file
         '''
         self._create_iscsi_session()
-        s.pwl(f'Start to get the disk device with id {consts.glo_id()}',2)
+        s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = get_disk_dev()
 
-        self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
-                                 f'Start prepare config file for resource {self.res_name}')
+        s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
+        # self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
+        #                          f'Start prepare config file for resource {self.res_name}')
 
         context = [rf'resource {self.res_name} {{',
                    rf'\ \ \ \ on maxluntarget {{',
@@ -149,9 +150,9 @@ class VplxDrbd(object):
             if echo_result['sts']:
                 continue
             else:
-                s.pwe('Fail to prepare drbd config file..',3,2)
+                s.pwce('Failed to prepare DRBD config file..', 3, 2)
 
-        s.pwl(f'Succeed in creating DRBD config file "{self.res_name}.res"',3,'','finish')
+        s.pwl(f'Succeed in creating DRBD config file "{self.res_name}.res"', 3, '', 'finish')
 
     def _drbd_init(self):
         '''
@@ -160,22 +161,20 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         unique_str = 'usnkegs'
         cmd = f'drbdadm create-md {self.res_name}'
-        info_msg = f'Start to initialize drbd for "{self.res_name}"'
-        s.pwl(info_msg,3,oprt_id,'start')
+        info_msg = f'Start to initialize DRBD resource for "{self.res_name}"'
+        s.pwl(info_msg, 3, oprt_id, 'start')
 
         init_result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         re_drbd = 'New drbd meta data block successfully created'
         if init_result['sts']:
             re_result = s.re_findall(re_drbd, init_result['rst'].decode())
             if re_result:
-                s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"',4,oprt_id,'finish')
+                s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failed to initialize resource {self.res_name}',4,2)
+                s.pwce(f'Failed to initialize DRBD resource {self.res_name}', 4, 2)
         else:
-            db = consts.glo_db()
-            s.prt(db.get_exception_info(consts.glo_tsc_id()),warning_level='exception')
-            raise consts.ReplayExit
+            s.handle_exception()
 
     def _drbd_up(self):
         '''
@@ -186,11 +185,14 @@ class VplxDrbd(object):
         cmd = f'drbdadm up {self.res_name}'
         s.pwl(f'Start to bring up DRBD resource "{self.res_name}"', 3, oprt_id, 'start')
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result['sts']:
-            s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"',4,oprt_id,'finish')
-            return True
+        if result:
+            if result['sts']:
+                s.pwl(f'Succeed in bringing up DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwce(f'Failed to bring up resource {self.res_name}', 4, 2)
         else:
-            s.pwe(f'Failed to bring up resource {self.res_name}', 4, 2)
+            s.handle_exception()
 
     def _drbd_primary(self):
         '''
@@ -199,16 +201,19 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         unique_str = '7C4LU6Xr'
         cmd = f'drbdadm primary --force {self.res_name}'
-        s.pwl(f'Start to initial synchronization for "{self.res_name}"',3,oprt_id,'start')
+        s.pwl(f'Start to initial synchronization for "{self.res_name}"', 3, oprt_id, 'start')
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result['sts']:
-            s.pwl(f'Succeed in synchronizing DRBD resource "{self.res_name}"',4,oprt_id,'finish') #-v 3->4
-            return True
+        if result:
+            if result['sts']:
+                s.pwl(f'Succeed in synchronizing DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwce(f'Failed to synchronize resource {self.res_name}', 4, 2)
         else:
-            s.pwe(f'Failed to synchronize resource {self.res_name}',4,2)
+            s.handle_exception()
 
     def drbd_cfg(self):
-        s.pwl('Start to configure DRBD resource',2,'','start')
+        s.pwl('Start to configure DRBD resource', 2, '', 'start')
         if self._drbd_init():
             if self._drbd_up():
                 if self._drbd_primary():
@@ -220,7 +225,7 @@ class VplxDrbd(object):
         '''
         oprt_id = s.get_oprt_id()
         cmd = f'drbdadm status {self.res_name}'
-        s.pwl(f'Start to check DRBD resource "{self.res_name}" status',3,oprt_id,'start')
+        s.pwl(f'Start to check DRBD resource "{self.res_name}" status', 3, oprt_id, 'start')
         result = s.get_ssh_cmd(SSH, 'By91GFxC', cmd, oprt_id)
         if result:
             if result['sts']:
@@ -231,15 +236,15 @@ class VplxDrbd(object):
                     status = re_result[0]
                     if status == 'UpToDate':
 
-                        s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"',4,oprt_id,'finish')
+                        s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
 
                         return True
                     else:
-                        s.pwe(f'Failed to check {self.res_name} DRBD',4,2)
+                        s.pwce(f'Failed to check DRBD resource "{self.res_name}"', 4, 2)
                 else:
-                    s.pwe(f'DRBD {self.res_name} does not exist',4,2)
+                    s.pwce(f'DRBD {self.res_name} does not exist', 4, 2)
         else:
-            raise consts.ReplayExit
+            s.handle_exception()
 
     def _drbd_down(self, res_name):
         '''
@@ -253,7 +258,7 @@ class VplxDrbd(object):
             s.pwl(f'Down the DRBD resource {res_name} successfully',2)
             return True
         else:
-            s.pwe(f'Failed to stop DRBD {res_name}',4,2)
+            s.pwce(f'Failed to stop DRBD {res_name}', 4, 2)
 
     def _drbd_del_config(self, res_name):
         '''
@@ -267,7 +272,8 @@ class VplxDrbd(object):
             s.pwl(f'Removed the DRBD resource {res_name} config file successfully',2)
             return True
         else:
-            s.pwe('drbd remove config file fail',4,2)
+            s.pwce('Failed to remove DRBD config file', 4, 2)
+  
 
     def get_all_cfgd_drbd(self):
         # get list of all configured crm res
@@ -279,7 +285,8 @@ class VplxDrbd(object):
             drbd_cfgd_list = s.re_findall(re_drbd, show_result)
             return drbd_cfgd_list
         else:
-            s.pwe(f'command "{cmd_drbd_status}" execute failed',3,2)
+            s.pwce(f'Failed to execute command "{cmd_drbd_status}"', 3, 2)
+
 
     def drbd_del(self, res_name):
         s.pwl(f'Deleting DRBD resource {res_name}',1)
@@ -288,7 +295,6 @@ class VplxDrbd(object):
                 return True
 
     def del_all(self, drbd_to_del_list):
-        # s.pwl('start to delete DRBD resource',0,'','delete')
         if drbd_to_del_list:
             s.pwl('Start to delete DRBD resource',0)
             for res_name in drbd_to_del_list:
@@ -325,9 +331,9 @@ class VplxCrm(object):
                 s.pwl(f'Succeed in creating iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
                 return True
             else:
-                s.pwe(f'Failed to create iSCSILogicaLUnit "{self.lu_name}"',4,2)
+                s.pwce(f'Failed to create iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
         else:
-            return
+            s.handle_exception()
 
     def _setting_col(self):
         '''
@@ -336,13 +342,16 @@ class VplxCrm(object):
         oprt_id = s.get_oprt_id()
         unique_str = 'E03YgRBd'
         cmd = f'crm conf colocation {self.colocation_name} inf: {self.lu_name} {TARGET_NAME}'
-        s.pwl(f'Start to set up colocation of iSCSILogicalUnit "{self.lu_name}"',3,oprt_id,'start')
+        s.pwl(f'Start to set up colocation of iSCSILogicalUnit "{self.lu_name}"', 3, oprt_id, 'start')
         result_crm = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_crm['sts']:
-            s.pwl(f'Succeed in set colocation of "{self.lu_name}"', 4, oprt_id, 'finish')
-            return True
+        if result_crm:
+            if result_crm['sts']:
+                s.pwl(f'Succeed in setting colocation of "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwce(f'Failed to set colocation of "{self.lu_name}"', 4, 2)
         else:
-            s.pwe(f'Failde to set colocation of "{self.lu_name}"',4,2)
+            s.handle_exception()
 
     def _setting_order(self):
         '''
@@ -351,13 +360,16 @@ class VplxCrm(object):
         oprt_id = s.get_oprt_id()
         unique_str = '0GHI63jX'
         cmd = f'crm conf order {self.order_name} {TARGET_NAME} {self.lu_name}'
-        s.pwl(f'Start to set up order of iSCSILogicalUnit "{self.lu_name}"',3,oprt_id,'start')
+        s.pwl(f'Start to set up order of iSCSILogicalUnit "{self.lu_name}"', 3, oprt_id, 'start')
         result_crm = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_crm['sts']:
-            s.pwl(f'Succeed in set order of "{self.lu_name}"', 4, oprt_id, 'finish')
-            return True
+        if result_crm:
+            if result_crm['sts']:
+                s.pwl(f'Succeed in setting order of "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwce(f'Failed to set order of "{self.lu_name}"', 4, 2)
         else:
-            s.pwe(f'Failde to set order of "{self.lu_name}"',4,2)
+            s.handle_exception()
 
     def _crm_setting(self):
         if self._setting_col():
@@ -371,14 +383,17 @@ class VplxCrm(object):
         oprt_id = s.get_oprt_id()
         unique_str = 'YnTDsuVX'
         cmd = f'crm res start {self.lu_name}'
-        s.pwl(f'Start up the iSCSILogicalUnit resource "{self.lu_name}"',3,oprt_id,'start')
+        s.pwl(f'Start up the iSCSILogicalUnit resource "{self.lu_name}"', 3, oprt_id, 'start')
         result_cmd = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
-        if result_cmd['sts']:
-            if self.cyclic_check_crm_status(self.lu_name, 'Started'):
-                s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
-                return True
+        if result_cmd:
+            if result_cmd['sts']:
+                if self.cyclic_check_crm_status(self.lu_name, 'Started'):
+                    s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
+                    return True
+            else:
+                s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
         else:
-            s.pwe(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"',4,2)
+            s.handle_exception()
 
     def crm_cfg(self):
         s.pwl('Start to configure crm resource', 2, '', 'start')
@@ -387,18 +402,6 @@ class VplxCrm(object):
                 if self._crm_start():
                     time.sleep(0.5)
                     return True
-
-    def _crm_status_check(self, res_name, status):
-        cmd_crm_show = f'crm res show {res_name}'
-        result_crm_show = s.get_ssh_cmd(SSH, 'UqmUytK3', cmd_crm_show, s.get_oprt_id())
-        if status == 'running':
-            re_running = f'resource {res_name} is running on'
-            if s.re_findall(re_running, result_crm_show):
-                return True
-        if status == 'stopped':
-            re_stopped = f'resource {res_name} is stopped'
-            if s.re_findall(re_stopped, result_crm_show):
-                return True
 
     def _crm_verify(self, res_name):
         '''
@@ -417,9 +420,10 @@ class VplxCrm(object):
             if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
                 return {'status': 'Stopped'}
             else:
-                s.pwe(f'crm resource {res_name} not found')
+                s.pwe(f'crm resource {res_name} not found',4,1)
         else:
-            s.pwe('Failed to show crm',4,2)
+            s.pwce('Failed to show crm',4,2)
+            
 
     def cyclic_check_crm_status(self, res_name, status):
         '''
@@ -446,12 +450,13 @@ class VplxCrm(object):
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
         if crm_stop['sts']:
             if self.cyclic_check_crm_status(res_name, 'Stopped'):
-                s.pwl(f'Stopped the iSCSILogicalUnit resource {res_name} successfully',2)
+                s.prt(f'Succeed in Stopping the iSCSILogicalUnit resource "{res_name}"', 2)
                 return True
             else:
-                s.pwe('crm stop failed,exit the program...',3,2)
+                s.pwce('Failed to stop CRM resource ,exit the program...', 3, 2)
         else:
-            s.pwe('crm stop failed',3,2)
+            s.pwce('Failed to stop CRM resource', 3, 2)
+
 
     def _crm_del(self, res_name):
         '''
@@ -461,16 +466,16 @@ class VplxCrm(object):
         crm_del_cmd = f'crm cof delete {res_name}'
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, crm_del_cmd, oprt_id)
-        #a:delete_result为error
+        # a:delete_result为error
         if del_result:
             re_delstr = 'deleted'
             re_result = s.re_findall(
                 re_delstr, del_result['rst'].decode('utf-8'))
             if len(re_result) == 2:
-                s.pwl(f'Removed the iSCSILogicalUnit resource {res_name} successfully',2)
+                s.prt(f'Succeed in deleting the iSCSILogicalUnit resource "{res_name}"', 2)
                 return True
             else:
-                s.pwe('crm cof delete failed',3,2)
+                s.pwce(f'Failed to delete the iSCSILogicalUnit resource "{res_name}"', 3, 2)
 
     def crm_del(self, res_name):
         s.pwl(f'Deleting crm resource {res_name}',1)
@@ -525,7 +530,6 @@ class VplxCrm(object):
     #     return lun_to_del_list
 
     def del_all(self, crm_to_del_list):
-        # s.pwl('start to delete crm resource',0,'','delete')
         if crm_to_del_list:
             s.pwl('Start to delete CRM resource',0)
             for res_name in crm_to_del_list:
