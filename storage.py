@@ -70,7 +70,7 @@ class Storage:
         info_msg = f'Start to create LUN, LUN name: "{self.lun_name}",LUN ID: "{self.ID}"'
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
         result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
-        if result=='':
+        if result:
             s.pwl(f'Succeed in creating LUN "{self.lun_name}"', 3, oprt_id, 'finish')
         else:
             s.handle_exception()
