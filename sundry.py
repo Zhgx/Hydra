@@ -2,7 +2,6 @@
 import random
 import consts
 import logdb
-
 import sys
 import re
 import time
@@ -73,7 +72,7 @@ def scsi_rescan(ssh, mode):
         pwl('Start to scan SCSI device with normal way', 3, '', 'start')
     elif mode == 'r':
         cmd = '/usr/bin/rescan-scsi-bus.sh -r'
-        pwl('Start to scan SCSI device after removing disk', 3, '', 'start')
+        pwl('Start to scan SCSI device after removing disk', 2, '', 'start')
     elif mode == 'a':
         cmd = '/usr/bin/rescan-scsi-bus.sh -a'
         pwl('Start to scan SCSI device in depth', 3, '', 'start')
@@ -103,7 +102,6 @@ def get_lsscsi(ssh, func_str, oprt_id):
 
 
 def get_the_disk_with_lun_id(all_disk):
-    logger = consts.glo_log()
     lun_id = str(consts.glo_id())
     dict_id_disk = dict(all_disk)
     if lun_id in dict_id_disk.keys():
@@ -328,7 +326,6 @@ def prt(str, level=0, warning_level=0):
         else:
             print(f'|{warning_str:<4}{indent_str:<70}{warning_str:>4}|')
 
-
     else:
         if warning_level == 'exception':
             print(' exception infomation '.center(105, '*'))
@@ -395,7 +392,6 @@ def pwe(str, level, warning_level):
             sys.exit()
         else:
             raise consts.ReplayExit
-
 
 def pwce(str, level, warning_level):
     """

@@ -58,7 +58,7 @@ class Storage:
                 s.change_pointer(db_id)
             result_cmd = db.get_cmd_result(oprt_id)
             if result_cmd:
-                return True
+                return result_cmd
 
     def lun_create(self):
         '''
@@ -86,15 +86,12 @@ class Storage:
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
         result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         if result:
-            s.pwl(f'Finish mapping LUN "{self.lun_name}" to VersaPLX', 3, oprt_id, 'finish')
+            re_string=f'LUN /vol/esxi/{self.lun_name} was mapped to initiator group hydra={self.ID}'
+            re_result=s.re_findall(re_string, result)
+            if re_result:
+                s.pwl(f'Finish mapping LUN "{self.lun_name}" to VersaPLX', 3, oprt_id, 'finish')
         else:
             s.handle_exception()
-
-    def lun_create_verify(self):
-        pass
-
-    def lun_map_verify(self):
-        pass
 
     def lun_unmap(self, lun_name):
         '''
@@ -108,12 +105,11 @@ class Storage:
             unmap_re = r'unmapped from initiator group hydra'
             re_result = s.re_findall(unmap_re, unmap_result)
             if re_result:
-                print(f'  Unmap the lun /vol/esxi/{lun_name}  successfully')
-
+                s.pwl(f'Unmap the lun /vol/esxi/{lun_name}  successfully',2)
                 return True
             else:
                 # -m:只有在出错之后才打印和记录,不过不退出.正常完成的不记录
-                s.prt(f'can not unmap lun {lun_name}')
+                s.pwe(f'can not unmap lun {lun_name}',2,1)
                 # print(f'can not unmap lun {lun_name}')
         else:
             print('unmap command execute failed')
@@ -130,12 +126,11 @@ class Storage:
             re_destroy = r'destroyed'
             re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
-
-                print(f'  Destroy the lun /vol/esxi/{lun_name} successfully')
+                s.pwl(f'Destroy the lun /vol/esxi/{lun_name} successfully',2)
 
                 return True
             else:
-                print(f'can not destroy lun {lun_name}')
+                s.prt(f'can not destroy lun {lun_name}',2)
         else:
             print('destroy command execute failed')
 
@@ -162,7 +157,7 @@ class Storage:
     def del_all(self, lun_to_del_list):
         s.pwl('start to delete storage lun', 0, '', 'delete')
         for lun_name in lun_to_del_list:
-            s.pwl(f'Deleting LUN "{lun_name}"', 2, '', 'start')
+            s.pwl(f'Deleting LUN "{lun_name}"', 1, '', 'delete')
             self.lun_unmap(lun_name)
             self.lun_destroy(lun_name)
 
