@@ -196,6 +196,12 @@ class HostTest(object):
         else:
             s.pwce(f'Failed to format device "{dev_name}"', 3, 2)
 
+    def host_rescan_r(self):
+        '''
+        vplx rescan after delete
+        '''
+        s.scsi_rescan(SSH, 'r')
+
 
 if __name__ == "__main__":
     # test = HostTest(21)
