@@ -2,7 +2,6 @@
 import random
 import consts
 import logdb
-
 import sys
 import re
 import time
@@ -26,12 +25,12 @@ class DebugLog(object):
         self._mk_debug_folder()
 
     def _mk_debug_folder(self):
-        #-m:增加判断,用file命令结果判断,如果已存在,则不创建
+        # -m:增加判断,用file命令结果判断,如果已存在,则不创建
         output = self.SSH.execute_command(f'mkdir {self.dbg_folder}')
         if output['sts']:
             pass
         else:
-            print(f'Can not create folder {self.dbg_folder} to stor debug log')
+            prt(f'Can not create folder {self.dbg_folder} to stor debug log', 3, 2)
             sys.exit()
 
     def prepare_debug_log(self, cmd_list):
@@ -40,7 +39,7 @@ class DebugLog(object):
             if output['sts']:
                 time.sleep(0.1)
             else:
-                print(f'Collect log command "{cmd}" execute failed.')
+                prt(f'Collect log command "{cmd}" execute failed.', 3, 2)
 
     def get_debug_log(self, local_folder):
         dbg_file = f'{self.dbg_folder}.tar'
@@ -51,12 +50,13 @@ class DebugLog(object):
 def dp(str, arg):
     print(f'{str}---------------------\n{arg}')
 
+
 def change_id_str_to_list(id_str):
     id_list = []
     id_range_list = [int(i) for i in id_str.split(',')]
-    if len(id_range_list) not in [1,2]:
-        #-m:提示格式
-        pwe('Please verify id format',2,2)
+    
+    if len(id_range_list) not in [1, 2]:
+        pwce('Please verify id format', 2, 2)
     elif len(id_range_list) == 1:
         id_ = id_range_list[0]
         id_list = [id_]
@@ -66,45 +66,39 @@ def change_id_str_to_list(id_str):
     return id_list
 
 
-
 def scsi_rescan(ssh, mode):
     if mode == 'n':
         cmd = '/usr/bin/rescan-scsi-bus.sh'
-        pwl('Start to scan SCSI device with normal way',3,'','start')
+        pwl('Start to scan SCSI device with normal way', 3, '', 'start')
     elif mode == 'r':
         cmd = '/usr/bin/rescan-scsi-bus.sh -r'
-        pwl('Start to scan SCSI device after removing disk',1,'','start')
+        pwl('Start to scan SCSI device after removing disk', 2, '', 'start')
     elif mode == 'a':
         cmd = '/usr/bin/rescan-scsi-bus.sh -a'
-        pwl('Start to scan SCSI device in depth',3,'','start')
+        pwl('Start to scan SCSI device in depth', 3, '', 'start')
 
     if consts.glo_rpl() == 'no':
         result = ssh.execute_command(cmd)
         if result['sts']:
             return True
         else:
-            pwl('Scan SCSI device failed',4,'','finish')
+            pwl('Scan SCSI device failed', 4, '', 'finish')
     else:
         return True
 
 
-
 def get_lsscsi(ssh, func_str, oprt_id):
-    logger = consts.glo_log()
     pwl('Start to get the list of all SCSI device',3,oprt_id,'start')
     cmd_lsscsi = 'lsscsi'
     result_lsscsi = get_ssh_cmd(ssh, func_str, cmd_lsscsi, oprt_id)
-    if result_lsscsi['sts']:
-        return result_lsscsi['rst'].decode('utf-8')
+    if result_lsscsi:
+        if result_lsscsi['sts']:
+            return result_lsscsi['rst'].decode('utf-8')
+        else:
+            pwe(f'Failed to excute Command "{cmd_lsscsi}"',4,1)
     else:
-        #-m:s.pwl
-        print(f'  Command {cmd_lsscsi} execute failed')
-        logger.write_to_log('T', 'INFO', 'warning', 'failed', oprt_id,
-                            f'  Command "{cmd_lsscsi}" execute failed')
+        handle_exception()
 
-#-m:这代码蠢不,..看你们有没有人指出来
-# def get_all_scsi_disk(re_string, lsscsi_result):
-#     return re_findall(re_string, lsscsi_result)
 
 
 def get_the_disk_with_lun_id(all_disk):
@@ -114,12 +108,7 @@ def get_the_disk_with_lun_id(all_disk):
     if lun_id in dict_id_disk.keys():
         disk_dev = dict_id_disk[lun_id]
         return disk_dev
-    #-m:考虑将意外判断放在外面调用部分
-    else:
-        #-m:第几级打印? 因为有重试,可能要考虑一下重试打印是否增加级
-        print(f'no disk device with SCSI ID {lun_id} found')
-        logger.write_to_log('T', 'INFO', 'warning', 'failed',
-                            '', f'no disk device with SCSI ID {lun_id} found')
+
 
 def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
     """
@@ -147,35 +136,19 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         if result_cmd:
             result = eval(result_cmd)
         else:
-            # pwl(f'Failed to execute command:{cmd}',4)
             result = None
         if db_id:
             change_pointer(db_id)
         return result
 
 
-def pwce(print_str, log_folder):
-    """
-    print, write to log and exit.
-    :param logger: Logger object for logging
-    :param print_str: Strings to be printed and recorded
-    :param print_str: Strings to be printed and recorded
-    """
-    logger = consts.glo_log()
-    #-m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    print(print_str)
-    logger.write_to_log('T', 'INFO', 'error', 'exit', '', print_str)
-
-    debug_log_folder = debug_log.collect_debug_log()
-    logger.write_to_log('T', 'DATA', 'clct', '', '', f'Save debug data to folder {debug_log_folder}')
-
-    sys.exit()
 
 def _compare(name, name_list):
     if name in name_list:
         return name
-    elif 'res_'+name in name_list:
-        return 'res_'+name
+    elif 'res_' + name in name_list:
+        return 'res_' + name
+
 
 def get_to_del_list(name_list):
     '''
@@ -207,7 +180,7 @@ def get_to_del_list(name_list):
     return to_del_list
 
 
-def prt_res_to_del(str_,res_list):
+def prt_res_to_del(str_, res_list):
     print(f'{str_:<15} to be delete:')
     print('-------------------------------------------------------------')
     for i in range(len(res_list)):
@@ -216,6 +189,7 @@ def prt_res_to_del(str_,res_list):
         if (i + 1) % 5 == 0:
             print()
     print()
+
 
 # def getshow(unique_str, id_list, name_list):
 #     '''
@@ -276,7 +250,6 @@ def change_pointer(new_id):
     consts.set_glo_log_id(new_id)
 
 
-
 def re_findall(re_string, tgt_string):
     logger = consts.glo_log()
     re_login = re.compile(re_string)
@@ -296,16 +269,22 @@ def iscsi_login(tgt_ip, ssh):
     oprt_id = get_oprt_id()
     cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
     result_iscsi_login = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-    if result_iscsi_login['sts']:
-        result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
-        re_string = f'Login to.*portal: ({tgt_ip}).*successful'
-        if re_findall(re_string, result_iscsi_login):
-            pwl(f'iSCSI login to {tgt_ip} successful',3,'','finish')
-            return True
-        else:
-            pwe(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
 
-#-m:string 和 oprt id 不用传递过来,在内部定义即可
+    if result_iscsi_login:
+        if result_iscsi_login['sts']:
+            result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
+            re_string = f'Login to.*portal: ({tgt_ip}).*successful'
+            if re_findall(re_string, result_iscsi_login):
+                pwl(f'iSCSI login to {tgt_ip} successful',3,'','finish')
+                return True
+            else:
+                pwce(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
+
+    else:
+        return
+
+
+# -m:string 和 oprt id 不用传递过来,在内部定义即可
 def find_session(tgt_ip, ssh):
     '''
     Execute the command and check up the status of session
@@ -321,48 +300,49 @@ def find_session(tgt_ip, ssh):
             if re_findall(re_session, result_session):
                 return True
     else:
-        raise consts.ReplayExit
+        return
 
-# def ran_str(num):
-#     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-#     str_ = ''
-#     for i in range(num):
-#         str_ += random.choice(chars)
-#     return str_
+
+def ran_str(num):
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    str_ = ''
+    for i in range(num):
+        str_ += random.choice(chars)
+    return str_
 
 
 def prt(str, level=0, warning_level=0):
-    warning_str = '*' * warning_level
+    if isinstance(warning_level, int):
+        warning_str = '*' * warning_level
+    else:
+        warning_str = ''
     indent_str = '  ' * level + str
+    title_str = '---- ' + str + ' '
     rpl = consts.glo_rpl()
 
     if rpl == 'no':
         if level == 0:
-            indent_str = '** ' + str + ' **'
-            print(f'{indent_str:-^80}')
+            print()
+            print(f'{title_str:-<80}')
         else:
             print(f'|{warning_str:<4}{indent_str:<70}{warning_str:>4}|')
 
     else:
         if warning_level == 'exception':
-            print('REASON'.center(96, '-'))
+            print(' exception infomation '.center(105, '*'))
             print(str)
-            print(f'{"":-^96}','\n')
+            print(f'{" exception infomation ":*^105}', '\n')
             return
 
         db = consts.glo_db()
-        time = db.get_time_via_str(consts.glo_tsc_id(),str)
+        time = db.get_time_via_str(consts.glo_tsc_id(), str)
         if not time:
             time = ''
 
         if level == 0:
-            indent_str = '** ' + str + ' **'
-            print(f'{indent_str:-^105}')
+            print(f'{title_str:-<105}')
         else:
             print(f'|{warning_str:<4} Re:{time:<20} {indent_str:<70}{warning_str:>4}|')
-
-
-
 
 
 def pwl(str, level, oprt_id=None, type=None):
@@ -370,16 +350,14 @@ def pwl(str, level, oprt_id=None, type=None):
     rpl = consts.glo_rpl()
     if rpl == 'no':
         logger = consts.glo_log()
-        prt(str,level)
+        prt(str, level)
         logger.write_to_log('T', 'INFO', 'info', type, oprt_id, str)
 
     elif rpl == 'yes':
-        prt(str,level)
+        prt(str, level)
 
 
-
-
-def pwe(str,level,warning_level):
+def prt_log(str, level, warning_level):
     """
     print, write to log and exit.
     :param logger: Logger object for logging
@@ -388,18 +366,78 @@ def pwe(str,level,warning_level):
     logger = consts.glo_log()
 
     #-m:这里也是要调用s.prt还是啥,指定级别,不同地方调用要用不同的级别.
-    prt(str,level,warning_level)
+    rpl = consts.glo_rpl()
+    format_width = 80
+    if rpl == 'yes':
+        format_width = 105
+        db = consts.glo_db()
+        oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
+        prt(str + f'.oprt_id:{oprt_id}', level, warning_level)
+        result_cmd = db.get_cmd_result(oprt_id)
+        if result_cmd:
+            result = eval(result_cmd)
+        else:
+            result = None
+        if result:
+            fail_reason = result['rst'].decode()
+        else:
+            fail_reason = 'Unknown mistake'
+        print(' wrong reason '.center(105, '*'))
+        print(fail_reason)
+        print(f'{" wrong reason ":*^105}')
+    elif rpl == 'no':
+        prt(str, level, warning_level)
+
+    # format_width = 105 if rpl == 'yes' else 80
+    # db = consts.glo_db()
+    # oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(), consts.glo_log_id())
+    # prt(str+f'oprt_id:{oprt_id}',level,warning_level)
+
     if warning_level == 1:
         logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
     elif warning_level == 2:
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
+        # sys.exit()
+
+
+def pwe(str, level, warning_level):
+    prt_log(str, level, warning_level)
+    if warning_level == 2:
         sys.exit()
 
+def pwce(str, level, warning_level):
+    """
+    print, write to log and exit.
+    :param logger: Logger object for logging
+    :param print_str: Strings to be printed and recorded
+    """
+
+    prt_log(str,level,warning_level)
+    if consts.glo_rpl() == 'no':
+        debug_log.collect_debug_log()
+    if warning_level == 2:
+        sys.exit()
+
+
+def handle_exception(str='',level=0,warning_level=0):
+    rpl = consts.glo_rpl()
+    if rpl == 'yes':
+        db = consts.glo_db()
+        exception_info = db.get_exception_info(consts.glo_tsc_id())
+        if exception_info:
+            prt('The transaction was interrupted because of an exception',1,warning_level=2)
+            prt(exception_info, warning_level='exception')
+            raise consts.ReplayExit
+        else:
+            oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(),consts.glo_log_id())
+            prt(f'Unable to get data from the database.oprt_id:{oprt_id}',3,2)
+            raise consts.ReplayExit
+
+    else:
+        pwce(str,level,warning_level)
 
 
 if __name__ == '__main__':
     pass
     # pwl('3333',0)
     # pwl('3askldjasdasldkjaskdl',1)
-
-
