@@ -103,11 +103,8 @@ class LogDB():
 
     def find_oprt_id_via_string(self, transaction_id, string):
         id_now = consts.glo_log_id()
-        # id_now = 1
-        sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id >= {id_now} and transaction_id = '{transaction_id}'"
+        sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id > {id_now} and transaction_id = '{transaction_id}'"
         id_and_oprt_id = self.sql_fetch_one(sql)
-        # sql = f"SELECT describe2 FROM logtable WHERE id = '{db_id}' "
-        # oprt_id = self.sql_fetch_one(sql)
         if id_and_oprt_id:
             return id_and_oprt_id
         else:
@@ -150,21 +147,17 @@ class LogDB():
 
     def get_time_via_str(self, transaction_id , str):
         id_now = consts.glo_log_id()
-        # id_now = 1
         sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and id >= {id_now} and data LIKE '%{str}%'"
         return self.sql_fetch_one(sql)
 
     def get_time_via_unique_str(self,transaction_id, str):
         id_now = consts.glo_log_id()
-        # id_now = 1
         oprt_id = self.find_oprt_id_via_string(transaction_id,str)[1]
         sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and id >= {id_now} and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
     def get_exception_info(self,transaction_id):
         id_now = consts.glo_log_id()
-        # print(id_now)
-        # id_now = 1
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}' and describe1 = 'exception' and id >= {id_now}"
         return self.sql_fetch_one(sql)
 

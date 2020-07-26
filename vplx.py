@@ -45,7 +45,7 @@ def get_disk_dev():
     else:
         s.scsi_rescan(SSH, 'a')
         s.pwl(f'No disk with SCSI ID "{consts.glo_id()}" found, scan again...', 3, '', 'start')
-        disk_dev = _find_new_disk()
+        disk_dev = _find_new_disk() #这里需要查询到的第二个结果，现在返回第一个。
         if disk_dev:
             s.pwl('Found the disk successfully', 4, '', 'finish')
             return disk_dev
@@ -118,7 +118,6 @@ class VplxDrbd(object):
         self._create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = get_disk_dev()
-
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
         # self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
         #                          f'Start prepare config file for resource {self.res_name}')
@@ -255,10 +254,10 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         down_result = s.get_ssh_cmd(SSH, unique_str, drbd_down_cmd, oprt_id)
         if down_result['sts']:
-            s.pwl(f'Down the DRBD resource {res_name} successfully',2)
+            s.pwl(f'Down the DRBD resource "{res_name}" successfully',2)
             return True
         else:
-            s.pwce(f'Failed to stop DRBD {res_name}', 4, 2)
+            s.pwce(f'Failed to stop DRBD "{res_name}"', 4, 2)
 
     def _drbd_del_config(self, res_name):
         '''
@@ -269,7 +268,7 @@ class VplxDrbd(object):
         oprt_id = s.get_oprt_id()
         del_result = s.get_ssh_cmd(SSH, unique_str, drbd_del_cmd, oprt_id)
         if del_result['sts']:
-            s.pwl(f'Removed the DRBD resource {res_name} config file successfully',2)
+            s.pwl(f'Removed the DRBD resource "{res_name}" config file successfully',2)
             return True
         else:
             s.pwce('Failed to remove DRBD config file', 4, 2)

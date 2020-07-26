@@ -58,7 +58,7 @@ class Storage:
                 s.change_pointer(db_id)
             result_cmd = db.get_cmd_result(oprt_id)
             if result_cmd:
-                return True
+                return result_cmd
 
     def lun_create(self):
         '''
