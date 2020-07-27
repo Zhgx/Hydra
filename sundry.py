@@ -379,7 +379,7 @@ def prt_log(str, level, warning_level):
         logger.write_to_log('T', 'INFO', 'warning', 'fail', '', str)
     elif warning_level == 2:
         logger.write_to_log('T', 'INFO', 'error', 'exit', '', str)
-        print(f'{"":-^{format_width}}','\n')
+        # print(f'{"":-^{format_width}}','\n')
         # sys.exit()
 
 
@@ -401,8 +401,9 @@ def pwce(str, level, warning_level):
     """
     rpl = consts.glo_rpl()
     prt_log(str,level,warning_level)
-    if consts.glo_rpl() == 'no':
+    if rpl == 'no':
         debug_log.collect_debug_log()
+        print('debug')
     if warning_level == 2:
         if rpl == 'no':
             sys.exit()
@@ -421,7 +422,7 @@ def handle_exception(str='',level=0,warning_level=0):
             raise consts.ReplayExit
         else:
             oprt_id = db.get_oprt_id_via_db_id(consts.glo_tsc_id(),consts.glo_log_id())
-            prt(f'Unable to get data from the database.oprt_id:{oprt_id}',3,2)
+            prt(f'Unable to get data from the logfile.oprt_id:{oprt_id}',3,2)
             raise consts.ReplayExit
 
     else:

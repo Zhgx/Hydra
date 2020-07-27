@@ -84,7 +84,6 @@ class HydraArgParse():
             '--date',
             dest='date',
             metavar='',
-            nargs=2,
             help='date')
         self.parser_replay = parser_replay
 
@@ -196,10 +195,28 @@ class HydraArgParse():
                 print(f'{"":-^{format_width}}', '\n')
                 continue
 
+    def get_valid_transaction(self,list_transaciont):
+        db = consts.glo_db()
+        lst_tid = list_transaciont[:]
+        for tid in lst_tid:
+            string, id = db.get_string_id(tid)
+            if string and id:
+                self.dict_id_str.update({id: string})
+            else:
+                self.list_tid.remove(tid)
+                cmd = db.get_cmd_via_tid(tid)
+                print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
+        print(f'Transaction to be executed: {" ".join(self.list_tid)}')
+        return self.dict_id_str
+
+
+
+
     def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
-        arg_date = args.date
+        print(args.date)
+        arg_date = args.date.split(',')
         print('* MODE : REPLAY *')
         time.sleep(1.5)
         if arg_tid:
@@ -216,19 +233,15 @@ class HydraArgParse():
         elif arg_date:
             self.list_tid = db.get_transaction_id_via_date(
                 arg_date[0], arg_date[1])
-            lst_tid = self.list_tid[:]
-            for tid in lst_tid:
-                string, id = db.get_string_id(tid)
-                if string and id:
-                    self.dict_id_str.update({id: string})
-                else:
-                    self.list_tid.remove(tid)
-                    cmd = db.get_cmd_via_tid(tid)
-                    print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
-            print(f'Transaction to be executed: {" ".join(self.list_tid)}')
+            self.get_valid_transaction(self.list_tid)
+        elif arg_tid and arg_date:
+            print('Please specify only one type of data for replay')
         else:
-            self.parser_replay.print_help()
-            return
+            # 执行日志全部的事务
+            self.list_tid = db.get_all_transaction()
+            self.get_valid_transaction(self.list_tid)
+
+
 
     def start(self):
         args = self.parser.parse_args()
