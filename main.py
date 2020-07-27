@@ -63,6 +63,7 @@ class HydraArgParse():
             action="store",
             default='',
             dest="id_range",
+            nargs= '+',
             help='ID or ID range(split with ",")')
 
         sub_parser = self.parser.add_subparsers(dest='replay')
@@ -84,6 +85,7 @@ class HydraArgParse():
             '--date',
             dest='date',
             metavar='',
+            nargs=2,
             help='date')
         self.parser_replay = parser_replay
 
@@ -215,8 +217,7 @@ class HydraArgParse():
     def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
-        print(args.date)
-        arg_date = args.date.split(',')
+        arg_date = args.date
         print('* MODE : REPLAY *')
         time.sleep(1.5)
         if arg_tid:

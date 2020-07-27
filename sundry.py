@@ -53,7 +53,7 @@ def dp(str, arg):
 
 def change_id_str_to_list(id_str):
     id_list = []
-    id_range_list = [int(i) for i in id_str.split(',')]
+    id_range_list = [int(i) for i in id_str]
     
     if len(id_range_list) not in [1, 2]:
         pwce('Please verify id format', 2, 2)
