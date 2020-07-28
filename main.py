@@ -33,6 +33,7 @@ class HydraArgParse():
         self.list_tid = None  # for replay
         self.log_user_input()
         self.dict_id_str = {}
+       
 
     def log_user_input(self):
         if sys.argv:
@@ -48,6 +49,13 @@ class HydraArgParse():
             action="store_true",
             dest="delete",
             help="to confirm delete lun")
+
+        self.parser.add_argument(
+            '-m',
+            action="store_true",
+            dest="hosttest",
+            help="to test max support host")
+
         self.parser.add_argument(
             '-t',
             action="store_true",
@@ -119,6 +127,34 @@ class HydraArgParse():
         '''
         host = host_initiator.HostTest()
         host.start_test()
+
+    
+    def generate_iqn(self):
+        num=0
+        self._storage()
+        self._vplx_drbd()
+        i=1
+        while i:
+            num+=1
+            s.set_glo_iqn(num)
+            iqn_list=consts.glo_iqn_list()
+            host=host_initiator.HostTest()
+            host.host_logout()
+            host._execute_echo()
+            host._restart_iscsi()
+            crm=vplx.VplxCrm()
+            if len(iqn_list)==1:
+                crm.crm_cfg()
+            elif len(iqn_list)>1:
+                drbd=vplx.VplxDrbd()
+                drbd.drbd_status_verify()
+                crm.modify_allow_initiator()
+            host._create_iscsi_session()
+            host.start_test()
+            if num==3:
+                i=0
+            
+
 
     def delete_resource(self):
         '''
@@ -248,6 +284,9 @@ class HydraArgParse():
         if args.delete:
             self.delete_resource()
             return
+        if args.hosttest:
+            consts.set_glo_id(args.id_range)
+            self.generate_iqn()
 
         elif args.replay:
             consts.set_glo_rpl('yes')
@@ -270,3 +309,4 @@ class HydraArgParse():
 if __name__ == '__main__':
     obj = HydraArgParse()
     obj.start()
+

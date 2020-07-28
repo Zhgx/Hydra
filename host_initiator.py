@@ -13,6 +13,7 @@ USER = 'root'
 PASSWORD = 'password'
 TIMEOUT = 3
 MOUNT_POINT = '/mnt'
+TARGET_IQN='iqn.2020-06.com.example:test-max-lun'
 
 
 def init_ssh():
@@ -80,6 +81,7 @@ class HostTest(object):
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self._prepare()
+        self.IQN_LIST=consts.glo_iqn_list()
 
     def _create_iscsi_session(self):
         # -m:这里应该有一个较高级别的说明现在在干啥.至于哪里需要这个函数的string,哪里不需要,我也晕了,需要确认一下
@@ -93,6 +95,39 @@ class HostTest(object):
         else:
             s.pwl(f'ISCSI has logged in {VPLX_IP}', 3, '', 'finish')
 
+    def host_logout(self):
+        cmd=f'iscsiadm -m node -T {TARGET_IQN} --logout '
+        oport_ip=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'HuTg1LaQ', cmd, oport_ip)
+        if results:
+            re_string=f'Logout of.*portal: ({VPLX_IP}).*successful'
+            re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
+            if re_result:
+                s.pwl('success in logout iSCSI target',2,2)
+                return True
+            else:
+                s.pwe('failed in logout iSCSI target',2,2)
+
+    def _execute_echo(self):
+        cmd=f'echo "InitiatorName={self.IQN_LIST[-1]}" > /etc/iscsi/initiatorname.iscsi'
+        oport_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
+        if results['sts']:
+            s.pwl('echo to modify  success',2)
+        else:
+            s.pwe(f'{self.IQN_LIST[-1]} modify failed',2,2)
+    
+    def _restart_iscsi(self):
+        cmd=f'systemctl restart iscsid open-iscsi'
+        oport_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'Uksjdkqi',cmd,oport_id)
+        if results['sts']:
+            s.pwl('restart iscsi service succeed',2)
+        else:
+            s.pwe('restart iscsi service failed',2,2)
+
+    
+    
     def _prepare(self):
         if self.rpl == 'no':
             init_ssh()

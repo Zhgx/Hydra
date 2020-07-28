@@ -11,11 +11,13 @@ import traceback
 import socket
 from random import shuffle
 import log
-
 import connect
-
 import debug_log
 
+
+def set_glo_iqn(num):
+    glo_iqn="iqn.1993-08.org.debian:01:2b129695b8bb"+f'maxhost{num}'
+    consts.append_glo_iqn_list(glo_iqn)
 
 class DebugLog(object):
     def __init__(self, ssh_obj, debug_folder):
@@ -269,7 +271,7 @@ def iscsi_login(tgt_ip, ssh):
     oprt_id = get_oprt_id()
     cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
     result_iscsi_login = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-
+    print(result_iscsi_login)
     if result_iscsi_login:
         if result_iscsi_login['sts']:
             result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')

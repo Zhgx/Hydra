@@ -11,6 +11,7 @@ def _init():
     _global_dict['LOG_ID'] = 0
     _global_dict['RPL'] = 'no'
     _global_dict['LOG_SWITCH'] = 'yes'
+    _global_dict['IQN_LIST'] = []
 
 def set_value(key, value):
     """ 定义一个全局变量 """
@@ -59,6 +60,8 @@ def set_glo_log_switch(value):
 def set_glo_id_list(value):
     set_value('ID_LIST', value)
 
+def append_glo_iqn_list(value):
+    _global_dict['IQN_LIST'].append(value)
 
 def glo_log():
     return get_value('LOG')
@@ -94,6 +97,10 @@ def glo_log_switch():
 
 def glo_id_list():
     return get_value('ID_LIST')
+
+def glo_iqn_list():
+    return get_value('IQN_LIST')
+
 
 def get_cmd_debug_sys(debug_folder,host):
     cmd_debug_sys = [

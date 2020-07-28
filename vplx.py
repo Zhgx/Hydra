@@ -15,8 +15,8 @@ timeout = 3
 
 NETAPP_IP = '10.203.1.231'
 TARGET_IQN = "iqn.2020-06.com.example:test-max-lun"
-INITIATOR_IQN = "iqn.1993-08.org.debian:01:885240c2d86c"
 TARGET_NAME = 't_test'
+
 
 
 def init_ssh():
@@ -235,7 +235,6 @@ class VplxDrbd(object):
                 if re_result:
                     status = re_result[0]
                     if status == 'UpToDate':
-
                         s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
 
                         return True
@@ -308,6 +307,7 @@ class VplxCrm(object):
         self.ID_LIST = consts.glo_id_list()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
+        self.IQN_LIST=consts.glo_iqn_list()
         self.lu_name = f'res_{self.STR}_{self.ID}'
         self.colocation_name = f'co_{self.lu_name}'
         self.order_name = f'or_{self.lu_name}'
@@ -324,7 +324,7 @@ class VplxCrm(object):
         cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{TARGET_IQN}" \
             implementation=lio-t lun={consts.glo_id()} path="/dev/{DRBD_DEV_NAME}"\
-            allowed_initiators="{INITIATOR_IQN}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
+            allowed_initiators="{self.IQN_LIST[-1]}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result:
             if result['sts']:
@@ -390,6 +390,8 @@ class VplxCrm(object):
                 if self.cyclic_check_crm_status(self.lu_name, 'Started'):
                     s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
                     return True
+                else:
+                    s.pwe(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
             else:
                 s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
         else:
@@ -483,31 +485,7 @@ class VplxCrm(object):
             if self._crm_del(res_name):
                 return True
 
-    # def _get_all_crm(self):
 
-    #     oprt_id = s.get_oprt_id()
-    #     res_show_result = s.get_ssh_cmd(SSH, unique_str, res_show_cmd, oprt_id)
-    #     if res_show_result['sts']:
-    #         re_show =
-    #         list_of_all_crm = s.re_findall(
-    #             re_show, res_show_result['rst'].decode('utf-8'))
-    #         s.dp('out_str',res_show_result['rst'].decode('utf-8'))
-    #         s.dp('list_of_all_crm',list_of_all_crm)
-    #         return list_of_all_crm
-
-    # def get_tgt_to_del(self):
-    #     '''
-    #     Get the crm resource name through regular matching and determine whether these exist
-    #     '''
-    #     crm_show_result = self._get_all_crm()
-    #     if crm_show_result:
-    #         list_of_show_crm = s.get_to_del_list(crm_show_result)
-    #         if list_of_show_crm:
-    #             print('crm：')
-    #             print(s.print_format(list_of_show_crm))
-    #         return list_of_show_crm
-    #     else:
-    #         return False
 
     def get_all_cfgd_res(self):
         # get list of all configured crm res
@@ -520,14 +498,7 @@ class VplxCrm(object):
             crm_res_cfgd_list = s.re_findall(re_crm_res, show_result)
             return crm_res_cfgd_list
 
-    # def get_res_to_del(self):
-    #     '''
-    #     Get all luns through regular matching
-    #     '''
-    #     # get list of all configured luns
-    #     lun_cfgd_list = self._get_all_cfgd_lun()
-    #     lun_to_del_list = s.get_to_del_list(lun_cfgd_list)
-    #     return lun_to_del_list
+
 
     def del_all(self, crm_to_del_list):
         if crm_to_del_list:
@@ -540,9 +511,47 @@ class VplxCrm(object):
         vplx rescan after delete
         '''
         s.scsi_rescan(SSH, 'r')
+    
+    def modify_allow_initiator(self):
+        iqn_string=' '.join(self.IQN_LIST)
+        cmd=f'crm conf set {self.lu_name}.allowed_initiators "{iqn_string}"'
+        oprt_id=s.get_oprt_id()
+        result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if result['sts']:
+            s.pwl('success in modify the allow initiator', 2, oprt_id, '')
+        else:
+            s.pwe('failed in modify the allow initiator', 2, 2)
+    
+    def _targetcli_verify(self):
+        cmd=f'targetcli ls iscsi/{TARGET_IQN}/tpg1/acls'
+        oprt_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if results['sts']:
+            re_string= f'(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*\s*.*mapped_lun{self.ID}'
+            re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
+            if re_result:
+                if re_result==self.IQN_LIST:
+                    s.pwl('success in verify targetcli status',2,oprt_id)
+            else:
+                s.pwe('failed in verify targetcli status',2, 2)
+        
+    def crm_and_targetcli_verify(self):
+        crm = self._crm_verify(self.lu_name)
+        t_test=self._crm_verify('t_test')
+        if crm['status']=='Started':
+            return True
+        else:
+            self._crm_start()
+
+        if t_test['status']=='Started':
+            return True
+
+
+
 
 
 if __name__ == '__main__':
+    pass
     # logger = log.Log(s.get_transaction_id())
     # consts._init()
     # consts.set_glo_log(logger)
@@ -552,4 +561,4 @@ if __name__ == '__main__':
     # consts.set_glo_rpl('no')
     # test_crm = VplxCrm()
     # test_crm._crm_status_check('res_ttt_2')
-    pass
+    
