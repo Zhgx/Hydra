@@ -103,11 +103,8 @@ class LogDB():
 
     def find_oprt_id_via_string(self, transaction_id, string):
         id_now = consts.glo_log_id()
-        # id_now = 1
-        sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id >= {id_now} and transaction_id = '{transaction_id}'"
+        sql = f"SELECT id,data FROM logtable WHERE describe1 = '{string}' and id > {id_now} and transaction_id = '{transaction_id}'"
         id_and_oprt_id = self.sql_fetch_one(sql)
-        # sql = f"SELECT describe2 FROM logtable WHERE id = '{db_id}' "
-        # oprt_id = self.sql_fetch_one(sql)
         if id_and_oprt_id:
             return id_and_oprt_id
         else:
@@ -144,27 +141,33 @@ class LogDB():
             return list_result
         return []
 
+    def get_all_transaction(self):
+        sql = f'SELECT DISTINCT transaction_id FROM logtable'
+        result = self.sql_fetch_all(sql)
+        list_result = []
+        if result:
+            for i in result:
+                list_result.append(i[0])
+            return list_result
+        return []
+
     def get_cmd_via_tid(self, transaction_id):
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}'"
         return self.sql_fetch_one(sql)
 
     def get_time_via_str(self, transaction_id , str):
         id_now = consts.glo_log_id()
-        # id_now = 1
         sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and id >= {id_now} and data LIKE '%{str}%'"
         return self.sql_fetch_one(sql)
 
     def get_time_via_unique_str(self,transaction_id, str):
         id_now = consts.glo_log_id()
-        # id_now = 1
         oprt_id = self.find_oprt_id_via_string(transaction_id,str)[1]
         sql = f"SELECT time FROM logtable WHERE transaction_id = '{transaction_id}' and id >= {id_now} and describe2 = '{oprt_id}'"
         return self.sql_fetch_one(sql)
 
     def get_exception_info(self,transaction_id):
         id_now = consts.glo_log_id()
-        # print(id_now)
-        # id_now = 1
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}' and describe1 = 'exception' and id >= {id_now}"
         return self.sql_fetch_one(sql)
 
@@ -175,6 +178,7 @@ class LogDB():
     def get_oprt_id_via_db_id(self,transaction_id,db_id):
         sql = f"SELECT data FROM logtable WHERE transaction_id = '{transaction_id}' and id = {db_id}"
         return self.sql_fetch_one(sql)
+
 
 
 
@@ -196,7 +200,6 @@ class LogDB():
             f = open('./' + file)
             content = f.read()
             file_data = re_.findall(content)
-
             for data_one in file_data:
                 data = id + data_one
                 self.insert(data)
@@ -217,7 +220,8 @@ if __name__ == '__main__':
     # print(db.get_exception('1595296861'))
     # print(db.get_cmd_result(''))
     # print(db.get_time_via_str('1595396085','Start iscsi login'))
-    print(db.get_last_one('1595409897'))
+    # print(db.get_last_one('1595409897'))
+    print(db.get_all_transaction())
     # print(db.get_oprt_id_via_db_id(''))
     # print(db.get_time_via_str('1595295584','Start to create lun, name: log_test_203'))
     # print(db.get_cmd_via_tid('1594879092'))

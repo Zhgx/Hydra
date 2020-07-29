@@ -58,7 +58,7 @@ class Storage:
                 s.change_pointer(db_id)
             result_cmd = db.get_cmd_result(oprt_id)
             if result_cmd:
-                return True
+                return result_cmd
 
     def lun_create(self):
         '''
@@ -91,7 +91,7 @@ class Storage:
             if re_result:
                 s.pwl(f'Finish mapping LUN "{self.lun_name}" to VersaPLX', 3, oprt_id, 'finish')
             else:
-                s.pwe(f'Failed mapping LUN "{self.lun_name}" to VersaPLX',2,1)
+                s.pwce(f'Failed to map LUN "{self.lun_name}"', 3, 2)
         else:
             s.handle_exception()
 
