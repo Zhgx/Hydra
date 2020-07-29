@@ -165,13 +165,14 @@ class VplxDrbd(object):
 
         init_result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         re_drbd = 'New drbd meta data block successfully created'
-        if init_result['sts']:
-            re_result = s.re_findall(re_drbd, init_result['rst'].decode())
-            if re_result:
-                s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
-                return True
-            else:
-                s.pwce(f'Failed to initialize DRBD resource {self.res_name}', 4, 2)
+        if init_result:
+            if init_result['sts']:
+                re_result = s.re_findall(re_drbd, init_result['rst'].decode())
+                if re_result:
+                    s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
+                    return True
+                else:
+                    s.pwce(f'Failed to initialize DRBD resource {self.res_name}', 4, 2)
         else:
             s.handle_exception()
 
@@ -410,18 +411,21 @@ class VplxCrm(object):
         crm_show_cmd = f'crm res show {res_name}'
         oprt_id = s.get_oprt_id()
         verify_result = s.get_ssh_cmd(SSH, unique_str, crm_show_cmd, oprt_id)
-        if verify_result['sts'] == 1:
-            re_start = f'resource {res_name} is running on'
-            if s.re_findall(re_start, verify_result['rst'].decode('utf-8')):
-                return {'status': 'Started'}
-        elif verify_result['sts'] == 0:
-            re_stopped = f'resource {res_name} is NOT running'
-            if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
-                return {'status': 'Stopped'}
+        if verify_result:
+            if verify_result['sts'] == 1:
+                re_start = f'resource {res_name} is running on'
+                if s.re_findall(re_start, verify_result['rst'].decode('utf-8')):
+                    return {'status': 'Started'}
+            elif verify_result['sts'] == 0:
+                re_stopped = f'resource {res_name} is NOT running'
+                if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
+                    return {'status': 'Stopped'}
+                else:
+                    s.pwe(f'crm resource {res_name} not found',4,1)
             else:
-                s.pwe(f'crm resource {res_name} not found',4,1)
+                s.pwce('Failed to show crm',4,2)
         else:
-            s.pwce('Failed to show crm',4,2)
+            s.handle_exception()
             
 
     def cyclic_check_crm_status(self, res_name, status):
@@ -447,14 +451,17 @@ class VplxCrm(object):
         crm_stop_cmd = (f'crm res stop {res_name}')
         oprt_id = s.get_oprt_id()
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
-        if crm_stop['sts']:
-            if self.cyclic_check_crm_status(res_name, 'Stopped'):
-                s.prt(f'Succeed in Stopping the iSCSILogicalUnit resource "{res_name}"', 2)
-                return True
+        if crm_stop:
+            if crm_stop['sts']:
+                if self.cyclic_check_crm_status(res_name, 'Stopped'):
+                    s.prt(f'Succeed in Stopping the iSCSILogicalUnit resource "{res_name}"', 2)
+                    return True
+                else:
+                    s.pwce('Failed to stop CRM resource ,exit the program...', 3, 2)
             else:
-                s.pwce('Failed to stop CRM resource ,exit the program...', 3, 2)
+                s.pwce('Failed to stop CRM resource', 3, 2)
         else:
-            s.pwce('Failed to stop CRM resource', 3, 2)
+            s.handle_exception()
 
 
     def _crm_del(self, res_name):
