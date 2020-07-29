@@ -271,7 +271,6 @@ def iscsi_login(tgt_ip, ssh):
     oprt_id = get_oprt_id()
     cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
     result_iscsi_login = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-    print(result_iscsi_login)
     if result_iscsi_login:
         if result_iscsi_login['sts']:
             result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')

@@ -4,6 +4,7 @@ import sundry as s
 import time
 import consts
 import log
+import re
 
 SSH = None
 
@@ -163,7 +164,6 @@ class VplxDrbd(object):
         cmd = f'drbdadm create-md {self.res_name}'
         info_msg = f'Start to initialize DRBD resource for "{self.res_name}"'
         s.pwl(info_msg, 3, oprt_id, 'start')
-
         init_result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         re_drbd = 'New drbd meta data block successfully created'
         if init_result['sts']:
@@ -307,7 +307,6 @@ class VplxCrm(object):
         self.ID_LIST = consts.glo_id_list()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
-        self.IQN_LIST=consts.glo_iqn_list()
         self.lu_name = f'res_{self.STR}_{self.ID}'
         self.colocation_name = f'co_{self.lu_name}'
         self.order_name = f'or_{self.lu_name}'
@@ -324,7 +323,7 @@ class VplxCrm(object):
         cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{TARGET_IQN}" \
             implementation=lio-t lun={consts.glo_id()} path="/dev/{DRBD_DEV_NAME}"\
-            allowed_initiators="{self.IQN_LIST[-1]}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
+            allowed_initiators="{consts.glo_iqn_list()[-1]}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result:
             if result['sts']:
@@ -376,24 +375,24 @@ class VplxCrm(object):
             if self._setting_order():
                 return True
 
-    def _crm_start(self):
+    def _crm_start(self,resource):
         '''
         start up the iSCSILogicalUnit resource
         '''
         oprt_id = s.get_oprt_id()
         unique_str = 'YnTDsuVX'
-        cmd = f'crm res start {self.lu_name}'
-        s.pwl(f'Start up the iSCSILogicalUnit resource "{self.lu_name}"', 3, oprt_id, 'start')
+        cmd = f'crm res start {resource}'
+        s.pwl(f'Start up the iSCSILogicalUnit resource "{resource}"', 3, oprt_id, 'start')
         result_cmd = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_cmd:
             if result_cmd['sts']:
-                if self.cyclic_check_crm_status(self.lu_name, 'Started'):
-                    s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
+                if self.cyclic_check_crm_status(resource, 'Started'):
+                    s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{resource}"', 4, oprt_id, 'finish')
                     return True
                 else:
-                    s.pwe(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
+                    s.pwce(f'Failed to start up iSCSILogicaLUnit "{resource}"', 4, 2)
             else:
-                s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
+                s.pwce(f'Failed to start up iSCSILogicaLUnit "{resource}"', 4, 2)
         else:
             s.handle_exception()
 
@@ -401,7 +400,7 @@ class VplxCrm(object):
         s.pwl('Start to configure crm resource', 2, '', 'start')
         if self._crm_create():
             if self._crm_setting():
-                if self._crm_start():
+                if self._crm_start(self.lu_name):
                     time.sleep(0.5)
                     return True
 
@@ -513,38 +512,54 @@ class VplxCrm(object):
         s.scsi_rescan(SSH, 'r')
     
     def modify_allow_initiator(self):
-        iqn_string=' '.join(self.IQN_LIST)
+        iqn_string=' '.join(consts.glo_iqn_list())
         cmd=f'crm conf set {self.lu_name}.allowed_initiators "{iqn_string}"'
         oprt_id=s.get_oprt_id()
         result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if result['sts']:
-            s.pwl('success in modify the allow initiator', 2, oprt_id, '')
+            if self.crm_targetcli_verify():
+                s.pwl('success in modify the allow initiator', 2, oprt_id, '')
         else:
             s.pwe('failed in modify the allow initiator', 2, 2)
     
     def _targetcli_verify(self):
         cmd=f'targetcli ls iscsi/{TARGET_IQN}/tpg1/acls'
         oprt_id=s.get_oprt_id()
+        time.sleep(0.5)
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results['sts']:
-            re_string= f'(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*\s*.*mapped_lun{self.ID}'
-            re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
+            restr = re.compile('''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun101''', re.DOTALL)
+            re_result=restr.findall(results['rst'].decode('utf-8'))
             if re_result:
-                if re_result==self.IQN_LIST:
+                if re_result==consts.glo_iqn_list():
                     s.pwl('success in verify targetcli status',2,oprt_id)
+                    return True
             else:
                 s.pwe('failed in verify targetcli status',2, 2)
         
-    def crm_and_targetcli_verify(self):
+    def extension_crm_verify(self):
         crm = self._crm_verify(self.lu_name)
         t_test=self._crm_verify('t_test')
-        if crm['status']=='Started':
-            return True
-        else:
-            self._crm_start()
 
-        if t_test['status']=='Started':
+        if crm['status']=='Stopped':
+            if self._crm_start(self.lu_name):
+                crm=self._crm_verify(self.lu_name)
+
+        if t_test['status']=='Stopped':
+            if self._crm_start('t_test'):
+                t_test=self._crm_verify('t_test')
+
+        if crm['status']==t_test['status']=='Started':
             return True
+        else:    
+            s.pwe('Crm and t_test verify status failed',2, 2)   
+    
+    def crm_targetcli_verify(self):
+        if self.extension_crm_verify():
+            # if self._targetcli_verify():
+            return True
+    
+        
 
 
 

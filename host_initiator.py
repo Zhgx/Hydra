@@ -50,7 +50,7 @@ def get_disk_dev():
         s.scsi_rescan(SSH, 'a')
         disk_dev = _find_new_disk()
         if disk_dev:
-            s.pwl('Found the disk successfully', 4, '', 'finish')
+            s.pwl(f'Found the disk device "{disk_dev}" successfully', 4, '', 'finish')
             return disk_dev
         else:
             s.pwce('No disk found, exit the program', 4, 2)
@@ -94,6 +94,15 @@ class HostTest(object):
                 s.pwce(f'Can not login to {VPLX_IP}', 4, 2)
         else:
             s.pwl(f'ISCSI has logged in {VPLX_IP}', 3, '', 'finish')
+    
+    def iscsi_logout_session(self):
+        if s.find_session(VPLX_IP, SSH):
+            if self.host_logout():
+                s.pwl('success in logout iSCSI target',2,2)
+            else:
+                s.pwe('failed in logout iSCSI target',2,2)
+        else:
+            s.pwl('already logout succeed',2,2)
 
     def host_logout(self):
         cmd=f'iscsiadm -m node -T {TARGET_IQN} --logout '
@@ -103,19 +112,16 @@ class HostTest(object):
             re_string=f'Logout of.*portal: ({VPLX_IP}).*successful'
             re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
             if re_result:
-                s.pwl('success in logout iSCSI target',2,2)
                 return True
-            else:
-                s.pwe('failed in logout iSCSI target',2,2)
 
     def _execute_echo(self):
         cmd=f'echo "InitiatorName={self.IQN_LIST[-1]}" > /etc/iscsi/initiatorname.iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
         if results['sts']:
-            s.pwl('echo to modify  success',2)
+            s.pwl('echo to modify IQN value success',2)
         else:
-            s.pwe(f'{self.IQN_LIST[-1]} modify failed',2,2)
+            s.pwe(f'{self.IQN_LIST[-1]} modify IQN value failed',2,2)
     
     def _restart_iscsi(self):
         cmd=f'systemctl restart iscsid open-iscsi'
