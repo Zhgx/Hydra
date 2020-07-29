@@ -296,7 +296,7 @@ class HydraArgParse():
             self.delete_resource()
             return
         if args.hosttest:
-            consts.set_glo_id(args.id_range)
+            consts.set_glo_id(''.join(args.id_range))
             self.run_host_test()
 
         elif args.replay:
