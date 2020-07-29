@@ -127,7 +127,7 @@ def get_cmd_debug_sys(debug_folder,host):
 
 def get_cmd_debug_drbd(debug_folder, host):
     cmd_debug_drbd = [
-            f'tar -cvf {debug_folder}/{host}_drbd_conf_file.tar /etc/drbd.d/*',
+            f'tar -cvf {debug_folder}/{host}_drbd_conf_file.tar -C /etc drbd.d',
             f'drbdadm status >> {debug_folder}/{host}_drbd.log',
         ]
     return cmd_debug_drbd

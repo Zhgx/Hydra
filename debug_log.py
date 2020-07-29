@@ -10,7 +10,10 @@ import sundry as s
 def collect_debug_log():
     tid = consts.glo_tsc_id()
     local_debug_folder = f'/tmp/{tid}/'
-    os.mkdir(local_debug_folder)
+    try:
+        os.mkdir(local_debug_folder)
+    except:
+        pass
 
     s.prt('Start to collect debug log',0)
 
