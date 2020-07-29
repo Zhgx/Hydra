@@ -90,6 +90,8 @@ class Storage:
             re_result=s.re_findall(re_string, result)
             if re_result:
                 s.pwl(f'Finish mapping LUN "{self.lun_name}" to VersaPLX', 3, oprt_id, 'finish')
+            else:
+                s.pwce(f'Failed to map LUN "{self.lun_name}"', 3, 2)
         else:
             s.handle_exception()
 
