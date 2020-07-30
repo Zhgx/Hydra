@@ -279,13 +279,16 @@ class VplxDrbd(object):
         # get list of all configured crm res
         cmd_drbd_status = 'drbdadm status'
         show_result = s.get_ssh_cmd(SSH, 'UikYgtM1', cmd_drbd_status, s.get_oprt_id())
-        if show_result['sts']:
-            re_drbd = f'res_\w*_[0-9]{{1,3}}'
-            show_result = show_result['rst'].decode('utf-8')
-            drbd_cfgd_list = s.re_findall(re_drbd, show_result)
-            return drbd_cfgd_list
+        if show_result:
+            if show_result['sts']:
+                re_drbd = f'res_\w*_[0-9]{{1,3}}'
+                show_result = show_result['rst'].decode('utf-8')
+                drbd_cfgd_list = s.re_findall(re_drbd, show_result)
+                return drbd_cfgd_list
+            else:
+                s.pwe(f'Failed to execute command "{cmd_drbd_status}"', 3, 2)
         else:
-            s.pwce(f'Failed to execute command "{cmd_drbd_status}"', 3, 2)
+            s.handle_exception()
 
 
     def drbd_del(self, res_name):
