@@ -516,6 +516,29 @@ class VplxCrm(object):
         vplx rescan after delete
         '''
         s.scsi_rescan(SSH, 'r')
+
+    # def crm_conf_set_verify(self):
+    #     cmd=f'crm conf show {self.lu_name}'
+    #     oprt_id=s.get_oprt_id()
+    #     result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+    #     if result['sts']:
+    #         re_string=f'{consts.glo_iqn_list()[-1]}'
+    #         re_result=s.re_findall(re_string,result['rst'].decode('utf-8'))
+    #         if  set(re_result).issubset(set(consts.glo_iqn_list())):
+    #             return True
+    #         else:
+    #             return False
+    
+    # def cyclic_crm_set_verify(self):
+    #     n = 0
+    #     while n < 10:
+    #         n += 1
+    #         if self.crm_conf_set_verify():
+    #             return True
+    #         else:
+    #             time.sleep(1.5)
+    #     else:
+    #         s.pwe('Failed in verify the allow initiator', 2, 2)
     
     def modify_allow_initiator(self):
         iqn_string=' '.join(consts.glo_iqn_list())
@@ -523,25 +546,27 @@ class VplxCrm(object):
         oprt_id=s.get_oprt_id()
         result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if result['sts']:
+            time.sleep(10)
             if self.crm_targetcli_verify():
                 s.pwl('success in modify the allow initiator', 2, oprt_id, '')
+            else:
+                s.pwe('Failed in verify the allow initiator', 2, 2)   
         else:
-            s.pwe('failed in modify the allow initiator', 2, 2)
+            s.pwe('Failed in modify the allow initiator', 2, 2)
     
     def _targetcli_verify(self):
         cmd=f'targetcli ls iscsi/{TARGET_IQN}/tpg1/acls'
         oprt_id=s.get_oprt_id()
-        time.sleep(0.5)
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results['sts']:
-            restr = re.compile('''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun101''', re.DOTALL)
+            restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun{self.ID}''', re.DOTALL)
             re_result=restr.findall(results['rst'].decode('utf-8'))
             if re_result:
                 if re_result==consts.glo_iqn_list():
-                    s.pwl('success in verify targetcli status',2,oprt_id)
                     return True
             else:
-                s.pwe('failed in verify targetcli status',2, 2)
+                return False         
+
         
     def extension_crm_verify(self):
         crm = self._crm_verify(self.lu_name)
@@ -562,8 +587,9 @@ class VplxCrm(object):
     
     def crm_targetcli_verify(self):
         if self.extension_crm_verify():
-            # if self._targetcli_verify():
-            return True
+            if self._targetcli_verify():
+                return True
+
     
         
 
@@ -572,14 +598,15 @@ class VplxCrm(object):
 
 
 if __name__ == '__main__':
-    pass
-    # logger = log.Log(s.get_transaction_id())
-    # consts._init()
-    # consts.set_glo_log(logger)
-    # consts.set_glo_id('')
-    # consts.set_glo_id_list('')
-    # consts.set_glo_str('luntest')
-    # consts.set_glo_rpl('no')
-    # test_crm = VplxCrm()
-    # test_crm._crm_status_check('res_ttt_2')
+    # pass
+    logger = log.Log(s.get_transaction_id())
+    consts._init()
+    consts.set_glo_log(logger)
+    consts.set_glo_id('')
+    consts.set_glo_id_list('')
+    consts.set_glo_str('luntest')
+    consts.set_glo_rpl('no')
+    test_crm = VplxCrm()
+    test_crm._targetcli_verify()
+    # 
     

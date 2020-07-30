@@ -3,6 +3,7 @@ import connect
 import time
 import sundry as s
 import consts
+import log
 
 SSH = None
 
@@ -39,6 +40,7 @@ def _find_new_disk():
 
 # -m:这里要注意replay的时候这边程序的调用过程.re-rescan之后又尽心过了一次_find_new_disk(),日志应该需要跳转到下一条lsscsi结果.注意指针及时移动
 def get_disk_dev():
+    # time.sleep(5)
     s.scsi_rescan(SSH, 'n')
     disk_dev = _find_new_disk()
     if disk_dev:
@@ -245,14 +247,18 @@ class HostTest(object):
 
 
 if __name__ == "__main__":
-    # test = HostTest(21)
+    logger = log.Log(s.get_transaction_id())
     consts._init()
-    consts.set_glo_tsc_id('789')
-    w = DebugLog()
-    w.collect_debug_sys()
+    consts.set_glo_log(logger)
+    consts.set_glo_id('')
+    consts.set_glo_id_list('')
+    consts.set_glo_str('luntest')
+    consts.set_glo_rpl('no')
+    test = HostTest()
+    test._create_iscsi_session()
+    # consts._init()
+    # consts.set_glo_tsc_id('789')
+    # w = DebugLog()
+    # w.collect_debug_sys()
     pass
-    # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
-    # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda
-    # [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb
-    # [33:0:0:21]  disk    LIO-ORG  res_luntest_21   4.0   /dev/sdc '''
-    # print(command_result)
+  

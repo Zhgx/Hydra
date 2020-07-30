@@ -129,7 +129,6 @@ class Storage:
             re_result = s.re_findall(re_destroy, destroy_result)
             if re_result:
                 s.pwl(f'Destroy the lun /vol/esxi/{lun_name} successfully',2)
-
                 return True
             else:
                 s.prt(f'can not destroy lun {lun_name}',2)
