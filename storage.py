@@ -8,17 +8,26 @@ port = 23
 username = 'root'
 password = 'Feixi@123'
 timeout = 3
+telnet_conn = None
+
+
+def init_telnet():
+    global telnet_conn
+    if not telnet_conn:
+        telnet_conn = connect.ConnTelnet(
+            host, port, username, password, timeout)
+    else:
+        pass
 
 
 class DebugLog(object):
     def __init__(self):
-        self.telnet_conn = connect.ConnTelnet(
-            host, port, username, password, timeout)
+        init_telnet()
 
     def get_storage_debug(self, debug_folder):
         cmd_debug = consts.get_cmd_debug_stor()
         for cmd in cmd_debug:
-            result = self.telnet_conn.execute_command(cmd)
+            result = telnet_conn.execute_command(cmd)
             with open(f'{debug_folder}/Storage_{host}.log', 'a') as f:
                 f.write(result)
 
@@ -37,8 +46,7 @@ class Storage:
         self.TID = consts.glo_tsc_id()
         self.lun_name = f'{self.STR}_{self.ID}'
         if self.rpl == 'no':
-            self.telnet_conn = connect.ConnTelnet(
-                host, port, username, password, timeout)
+            init_telnet()
 
     def ex_telnet_cmd(self, unique_str, cmd, oprt_id):
         if self.rpl == 'no':
@@ -46,7 +54,7 @@ class Storage:
                 'F', 'DATA', 'STR', unique_str, '', oprt_id)
             self.logger.write_to_log(
                 'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
-            result = self.telnet_conn.execute_command(cmd)
+            result = telnet_conn.execute_command(cmd)
             self.logger.write_to_log(
                 'F', 'DATA', 'cmd', 'telnet', oprt_id, result)
             return result
