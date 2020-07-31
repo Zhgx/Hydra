@@ -18,15 +18,17 @@ import debug_log
 
 
 class DebugLog(object):
-    def __init__(self, ssh_obj, debug_folder):
+    def __init__(self, ssh_obj, debug_folder, host):
         # print(debug_folder)
         self.dbg_folder = debug_folder
         self.SSH = ssh_obj
+        self.host = host
         self._mk_debug_folder()
 
     def _mk_debug_folder(self):
         # -m:增加判断,用file命令结果判断,如果已存在,则不创建
         output = self.SSH.execute_command(f'mkdir {self.dbg_folder}')
+        self.SSH.execute_command(f'mkdir {self.dbg_folder}/{self.host}')
         if output['sts']:
             pass
         else:
@@ -43,7 +45,9 @@ class DebugLog(object):
 
     def get_debug_log(self, local_folder):
         dbg_file = f'{self.dbg_folder}.tar'
-        self.SSH.execute_command(f'tar cvf {dbg_file} -C {self.dbg_folder} .')
+        self.SSH.execute_command(f'mv {self.dbg_folder}/*.log {self.dbg_folder}/{self.host}')
+        self.SSH.execute_command(f'mv {self.dbg_folder}/*.tar {self.dbg_folder}/{self.host}')
+        self.SSH.execute_command(f'tar cvf {dbg_file} -C {self.dbg_folder} {self.host}')
         self.SSH.download(dbg_file, local_folder)
 
 
