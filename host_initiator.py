@@ -83,7 +83,7 @@ class HostTest(object):
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self._prepare()
-        self.IQN_LIST=consts.glo_iqn_list()
+        self.iqn_list=consts.glo_iqn_list()
 
     def _create_iscsi_session(self):
         # -m:这里应该有一个较高级别的说明现在在干啥.至于哪里需要这个函数的string,哪里不需要,我也晕了,需要确认一下
@@ -97,43 +97,55 @@ class HostTest(object):
         else:
             s.pwl(f'ISCSI has logged in {VPLX_IP}', 3, '', 'finish')
     
-    def iscsi_logout_session(self):
+    def disconnect_iscsi_session(self):
         if s.find_session(VPLX_IP, SSH):
-            if self.host_logout():
-                s.pwl('success in logout iSCSI target',2,2)
+            if self.iscsi_logout():
+                s.pwl(f'Success in logout {VPLX_IP}',2,'','finish')
             else:
-                s.pwe('failed in logout iSCSI target',2,2)
+                s.pwce(f'Failed to logout {VPLX_IP}',2,2)
         else:
-            s.pwl('already logout succeed',2,2)
+            s.pwl('ISCSI had Logged out successfully',2,'','finish')
 
-    def host_logout(self):
+    def iscsi_logout(self):
         cmd=f'iscsiadm -m node -T {TARGET_IQN} --logout '
         oport_ip=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'HuTg1LaQ', cmd, oport_ip)
         if results:
-            re_string=f'Logout of.*portal: ({VPLX_IP}).*successful'
-            re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
-            if re_result:
-                return True
+            if results['sts']:
+                re_string=f'Logout of.*portal: ({VPLX_IP}).*successful'
+                re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
+                if re_result:
+                    return True
+            else:
+                s.pwce(f'Can not logout to {VPLX_IP}', 4, 2)
+        
+        else:
+            s.handle_exception()
+            
 
-    def _execute_echo(self):
-        cmd=f'echo "InitiatorName={self.IQN_LIST[-1]}" > /etc/iscsi/initiatorname.iscsi'
+    def _modify_host_iqn(self):
+        cmd=f'echo "InitiatorName={self.iqn_list[-1]}" > /etc/iscsi/initiatorname.iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
-        if results['sts']:
-            s.pwl('echo to modify IQN value success',2)
+        if results:
+            if results['sts']:
+                s.pwl(f'Success in modify initiator IQN "{self.iqn_list[-1]}"',2,'','finish')
+            else:
+                s.pwe(f'Failed to  modify initiator IQN "{self.iqn_list[-1]}"',2,2)
         else:
-            s.pwe(f'{self.IQN_LIST[-1]} modify IQN value failed',2,2)
+            s.handle_exception()
     
     def _restart_iscsi(self):
         cmd=f'systemctl restart iscsid open-iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'Uksjdkqi',cmd,oport_id)
-        if results['sts']:
-            s.pwl('restart iscsi service succeed',2)
+        if results:
+            if results['sts']:
+                s.pwl('Success in restarting iscsi service',2,'','finish')
+            else:
+                s.pwe('Failed to restart iscsi service',2,2)
         else:
-            s.pwe('restart iscsi service failed',2,2)
-
+            s.handle_exception()
     
     
     def _prepare(self):
@@ -255,7 +267,7 @@ if __name__ == "__main__":
     consts.set_glo_str('luntest')
     consts.set_glo_rpl('no')
     test = HostTest()
-    test._create_iscsi_session()
+    test.iscsi_logout()
     # consts._init()
     # consts.set_glo_tsc_id('789')
     # w = DebugLog()

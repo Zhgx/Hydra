@@ -5,7 +5,7 @@ import time
 import consts
 import log
 import re
-
+import sys
 SSH = None
 
 host = '10.203.1.199'
@@ -318,12 +318,13 @@ class VplxCrm(object):
         Create iSCSILogicalUnit resource
         '''
         oprt_id = s.get_oprt_id()
+        initiator_iqn=consts.glo_iqn_list()[-1]
         unique_str = 'LXYV7dft'
         s.pwl(f'Start to create iSCSILogicalUnit resource "{self.lu_name}"', 3, oprt_id, 'start')
         cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{TARGET_IQN}" \
             implementation=lio-t lun={consts.glo_id()} path="/dev/{DRBD_DEV_NAME}"\
-            allowed_initiators="{consts.glo_iqn_list()[-1]}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
+            allowed_initiators="{initiator_iqn}" op start timeout=60 interval=0 op stop timeout=60 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'#40->60
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result:
             if result['sts']:
@@ -409,20 +410,17 @@ class VplxCrm(object):
         Check the crm resource status
         '''
         unique_str = 'UqmUytK3'
-        crm_show_cmd = f'crm res show {res_name}'
+        crm_show_cmd = f'crm res list | grep {res_name}'
         oprt_id = s.get_oprt_id()
         verify_result = s.get_ssh_cmd(SSH, unique_str, crm_show_cmd, oprt_id)
         if verify_result:
-            if verify_result['sts'] == 1:
-                re_start = f'resource {res_name} is running on'
-                if s.re_findall(re_start, verify_result['rst'].decode('utf-8')):
-                    return {'status': 'Started'}
-            elif verify_result['sts'] == 0:
-                re_stopped = f'resource {res_name} is NOT running'
-                if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
-                    return {'status': 'Stopped'}
+            if verify_result['sts']:
+                re_string=f'''{res_name}\s*\(ocf::heartbeat:\w*\):\s*(\w*)'''
+                re_result=s.re_findall(re_string, verify_result['rst'].decode('utf-8'))
+                if re_result:
+                    return {'status': re_result[0]}
                 else:
-                    s.pwe(f'crm resource {res_name} not found',4,1)
+                    s.pwce('Failed to show crm',4,2)
             else:
                 s.pwce('Failed to show crm',4,2)
         else:
@@ -440,7 +438,7 @@ class VplxCrm(object):
             if crm_verify['status'] == status:
                 return True
             else:
-                time.sleep(1.5)
+                time.sleep(6)
         else:
             return False
 
@@ -483,13 +481,14 @@ class VplxCrm(object):
                 return True
             else:
                 s.pwce(f'Failed to delete the iSCSILogicalUnit resource "{res_name}"', 3, 2)
+        else:
+            s.handle_exception()
 
     def crm_del(self, res_name):
         s.pwl(f'Deleting crm resource {res_name}',1)
         if self._crm_stop(res_name):
             if self._crm_del(res_name):
                 return True
-
 
 
     def get_all_cfgd_res(self):
@@ -565,36 +564,80 @@ class VplxCrm(object):
                 if re_result==consts.glo_iqn_list():
                     return True
             else:
-                return False         
+                return False     
+
+    def _crm_restart(self):
+        cmd=f'crm res restart {self.lu_name}'
+        oprt_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if results:
+            return True
+        else:
+            return False
+    
+    def _crm_ref(self):
+        cmd=f'crm res ref'
+        oprt_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if results:
+            if results['sts']==1:
+                return True
+            else:
+                return False
+
 
         
     def extension_crm_verify(self):
         crm = self._crm_verify(self.lu_name)
-        t_test=self._crm_verify('t_test')
+        t_test=self._crm_verify(TARGET_NAME)
 
         if crm['status']=='Stopped':
-            if self._crm_start(self.lu_name):
-                crm=self._crm_verify(self.lu_name)
+            time.sleep(10)
+            crm=self._crm_verify(self.lu_name)
 
         if t_test['status']=='Stopped':
-            if self._crm_start('t_test'):
-                t_test=self._crm_verify('t_test')
+            time.sleep(10)
+            t_test=self._crm_verify(TARGET_NAME)
+        if crm['status']=='FAILED':
+            if self._crm_ref():
+                time.sleep(5)
+                crm=self._crm_verify(self.lu_name)
+                if crm['status']!='Started':
+                    time.sleep(10)
+                    crm=self._crm_verify(self.lu_name)
+                    if crm['status']!='Started':
+                        if self._crm_restart():
+                            time.sleep(5)
+                            crm=self._crm_verify(self.lu_name)
+                            if crm['status']=='FAILED':
+                                s.pwce('Failed to restart CRM resource,status:FAILED',2,2)
+                            elif crm['status']=='Stopped':
+                                time.sleep(10)
+                                crm=self._crm_verify(self.lu_name)
+                                if crm['status']=='Stopped':
+                                    s.pwce('Failed to restart CRM resource,status:Stopped',2,2)
+                                elif crm['status']=='Started':
+                                    pass
+                                else:
+                                    s.pwce('Failed to restart CRM resource,status:FAILED',2,2)
+                            elif crm['status']=='Started':
+                                pass
 
-        if crm['status']==t_test['status']=='Started':
-            return True
+        if t_test['status']=='Started':
+            if crm['status']=='Started':
+                return True
         else:    
             s.pwe('Crm and t_test verify status failed',2, 2)   
     
     def crm_targetcli_verify(self):
         if self.extension_crm_verify():
+            time.sleep(10)
             if self._targetcli_verify():
                 return True
-
-    
-        
-
-
-
+            elif self.extension_crm_verify():
+                time.sleep(10)
+                if self._targetcli_verify():
+                    return True 
 
 
 if __name__ == '__main__':
@@ -607,6 +650,6 @@ if __name__ == '__main__':
     consts.set_glo_str('luntest')
     consts.set_glo_rpl('no')
     test_crm = VplxCrm()
-    test_crm._targetcli_verify()
+    test_crm._crm_verify('res_hosttest_100')
     # 
     

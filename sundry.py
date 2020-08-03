@@ -16,8 +16,9 @@ import debug_log
 
 
 def set_glo_iqn(num):
-    glo_iqn="iqn.1993-08.org.debian:01:2b129695b8bb"+f'maxhost{num}'
-    consts.append_glo_iqn_list(glo_iqn)
+    iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{num}"
+    consts.append_glo_iqn_list(iqn)
+
 
 class DebugLog(object):
     def __init__(self, ssh_obj, debug_folder):
@@ -281,7 +282,7 @@ def iscsi_login(tgt_ip, ssh):
                 pwce(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
 
     else:
-        return
+        handle_exception()
 
 
 # -m:string 和 oprt id 不用传递过来,在内部定义即可
@@ -300,7 +301,7 @@ def find_session(tgt_ip, ssh):
             if re_findall(re_session, result_session):
                 return True
     else:
-        return
+        handle_exception()
 
 
 def ran_str(num):

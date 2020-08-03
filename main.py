@@ -119,6 +119,7 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config iSCSI Target
         '''
+        s.set_glo_iqn('0')
         crm = vplx.VplxCrm()
         crm.crm_cfg()
 
@@ -128,16 +129,19 @@ class HydraArgParse():
         Umount and start to format, write, and read iSCSI LUN
         '''
         host = host_initiator.HostTest()
+        host.disconnect_iscsi_session()
+        host._modify_host_iqn()
+        host._restart_iscsi()
         host.start_test()
     
-    def _host_modify(self):
+    def _modify_iqn_and_restart(self):
         host=host_initiator.HostTest()
-        host.iscsi_logout_session()
-        host._execute_echo()
+        host.disconnect_iscsi_session()
+        host._modify_host_iqn()
         host._restart_iscsi()
 
     
-    def run_host_test(self):
+    def max_suport_host_test(self):
         num=0
         self._storage()
         self._vplx_drbd()
@@ -147,7 +151,7 @@ class HydraArgParse():
             num+=1
             s.set_glo_iqn(num)
             iqn_list=consts.glo_iqn_list()
-            self._host_modify()
+            self._modify_iqn_and_restart()
             if len(iqn_list)==1:
                 crm.crm_cfg()
             elif len(iqn_list)>1:
@@ -295,9 +299,10 @@ class HydraArgParse():
         if args.delete:
             self.delete_resource()
             return
-        if args.hosttest:
+        elif args.hosttest:
             consts.set_glo_id(''.join(args.id_range))
-            self.run_host_test()
+            self.max_suport_host_test()
+            return
 
         elif args.replay:
             consts.set_glo_rpl('yes')
