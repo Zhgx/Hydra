@@ -15,7 +15,7 @@ import connect
 import debug_log
 
 
-def set_glo_iqn(num):
+def create_iqn(num):
     iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{num}"
     consts.append_glo_iqn_list(iqn)
 
@@ -106,7 +106,15 @@ def get_lsscsi(ssh, func_str, oprt_id):
     else:
         handle_exception()
 
-
+def re_search(re_string, tgt_string):
+    logger = consts.glo_log()
+    re_object = re.compile(re_string)
+    re_result = re_object.search(tgt_string)
+    oprt_id = get_oprt_id()
+    logger.write_to_log('T', 'OPRT', 'regular', 'search',
+                        oprt_id, {re_string: tgt_string})
+    logger.write_to_log('F', 'DATA', 'regular', 'search', oprt_id, re_result)
+    return re_result
 
 def get_the_disk_with_lun_id(all_disk):
     lun_id = str(consts.glo_id())
@@ -177,7 +185,7 @@ def get_to_del_list(name_list):
                 to_del_list.append(name)
     elif id_list:
         for id_ in id_list:
-            str_ = f'_{id_}'
+            str_ = f'_{id_}\b'
             for name in name_list:
                 if str_ in name:
                     to_del_list.append(name)

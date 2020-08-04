@@ -3,11 +3,11 @@ import connect
 import sundry as s
 import consts
 
-host = '10.203.1.231'
-port = 23
-username = 'root'
-password = 'Feixi@123'
-timeout = 3
+HOST = '10.203.1.231'
+PORT = 23
+USERNSME = 'root'
+PASSWORD = 'Feixi@123'
+TIMEOUT = 3
 TELNET_CONN = None
 
 
@@ -15,7 +15,7 @@ def init_telnet():
     global TELNET_CONN
     if not TELNET_CONN:
         TELNET_CONN = connect.ConnTelnet(
-            host, port, username, password, timeout)
+            HOST, PORT, USERNSME, PASSWORD, TIMEOUT)
     else:
         pass
 
@@ -28,7 +28,7 @@ class DebugLog(object):
         cmd_debug = consts.get_cmd_debug_stor()
         for cmd in cmd_debug:
             result = TELNET_CONN.execute_command(cmd)
-            with open(f'{debug_folder}/Storage_{host}.log', 'a') as f:
+            with open(f'{debug_folder}/Storage_{HOST}.log', 'a') as f:
                 f.write(result)
 
 
@@ -95,7 +95,7 @@ class Storage:
         result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
         if result:
             re_string=f'LUN /vol/esxi/{self.lun_name} was mapped to initiator group hydra={self.ID}'
-            re_result=s.re_findall(re_string, result)
+            re_result=s.re_search(re_string, result)
             if re_result:
                 s.pwl(f'Finish mapping LUN "{self.lun_name}" to VersaPLX', 3, oprt_id, 'finish')
             else:

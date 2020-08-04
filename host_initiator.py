@@ -105,7 +105,7 @@ class HostTest(object):
             else:
                 s.pwce(f'Failed to logout {VPLX_IP}',2,2)
         else:
-            s.pwl('ISCSI had Logged out successfully',2,'','finish')
+            s.pwl('ISCSI has Logged out {VPLX_IP}',2,'','finish')
             return True
 
     def iscsi_logout(self):
