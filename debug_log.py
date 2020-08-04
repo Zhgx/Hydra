@@ -12,6 +12,7 @@ def collect_debug_log():
     local_debug_folder = f'/tmp/{tid}/'
     os.mkdir(local_debug_folder)
 
+
     s.prt('Start to collect debug log',0)
 
     s.prt('Start to collect debug log from Host',1)

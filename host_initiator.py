@@ -60,7 +60,7 @@ class DebugLog(object):
         init_ssh()
         self.tid = consts.glo_tsc_id()
         self.debug_folder = f'/var/log/{self.tid}'
-        self.dbg = s.DebugLog(SSH, self.debug_folder)
+        self.dbg = s.DebugLog(SSH, self.debug_folder, HOST)
 
     def collect_debug_sys(self):
         cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, HOST)
