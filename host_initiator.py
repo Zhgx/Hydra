@@ -83,7 +83,7 @@ class HostTest(object):
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self._prepare()
-        self.iqn_list=consts.glo_iqn_list()
+       
 
     def _create_iscsi_session(self):
         # -m:这里应该有一个较高级别的说明现在在干啥.至于哪里需要这个函数的string,哪里不需要,我也晕了,需要确认一下
@@ -101,10 +101,12 @@ class HostTest(object):
         if s.find_session(VPLX_IP, SSH):
             if self.iscsi_logout():
                 s.pwl(f'Success in logout {VPLX_IP}',2,'','finish')
+                return True
             else:
                 s.pwce(f'Failed to logout {VPLX_IP}',2,2)
         else:
             s.pwl('ISCSI had Logged out successfully',2,'','finish')
+            return True
 
     def iscsi_logout(self):
         cmd=f'iscsiadm -m node -T {TARGET_IQN} --logout '
@@ -117,21 +119,26 @@ class HostTest(object):
                 if re_result:
                     return True
             else:
-                s.pwce(f'Can not logout to {VPLX_IP}', 4, 2)
+                s.pwce(f'Can not logout {VPLX_IP}', 4, 2)
         
         else:
             s.handle_exception()
             
 
     def _modify_host_iqn(self):
-        cmd=f'echo "InitiatorName={self.iqn_list[-1]}" > /etc/iscsi/initiatorname.iscsi'
+        if consts.glo_iqn_list():
+            initiator_iqn=consts.glo_iqn_list()[-1]
+        else:
+            s.handle_exception()
+        cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
         if results:
             if results['sts']:
-                s.pwl(f'Success in modify initiator IQN "{self.iqn_list[-1]}"',2,'','finish')
+                s.pwl(f'Success in modify initiator IQN "{initiator_iqn}"',2,'','finish')
+                return True
             else:
-                s.pwe(f'Failed to  modify initiator IQN "{self.iqn_list[-1]}"',2,2)
+                s.pwe(f'Failed to  modify initiator IQN "{initiator_iqn}"',2,2)
         else:
             s.handle_exception()
     
@@ -146,6 +153,11 @@ class HostTest(object):
                 s.pwe('Failed to restart iscsi service',2,2)
         else:
             s.handle_exception()
+    
+    def modify_iqn_and_restart(self):
+        if self.disconnect_iscsi_session():
+            if self._modify_host_iqn():
+                self._restart_iscsi()
     
     
     def _prepare(self):

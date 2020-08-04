@@ -129,29 +129,43 @@ class HydraArgParse():
         Umount and start to format, write, and read iSCSI LUN
         '''
         host = host_initiator.HostTest()
-        host.disconnect_iscsi_session()
-        host._modify_host_iqn()
-        host._restart_iscsi()
+        host.modify_iqn_and_restart()
         host.start_test()
     
-    def _modify_iqn_and_restart(self):
-        host=host_initiator.HostTest()
-        host.disconnect_iscsi_session()
-        host._modify_host_iqn()
-        host._restart_iscsi()
+    def create_max_host(self):
+        consts.set_glo_id_list(100)
+        crm = vplx.VplxCrm()
+        drbd = vplx.VplxDrbd()
+        stor = storage.Storage()
+        host = host_initiator.HostTest()
+
+        crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
+        drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
+        lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
+        if crm_to_del_list or drbd_to_del_list or lun_to_del_list: 
+            crm.del_all(crm_to_del_list)
+            drbd.del_all(drbd_to_del_list)
+            stor.del_all(lun_to_del_list)         
+            crm.vplx_rescan_r()
+            host.host_rescan_r()
+        consts.set_glo_id(105)
+        consts.set_glo_str('maxhost')
+     
 
     
     def max_suport_host_test(self):
         num=0
         self._storage()
         self._vplx_drbd()
+        # self.create_max_host()
         drbd=vplx.VplxDrbd()
         crm = vplx.VplxCrm()
+        host=host_initiator.HostTest()
         while True:
             num+=1
             s.set_glo_iqn(num)
             iqn_list=consts.glo_iqn_list()
-            self._modify_iqn_and_restart()
+            host.modify_iqn_and_restart()
             if len(iqn_list)==1:
                 crm.crm_cfg()
             elif len(iqn_list)>1:
@@ -300,7 +314,7 @@ class HydraArgParse():
             self.delete_resource()
             return
         elif args.hosttest:
-            consts.set_glo_id(''.join(args.id_range))
+            consts.set_glo_id(args.id_range[0])
             self.max_suport_host_test()
             return
 

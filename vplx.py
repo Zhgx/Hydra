@@ -318,7 +318,10 @@ class VplxCrm(object):
         Create iSCSILogicalUnit resource
         '''
         oprt_id = s.get_oprt_id()
-        initiator_iqn=consts.glo_iqn_list()[-1]
+        if consts.glo_iqn_list():
+            initiator_iqn=consts.glo_iqn_list()[-1]
+        else:
+            s.handle_exception()
         unique_str = 'LXYV7dft'
         s.pwl(f'Start to create iSCSILogicalUnit resource "{self.lu_name}"', 3, oprt_id, 'start')
         cmd = f'crm conf primitive {self.lu_name} \
@@ -516,28 +519,7 @@ class VplxCrm(object):
         '''
         s.scsi_rescan(SSH, 'r')
 
-    # def crm_conf_set_verify(self):
-    #     cmd=f'crm conf show {self.lu_name}'
-    #     oprt_id=s.get_oprt_id()
-    #     result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
-    #     if result['sts']:
-    #         re_string=f'{consts.glo_iqn_list()[-1]}'
-    #         re_result=s.re_findall(re_string,result['rst'].decode('utf-8'))
-    #         if  set(re_result).issubset(set(consts.glo_iqn_list())):
-    #             return True
-    #         else:
-    #             return False
-    
-    # def cyclic_crm_set_verify(self):
-    #     n = 0
-    #     while n < 10:
-    #         n += 1
-    #         if self.crm_conf_set_verify():
-    #             return True
-    #         else:
-    #             time.sleep(1.5)
-    #     else:
-    #         s.pwe('Failed in verify the allow initiator', 2, 2)
+
     
     def modify_allow_initiator(self):
         iqn_string=' '.join(consts.glo_iqn_list())
@@ -571,9 +553,10 @@ class VplxCrm(object):
         oprt_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results:
-            return True
+            if results['sts']:
+                return True
         else:
-            return False
+            s.handle_exception()
     
     def _crm_ref(self):
         cmd=f'crm res ref'
@@ -583,7 +566,7 @@ class VplxCrm(object):
             if results['sts']:
                 return True
             else:
-                s.pwce('Failed to refresh CRM ',2,2)
+                s.handle_exception()
 
 
         
@@ -592,11 +575,11 @@ class VplxCrm(object):
         t_test=self._crm_verify(TARGET_NAME)
 
         if crm['status']=='Stopped':
-            time.sleep(10)
+            self.cyclic_check_crm_status(self.lu_name,'Started')
             crm=self._crm_verify(self.lu_name)
 
         if t_test['status']=='Stopped':
-            time.sleep(10)
+            self.cyclic_check_crm_status(TARGET_NAME,'Started')
             t_test=self._crm_verify(TARGET_NAME)
         if crm['status']=='FAILED':
             self._crm_ref()
@@ -613,7 +596,7 @@ class VplxCrm(object):
                         time.sleep(10)
                         crm=self._crm_verify(self.lu_name)
                     if crm['status']!='Started':
-                        s.pwce('Failed to restart CRM resource,status:Stopped',2,2)
+                        s.pwce('Failed to restart CRM resource',2,2)
 
         if t_test['status']=='Started':
             if crm['status']=='Started':
@@ -622,21 +605,21 @@ class VplxCrm(object):
             s.pwe('Crm and t_test verify status failed',2, 2)   
     
     def crm_targetcli_verify(self):
+        time.sleep(10)
         if self.extension_crm_verify():
-            time.sleep(10)
             if self._targetcli_verify():
                 return True
     
-    # def cyclic_crm_targetcli_verify(self):
-    #     n=0
-    #     while n<10:
-    #         n+=1
-    #         if self.crm_targetcli_verify():
-    #             return True
-    #         else:
-    #             time.sleep(2)
-    #     else:
-    #         s.pwce('Failed to verify the CRM and targetcli status',2,2)
+    def cyclic_crm_targetcli_verify(self):
+        n=0
+        while n<10:
+            n+=1
+            if self.crm_targetcli_verify():
+                return True
+            else:
+                time.sleep(1)
+        else:
+            s.pwce('Failed to verify the CRM and targetcli status',2,2)
 
 
 if __name__ == '__main__':
