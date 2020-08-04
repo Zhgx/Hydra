@@ -546,7 +546,7 @@ class VplxCrm(object):
         result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if result['sts']:
             time.sleep(10)
-            if self.crm_targetcli_verify():
+            if self.cyclic_crm_targetcli_verify():
                 s.pwl('success in modify the allow initiator', 2, oprt_id, '')
             else:
                 s.pwe('Failed in verify the allow initiator', 2, 2)   
@@ -580,10 +580,10 @@ class VplxCrm(object):
         oprt_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results:
-            if results['sts']==1:
+            if results['sts']:
                 return True
             else:
-                return False
+                s.pwce('Failed to refresh CRM ',2,2)
 
 
         
@@ -599,29 +599,21 @@ class VplxCrm(object):
             time.sleep(10)
             t_test=self._crm_verify(TARGET_NAME)
         if crm['status']=='FAILED':
-            if self._crm_ref():
-                time.sleep(5)
+            self._crm_ref()
+            time.sleep(5)
+            crm=self._crm_verify(self.lu_name)
+            if crm['status']!='Started':
+                time.sleep(10)
                 crm=self._crm_verify(self.lu_name)
                 if crm['status']!='Started':
-                    time.sleep(10)
+                    self._crm_restart()
+                    time.sleep(5)
                     crm=self._crm_verify(self.lu_name)
+                    if crm['status'] == 'Stopped':
+                        time.sleep(10)
+                        crm=self._crm_verify(self.lu_name)
                     if crm['status']!='Started':
-                        if self._crm_restart():
-                            time.sleep(5)
-                            crm=self._crm_verify(self.lu_name)
-                            if crm['status']=='FAILED':
-                                s.pwce('Failed to restart CRM resource,status:FAILED',2,2)
-                            elif crm['status']=='Stopped':
-                                time.sleep(10)
-                                crm=self._crm_verify(self.lu_name)
-                                if crm['status']=='Stopped':
-                                    s.pwce('Failed to restart CRM resource,status:Stopped',2,2)
-                                elif crm['status']=='Started':
-                                    pass
-                                else:
-                                    s.pwce('Failed to restart CRM resource,status:FAILED',2,2)
-                            elif crm['status']=='Started':
-                                pass
+                        s.pwce('Failed to restart CRM resource,status:Stopped',2,2)
 
         if t_test['status']=='Started':
             if crm['status']=='Started':
@@ -634,10 +626,17 @@ class VplxCrm(object):
             time.sleep(10)
             if self._targetcli_verify():
                 return True
-            elif self.extension_crm_verify():
-                time.sleep(10)
-                if self._targetcli_verify():
-                    return True 
+    
+    # def cyclic_crm_targetcli_verify(self):
+    #     n=0
+    #     while n<10:
+    #         n+=1
+    #         if self.crm_targetcli_verify():
+    #             return True
+    #         else:
+    #             time.sleep(2)
+    #     else:
+    #         s.pwce('Failed to verify the CRM and targetcli status',2,2)
 
 
 if __name__ == '__main__':
