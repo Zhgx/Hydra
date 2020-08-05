@@ -90,7 +90,7 @@ class HostTest(object):
         if consts.glo_iqn_list():
             initiator_iqn=consts.glo_iqn_list()[-1]
         else:
-            s.handle_exception()
+            s.pwe('Global IQN list is None',2,2)
         cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)

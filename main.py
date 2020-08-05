@@ -28,11 +28,12 @@ class HydraArgParse():
         consts.set_glo_tsc_id(self.transaction_id)
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
-        consts.set_glo_tsc_id(self.transaction_id)
         self.argparse_init()
         self.list_tid = None  # for replay
         self.log_user_input()
         self.dict_id_str = {}
+        self.del_print=False
+
        
 
     def log_user_input(self):
@@ -88,7 +89,7 @@ class HydraArgParse():
             '--transactionid',
             dest='tid',
             metavar='',
-            help='Choose the transaction id for replay')
+            help='The transaction id for replay')
 
         parser_replay.add_argument(
             '-d',
@@ -96,7 +97,7 @@ class HydraArgParse():
             dest='date',
             metavar='',
             nargs=2,
-            help='Choose the time period for replay')
+            help='The time period for replay')
         self.parser_replay = parser_replay
 
     def _storage(self):
@@ -121,7 +122,7 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config iSCSI Target
         '''
-        s.create_iqn('0')
+        s.generate_iqn('0')
         crm = vplx.VplxCrm()
         crm.crm_cfg()
 
@@ -136,27 +137,11 @@ class HydraArgParse():
     
     def create_max_host_resource(self):
         consts.set_glo_id_list([0])
-        crm = vplx.VplxCrm()
-        drbd = vplx.VplxDrbd()
-        stor = storage.Storage()
-        host = host_initiator.HostTest()
-
-        crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
-        drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
-        lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
-        if crm_to_del_list or drbd_to_del_list or lun_to_del_list: 
-            crm.del_all(crm_to_del_list)
-            drbd.del_all(drbd_to_del_list)
-            stor.del_all(lun_to_del_list)         
-            crm.vplx_rescan_r()
-            host.host_rescan_r()
-
+        self.delete_resource()
         consts.set_glo_id(0)
         consts.set_glo_str('maxhost')
         self._storage()
         self._vplx_drbd()
-     
-
     
     def max_support_host_test(self):
         num=0
@@ -167,7 +152,7 @@ class HydraArgParse():
         while True:
             num+=1
             s.prt(f'The current number of max supported hosts test is {num}')
-            s.create_iqn(num)
+            s.generate_iqn(num)
             iqn_list=consts.glo_iqn_list()
             host.modify_iqn_and_restart()
             if len(iqn_list)==1:
@@ -188,20 +173,27 @@ class HydraArgParse():
         host = host_initiator.HostTest()
 
         crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
-        if crm_to_del_list:
-            s.prt_res_to_del('\nCRM resource', crm_to_del_list)
-
         drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
-        if drbd_to_del_list:
-            s.prt_res_to_del('\nDRBD resource', drbd_to_del_list)
-
         lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
-        if lun_to_del_list:
-            s.prt_res_to_del('\nStorage LUN', lun_to_del_list)
+        if self.del_print:
+            if crm_to_del_list:
+                s.prt_res_to_del('\nCRM resource', crm_to_del_list)
+            if drbd_to_del_list:
+                s.prt_res_to_del('\nDRBD resource', drbd_to_del_list) 
+            if lun_to_del_list:
+                s.prt_res_to_del('\nStorage LUN', lun_to_del_list)
 
         if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
-            answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
-            if answer == 'yes' or answer == 'y':
+            if self.del_print:
+                answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
+                if answer == 'yes' or answer == 'y':
+                    pass
+                else:
+                    self.del_print=False
+            else:
+                self.del_print=True
+            
+            if self.del_print:
                 crm.del_all(crm_to_del_list)
                 drbd.del_all(drbd_to_del_list)
                 stor.del_all(lun_to_del_list)
@@ -213,8 +205,11 @@ class HydraArgParse():
             else:
                 s.pwe('User canceled deleting proccess ...', 2, 2)
         else:
-            print()
-            s.pwe('No qualified resources to be delete.', 2, 2)
+            if self.del_print:
+                print()
+                s.pwe('No qualified resources to be delete.', 2, 2)
+            else:
+                return True
 
     @s.record_exception
     def run(self, dict_args):
@@ -315,6 +310,7 @@ class HydraArgParse():
             consts.set_glo_str(args.uniq_str)
 
         if args.delete:
+            self.del_print=True
             self.delete_resource()
             return
         elif args.hosttest:

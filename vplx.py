@@ -313,7 +313,7 @@ class VplxCrm(object):
         if consts.glo_iqn_list():
             initiator_iqn=consts.glo_iqn_list()[-1]
         else:
-            s.handle_exception()
+            s.pwe('Global IQN list is None',2,2)
         unique_str = 'LXYV7dft'
         s.pwl(f'Start to create iSCSILogicalUnit resource "{self.lu_name}"', 3, oprt_id, 'start')
         cmd = f'crm conf primitive {self.lu_name} \
@@ -522,7 +522,7 @@ class VplxCrm(object):
             if result['sts']:
                 time.sleep(10)
                 if self.cyclic_crm_targetcli_verify():
-                    s.pwl('success in modify the allow initiator', 2, oprt_id, '')
+                    s.pwl('Success in modify the allow initiator', 2, oprt_id)
                 else:
                     s.pwe('Failed in verify the allow initiator', 2, 2)   
             else:
@@ -550,7 +550,6 @@ class VplxCrm(object):
         cmd=f'crm res restart {self.lu_name}'
         oprt_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
-        #执行该命令，results['sts']=0
         if results:
             return True
         else:
@@ -581,12 +580,8 @@ class VplxCrm(object):
             t_test=self._crm_verify(TARGET_NAME)
         if crm['status']=='FAILED':
             self._crm_ref()
-            time.sleep(5)
-            crm=self._crm_verify(self.lu_name)
-            if crm['status']!='Started':
-                time.sleep(10)
-                crm=self._crm_verify(self.lu_name)
-                if crm['status']!='Started':
+            if self._crm_failed_time_delay(5):
+                if self._crm_failed_time_delay(10):
                     self._crm_restart()
                     time.sleep(5)
                     crm=self._crm_verify(self.lu_name)
@@ -601,6 +596,12 @@ class VplxCrm(object):
                 return True
             else:    
                 return False  
+
+    def _crm_failed_time_delay(self,time):
+        time.sleep(time)
+        crm=self._crm_verify(self.lu_name)
+        if crm['status']!='Started':
+            return True
     
     def crm_targetcli_verify(self):
         time.sleep(10)

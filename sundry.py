@@ -15,7 +15,7 @@ import connect
 import debug_log
 
 
-def create_iqn(num):
+def generate_iqn(num):
     iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{num}"
     consts.append_glo_iqn_list(iqn)
 
@@ -68,7 +68,7 @@ class Iscsi(object):
                 pwce(f'Can not login to {self.tgt_ip}', 4, 2)
 
         else:
-            pwl(f'ISCSI has logged in {self.tgt_ip}', 3, '', 'finish')
+            pwl(f'The iSCSI session already logged in to {self.tgt_ip}', 3)
 
     def disconnect_iscsi_session(self,tgt_iqn):
         if self.find_session():
@@ -76,9 +76,9 @@ class Iscsi(object):
                 pwl(f'Success in logout {self.tgt_ip}',2,'','finish')
                 return True
             else:
-                pwce(f'Failed to logout {self.tgt_ip}',2,2)
+                pwce(f'Failed to logout {self.tgt_ip}',4,2)
         else:
-            pwl(f'ISCSI has Logged out {self.tgt_ip}',2,'','finish')
+            pwl(f'The iSCSI session already logged out to {self.tgt_ip}',3)
             return True
     
     def iscsi_logout(self,tgt_iqn):
@@ -360,8 +360,8 @@ def change_pointer(new_id):
 
 def re_findall(re_string, tgt_string):
     logger = consts.glo_log()
-    re_login = re.compile(re_string)
-    re_result = re_login.findall(tgt_string)
+    re_object = re.compile(re_string)
+    re_result = re_object.findall(tgt_string)
     oprt_id = get_oprt_id()
     logger.write_to_log('T', 'OPRT', 'regular', 'findall',
                         oprt_id, {re_string: tgt_string})
