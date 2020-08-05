@@ -113,7 +113,7 @@ class Storage:
         unmap_result = self.ex_telnet_cmd(unique_str, unmap, oprt_id)
         if unmap_result:
             unmap_re = r'unmapped from initiator group hydra'
-            re_result = s.re_findall(unmap_re, unmap_result)
+            re_result = s.re_search(unmap_re, unmap_result)
             if re_result:
                 s.pwl(f'Unmap the lun /vol/esxi/{lun_name}  successfully',2)
                 return True
@@ -133,8 +133,8 @@ class Storage:
         destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
         destroy_result = self.ex_telnet_cmd(unique_str, destroy_cmd, oprt_id)
         if destroy_result:
-            re_destroy = r'destroyed'
-            re_result = s.re_findall(re_destroy, destroy_result)
+            re_destroy = f'LUN /vol/esxi/{lun_name} destroyed'
+            re_result = s.re_search(re_destroy, destroy_result)
             if re_result:
                 s.pwl(f'Destroy the lun /vol/esxi/{lun_name} successfully',2)
                 return True

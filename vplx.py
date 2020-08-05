@@ -29,12 +29,12 @@ def init_ssh():
 
 
 def _find_new_disk():
+    id=consts.glo_id()
     result_lsscsi = s.get_lsscsi(SSH, 'D37nG6Yi', s.get_oprt_id())
-    re_string = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    all_disk = s.re_findall(re_string, result_lsscsi)
-    disk_dev = s.get_the_disk_with_lun_id(all_disk)
+    re_string = f'\:{id}\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'
+    disk_dev= s.re_search(re_string, result_lsscsi)
     if disk_dev:
-        return disk_dev
+        return disk_dev.group(1)
 
 
 def get_disk_dev():
@@ -95,18 +95,7 @@ class VplxDrbd(object):
         global RPL
         RPL = consts.glo_rpl()
         self._prepare()
-
-    def _create_iscsi_session(self):
-        s.pwl('Check up the status of session', 2, '', 'start')
-        if not s.find_session(NETAPP_IP, SSH):
-            s.pwl(f'No session found, start to login to {NETAPP_IP}', 3, '', 'start')
-            if s.iscsi_login(NETAPP_IP, SSH):
-                s.pwl(f'Succeed in logining to {NETAPP_IP}', 4, 'finish')
-            else:
-                s.pwce(f'Can not login to {NETAPP_IP}', 4, 2)
-
-        else:
-            s.pwl(f'ISCSI has logged in {NETAPP_IP}', 3, '', 'finish')
+        self.iSCSI=s.Iscsi(SSH,NETAPP_IP)
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -116,7 +105,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
-        self._create_iscsi_session()
+        self.iSCSI.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = get_disk_dev()
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
@@ -167,7 +156,7 @@ class VplxDrbd(object):
         re_drbd = 'New drbd meta data block successfully created'
         if init_result:
             if init_result['sts']:
-                re_result = s.re_findall(re_drbd, init_result['rst'].decode())
+                re_result = s.re_search(re_drbd, init_result['rst'].decode())
                 if re_result:
                     s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
                     return True
@@ -231,9 +220,9 @@ class VplxDrbd(object):
             if result['sts']:
                 result = result['rst'].decode()
                 re_display = r'''disk:(\w*)'''
-                re_result = s.re_findall(re_display, result)
+                re_result = s.re_search(re_display, result)
                 if re_result:
-                    status = re_result[0]
+                    status = re_result.group(1)
                     if status == 'UpToDate':
                         s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
 
@@ -330,7 +319,7 @@ class VplxCrm(object):
         cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{TARGET_IQN}" \
             implementation=lio-t lun={consts.glo_id()} path="/dev/{DRBD_DEV_NAME}"\
-            allowed_initiators="{initiator_iqn}" op start timeout=60 interval=0 op stop timeout=60 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'#40->60
+            allowed_initiators="{initiator_iqn}" op start timeout=600 interval=0 op stop timeout=600 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'#40->600
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result:
             if result['sts']:
@@ -422,9 +411,9 @@ class VplxCrm(object):
         if verify_result:
             if verify_result['sts']:
                 re_string=f'''{res_name}\s*\(ocf::heartbeat:\w*\):\s*(\w*)'''
-                re_result=s.re_findall(re_string, verify_result['rst'].decode('utf-8'))
+                re_result=s.re_search(re_string, verify_result['rst'].decode('utf-8'))
                 if re_result:
-                    return {'status': re_result[0]}
+                    return {'status': re_result.group(1)}
                 else:
                     s.pwce('Failed to show crm',4,2)
             else:
@@ -438,7 +427,7 @@ class VplxCrm(object):
         Determine crm resource status is started/stopped
         '''
         n = 0
-        while n < 10:
+        while n < 100:
             n += 1
             crm_verify = self._crm_verify(res_name)
             if crm_verify['status'] == status:
@@ -610,8 +599,8 @@ class VplxCrm(object):
         if t_test['status']=='Started':
             if crm['status']=='Started':
                 return True
-        else:    
-            s.pwe('Crm and t_test verify status failed',2, 2)   
+            else:    
+                return False  
     
     def crm_targetcli_verify(self):
         time.sleep(10)
@@ -621,12 +610,12 @@ class VplxCrm(object):
     
     def cyclic_crm_targetcli_verify(self):
         n=0
-        while n<3:
+        while n<100:
             n+=1
             if self.crm_targetcli_verify():
                 return True
             else:
-                time.sleep(1.5)
+                time.sleep(6)
         else:
             s.pwce('Failed to verify the CRM and targetcli status',2,2)
 

@@ -30,12 +30,12 @@ def umount_mnt():
 
 
 def _find_new_disk():
+    id=consts.glo_id()
     result_lsscsi = s.get_lsscsi(SSH, 's9mf7aYb', s.get_oprt_id())
-    re_lio_disk = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    all_disk = s.re_findall(re_lio_disk, result_lsscsi)
-    disk_dev = s.get_the_disk_with_lun_id(all_disk)
+    re_lio_disk = f'''\:{id}\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'''
+    disk_dev = s.re_search(re_lio_disk, result_lsscsi)
     if disk_dev:
-        return disk_dev
+        return disk_dev.group(1)
 
 
 # -m:这里要注意replay的时候这边程序的调用过程.re-rescan之后又尽心过了一次_find_new_disk(),日志应该需要跳转到下一条lsscsi结果.注意指针及时移动
@@ -83,48 +83,9 @@ class HostTest(object):
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self._prepare()
-       
+        self.iSCSI=s.Iscsi(SSH,VPLX_IP)
 
-    def _create_iscsi_session(self):
-        # -m:这里应该有一个较高级别的说明现在在干啥.至于哪里需要这个函数的string,哪里不需要,我也晕了,需要确认一下
-        s.pwl('Check up the status of session', 2, '', 'start')
-        if not s.find_session(VPLX_IP, SSH):
-            s.pwl(f'No session found, start to login to {VPLX_IP}', 3, '', 'start')
-            if s.iscsi_login(VPLX_IP, SSH):
-                s.pwl(f'Succeed in logining to {VPLX_IP}', 4, '', 'finish')
-            else:
-                s.pwce(f'Can not login to {VPLX_IP}', 4, 2)
-        else:
-            s.pwl(f'ISCSI has logged in {VPLX_IP}', 3, '', 'finish')
-    
-    def disconnect_iscsi_session(self):
-        if s.find_session(VPLX_IP, SSH):
-            if self.iscsi_logout():
-                s.pwl(f'Success in logout {VPLX_IP}',2,'','finish')
-                return True
-            else:
-                s.pwce(f'Failed to logout {VPLX_IP}',2,2)
-        else:
-            s.pwl('ISCSI has Logged out {VPLX_IP}',2,'','finish')
-            return True
-
-    def iscsi_logout(self):
-        cmd=f'iscsiadm -m node -T {TARGET_IQN} --logout '
-        oport_ip=s.get_oprt_id()
-        results=s.get_ssh_cmd(SSH,'HuTg1LaQ', cmd, oport_ip)
-        if results:
-            if results['sts']:
-                re_string=f'Logout of.*portal: ({VPLX_IP}).*successful'
-                re_result=s.re_findall(re_string,results['rst'].decode('utf-8'))
-                if re_result:
-                    return True
-            else:
-                s.pwce(f'Can not logout {VPLX_IP}', 4, 2)
-        
-        else:
-            s.handle_exception()
             
-
     def _modify_host_iqn(self):
         if consts.glo_iqn_list():
             initiator_iqn=consts.glo_iqn_list()[-1]
@@ -141,23 +102,11 @@ class HostTest(object):
                 s.pwe(f'Failed to  modify initiator IQN "{initiator_iqn}"',2,2)
         else:
             s.handle_exception()
-    
-    def _restart_iscsi(self):
-        cmd=f'systemctl restart iscsid open-iscsi'
-        oport_id=s.get_oprt_id()
-        results=s.get_ssh_cmd(SSH,'Uksjdkqi',cmd,oport_id)
-        if results:
-            if results['sts']:
-                s.pwl('Success in restarting iscsi service',2,'','finish')
-            else:
-                s.pwe('Failed to restart iscsi service',2,2)
-        else:
-            s.handle_exception()
-    
+      
     def modify_iqn_and_restart(self):
-        if self.disconnect_iscsi_session():
+        if self.iSCSI.disconnect_iscsi_session(TARGET_IQN):
             if self._modify_host_iqn():
-                self._restart_iscsi()
+                self.iSCSI.restart_iscsi()
     
     
     def _prepare(self):
@@ -252,7 +201,7 @@ class HostTest(object):
 
     def start_test(self):
         # s.pwl('Start iscsi login',2,'','start')
-        self._create_iscsi_session()
+        self.iSCSI.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         dev_name = get_disk_dev()
         if self.format(dev_name):
@@ -279,7 +228,7 @@ if __name__ == "__main__":
     consts.set_glo_str('luntest')
     consts.set_glo_rpl('no')
     test = HostTest()
-    test.iscsi_logout()
+    # test.iscsi_logout()
     # consts._init()
     # consts.set_glo_tsc_id('789')
     # w = DebugLog()

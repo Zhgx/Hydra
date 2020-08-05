@@ -53,6 +53,100 @@ class DebugLog(object):
         self.SSH.execute_command(f'tar cvf {dbg_file} -C {self.dbg_folder} {self.host}')
         self.SSH.download(dbg_file, local_folder)
 
+class Iscsi(object):
+    def __init__(self,ssh_obj,tgt_ip):
+        self.SSH = ssh_obj
+        self.tgt_ip=tgt_ip
+
+    def create_iscsi_session(self):
+        pwl('Check up the status of session', 2, '', 'start')
+        if not self.find_session():
+            pwl(f'No session found, start to login to {self.tgt_ip}', 3, '', 'start')
+            if self.iscsi_login():
+                pwl(f'Succeed in logining to {self.tgt_ip}', 4, 'finish')
+            else:
+                pwce(f'Can not login to {self.tgt_ip}', 4, 2)
+
+        else:
+            pwl(f'ISCSI has logged in {self.tgt_ip}', 3, '', 'finish')
+
+    def disconnect_iscsi_session(self,tgt_iqn):
+        if self.find_session():
+            if self.iscsi_logout(tgt_iqn):
+                pwl(f'Success in logout {self.tgt_ip}',2,'','finish')
+                return True
+            else:
+                pwce(f'Failed to logout {self.tgt_ip}',2,2)
+        else:
+            pwl(f'ISCSI has Logged out {self.tgt_ip}',2,'','finish')
+            return True
+    
+    def iscsi_logout(self,tgt_iqn):
+        cmd=f'iscsiadm -m node -T {tgt_iqn} --logout '
+        oport_ip=get_oprt_id()
+        results=get_ssh_cmd(self.SSH,'HuTg1LaQ', cmd, oport_ip)
+        if results:
+            if results['sts']:
+                re_string=f'Logout of.*portal: ({self.tgt_ip}).*successful'
+                re_result=re_search(re_string,results['rst'].decode('utf-8'))
+                if re_result:
+                    return True
+            else:
+                pwce(f'Can not logout {self.tgt_ip}', 4, 2)
+        
+        else:
+            handle_exception()
+
+    def iscsi_login(self):
+        '''
+        Discover iSCSI login session, if no, login to vplx
+        '''
+        func_str = 'rgjfYl3K'
+        oprt_id = get_oprt_id()
+        cmd = f'iscsiadm -m discovery -t st -p {self.tgt_ip} -l'
+        result_iscsi_login = get_ssh_cmd(self.SSH, func_str, cmd, oprt_id)
+        if result_iscsi_login:
+            if result_iscsi_login['sts']:
+                result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
+                re_string = f'Login to.*portal: ({self.tgt_ip}).*successful'
+                if re_search(re_string, result_iscsi_login):
+                    pwl(f'iSCSI login to {self.tgt_ip} successful',3,'','finish')
+                    return True
+                else:
+                    pwce(f'iSCSI login to {self.tgt_ip} failed',3,warning_level=2)
+
+        else:
+            handle_exception()
+    # -m:string 和 oprt id 不用传递过来,在内部定义即可
+    def find_session(self):
+        '''
+        Execute the command and check up the status of session
+        '''
+        func_str = 'V9jGOP1i'
+        oprt_id = get_oprt_id()
+        cmd = 'iscsiadm -m session'
+        result_session = get_ssh_cmd(self.SSH, func_str, cmd, oprt_id)
+        if result_session:
+            if result_session['sts']:
+                result_session = result_session['rst'].decode('utf-8')
+                re_session = f'tcp:.*({self.tgt_ip}):.*'
+                if re_search(re_session, result_session):
+                    return True
+        else:
+            handle_exception()
+
+    def restart_iscsi(self):
+        cmd=f'systemctl restart iscsid open-iscsi'
+        oport_id=get_oprt_id()
+        results=get_ssh_cmd(self.SSH,'Uksjdkqi',cmd,oport_id)
+        if results:
+            if results['sts']:
+                pwl('Success in restarting iscsi service',2,'','finish')
+            else:
+                pwe('Failed to restart iscsi service',2,2)
+        else:
+            handle_exception()
+
 
 def dp(str, arg):
     print(f'{str}---------------------\n{arg}')
@@ -185,9 +279,9 @@ def get_to_del_list(name_list):
                 to_del_list.append(name)
     elif id_list:
         for id_ in id_list:
-            str_ = f'_{id_}\b'
+            str_ = f'_{id_}'
             for name in name_list:
-                if str_ in name:
+                if name.endswith(str_):
                     to_del_list.append(name)
     else:
         to_del_list = name_list
@@ -275,45 +369,7 @@ def re_findall(re_string, tgt_string):
     return re_result
 
 
-def iscsi_login(tgt_ip, ssh):
-    '''
-    Discover iSCSI login session, if no, login to vplx
-    '''
-    func_str = 'rgjfYl3K'
-    oprt_id = get_oprt_id()
-    cmd = f'iscsiadm -m discovery -t st -p {tgt_ip} -l'
-    result_iscsi_login = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-    if result_iscsi_login:
-        if result_iscsi_login['sts']:
-            result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
-            re_string = f'Login to.*portal: ({tgt_ip}).*successful'
-            if re_findall(re_string, result_iscsi_login):
-                pwl(f'iSCSI login to {tgt_ip} successful',3,'','finish')
-                return True
-            else:
-                pwce(f'iSCSI login to {tgt_ip} failed',3,warning_level=2)
 
-    else:
-        handle_exception()
-
-
-# -m:string 和 oprt id 不用传递过来,在内部定义即可
-def find_session(tgt_ip, ssh):
-    '''
-    Execute the command and check up the status of session
-    '''
-    func_str = 'V9jGOP1i'
-    oprt_id = get_oprt_id()
-    cmd = 'iscsiadm -m session'
-    result_session = get_ssh_cmd(ssh, func_str, cmd, oprt_id)
-    if result_session:
-        if result_session['sts']:
-            result_session = result_session['rst'].decode('utf-8')
-            re_session = f'tcp:.*({tgt_ip}):.*'
-            if re_findall(re_session, result_session):
-                return True
-    else:
-        handle_exception()
 
 
 def ran_str(num):
