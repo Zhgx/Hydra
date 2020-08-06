@@ -6,21 +6,22 @@ class ReplayExit(Exception):
 
 
 def _init():
-    global _global_dict
-    _global_dict = {}
-    _global_dict['LOG_ID'] = 0
-    _global_dict['RPL'] = 'no'
-    _global_dict['LOG_SWITCH'] = 'yes'
+    global _GLOBAL_DICT
+    _GLOBAL_DICT = {}
+    _GLOBAL_DICT['LOG_ID'] = 0
+    _GLOBAL_DICT['RPL'] = 'no'
+    _GLOBAL_DICT['LOG_SWITCH'] = 'yes'
+    _GLOBAL_DICT['IQN_LIST'] = []
 
 def set_value(key, value):
     """ 定义一个全局变量 """
-    _global_dict[key] = value
+    _GLOBAL_DICT[key] = value
 
 
 def get_value(key, dft_val = None):
     """ 获得一个全局变量,不存在则返回默认值 """
     try:
-        return _global_dict[key]
+        return _GLOBAL_DICT[key]
     except KeyError:
         return dft_val
 
@@ -59,6 +60,8 @@ def set_glo_log_switch(value):
 def set_glo_id_list(value):
     set_value('ID_LIST', value)
 
+def append_glo_iqn_list(value):
+    _GLOBAL_DICT['IQN_LIST'].append(value)
 
 def glo_log():
     return get_value('LOG')
@@ -94,6 +97,10 @@ def glo_log_switch():
 
 def glo_id_list():
     return get_value('ID_LIST')
+
+def glo_iqn_list():
+    return get_value('IQN_LIST')
+
 
 def get_cmd_debug_sys(debug_folder,host):
     cmd_debug_sys = [

@@ -4,36 +4,37 @@ import sundry as s
 import time
 import consts
 import log
-
+import re
+import sys
 SSH = None
 
-host = '10.203.1.199'
-port = 22
-user = 'root'
-password = 'password'
-timeout = 3
+HOST = '10.203.1.199'
+PORT = 22
+USER = 'root'
+PASSWORD = 'password'
+TIMEOUT = 3
 
 NETAPP_IP = '10.203.1.231'
 TARGET_IQN = "iqn.2020-06.com.example:test-max-lun"
-INITIATOR_IQN = "iqn.1993-08.org.debian:01:885240c2d86c"
 TARGET_NAME = 't_test'
+
 
 
 def init_ssh():
     global SSH
     if not SSH:
-        SSH = connect.ConnSSH(host, port, user, password, timeout)
+        SSH = connect.ConnSSH(HOST, PORT, USER, PASSWORD, TIMEOUT)
     else:
         pass
 
 
 def _find_new_disk():
+    id=consts.glo_id()
     result_lsscsi = s.get_lsscsi(SSH, 'D37nG6Yi', s.get_oprt_id())
-    re_string = r'\:(\d*)\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    all_disk = s.re_findall(re_string, result_lsscsi)
-    disk_dev = s.get_the_disk_with_lun_id(all_disk)
+    re_string = f'\:{id}\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'
+    disk_dev= s.re_search(re_string, result_lsscsi)
     if disk_dev:
-        return disk_dev
+        return disk_dev.group(1)
 
 
 def get_disk_dev():
@@ -58,22 +59,22 @@ class DebugLog(object):
         init_ssh()
         self.tid = consts.glo_tsc_id()
         self.debug_folder = f'/var/log/{self.tid}'
-        self.dbg = s.DebugLog(SSH, self.debug_folder, host)
+        self.dbg = s.DebugLog(SSH, self.debug_folder, HOST)
 
     def collect_debug_sys(self):
-        cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, host)
+        cmd_debug_sys = consts.get_cmd_debug_sys(self.debug_folder, HOST)
         self.dbg.prepare_debug_log(cmd_debug_sys)
 
     def collect_debug_drbd(self):
-        cmd_debug_drbd = consts.get_cmd_debug_drbd(self.debug_folder, host)
+        cmd_debug_drbd = consts.get_cmd_debug_drbd(self.debug_folder, HOST)
         self.dbg.prepare_debug_log(cmd_debug_drbd)
 
     def collect_debug_crm(self):
-        cmd_debug_crm = consts.get_cmd_debug_crm(self.debug_folder, host)
+        cmd_debug_crm = consts.get_cmd_debug_crm(self.debug_folder, HOST)
         self.dbg.prepare_debug_log(cmd_debug_crm)
 
     def get_all_log(self, folder):
-        local_file = f'{folder}/{host}.tar'
+        local_file = f'{folder}/{HOST}.tar'
         self.dbg.get_debug_log(local_file)
 
 
@@ -94,18 +95,7 @@ class VplxDrbd(object):
         global RPL
         RPL = consts.glo_rpl()
         self._prepare()
-
-    def _create_iscsi_session(self):
-        s.pwl('Check up the status of session', 2, '', 'start')
-        if not s.find_session(NETAPP_IP, SSH):
-            s.pwl(f'No session found, start to login to {NETAPP_IP}', 3, '', 'start')
-            if s.iscsi_login(NETAPP_IP, SSH):
-                s.pwl(f'Succeed in logining to {NETAPP_IP}', 4, 'finish')
-            else:
-                s.pwce(f'Can not login to {NETAPP_IP}', 4, 2)
-
-        else:
-            s.pwl(f'ISCSI has logged in {NETAPP_IP}', 3, '', 'finish')
+        self.iSCSI=s.Iscsi(SSH,NETAPP_IP)
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -115,7 +105,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
-        self._create_iscsi_session()
+        self.iSCSI.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = get_disk_dev()
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
@@ -162,12 +152,11 @@ class VplxDrbd(object):
         cmd = f'drbdadm create-md {self.res_name}'
         info_msg = f'Start to initialize DRBD resource for "{self.res_name}"'
         s.pwl(info_msg, 3, oprt_id, 'start')
-
         init_result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         re_drbd = 'New drbd meta data block successfully created'
         if init_result:
             if init_result['sts']:
-                re_result = s.re_findall(re_drbd, init_result['rst'].decode())
+                re_result = s.re_search(re_drbd, init_result['rst'].decode())
                 if re_result:
                     s.pwl(f'Succeed in initializing DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
                     return True
@@ -231,11 +220,10 @@ class VplxDrbd(object):
             if result['sts']:
                 result = result['rst'].decode()
                 re_display = r'''disk:(\w*)'''
-                re_result = s.re_findall(re_display, result)
+                re_result = s.re_search(re_display, result)
                 if re_result:
-                    status = re_result[0]
+                    status = re_result.group(1)
                     if status == 'UpToDate':
-
                         s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
 
                         return True
@@ -322,12 +310,16 @@ class VplxCrm(object):
         Create iSCSILogicalUnit resource
         '''
         oprt_id = s.get_oprt_id()
+        if consts.glo_iqn_list():
+            initiator_iqn=consts.glo_iqn_list()[-1]
+        else:
+            s.pwe('Global IQN list is None',2,2)
         unique_str = 'LXYV7dft'
         s.pwl(f'Start to create iSCSILogicalUnit resource "{self.lu_name}"', 3, oprt_id, 'start')
         cmd = f'crm conf primitive {self.lu_name} \
             iSCSILogicalUnit params target_iqn="{TARGET_IQN}" \
             implementation=lio-t lun={consts.glo_id()} path="/dev/{DRBD_DEV_NAME}"\
-            allowed_initiators="{INITIATOR_IQN}" op start timeout=40 interval=0 op stop timeout=40 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'
+            allowed_initiators="{initiator_iqn}" op start timeout=600 interval=0 op stop timeout=600 interval=0 op monitor timeout=40 interval=50 meta target-role=Stopped'#40->600
         result = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result:
             if result['sts']:
@@ -393,6 +385,8 @@ class VplxCrm(object):
                 if self.cyclic_check_crm_status(self.lu_name, 'Started'):
                     s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
                     return True
+                else:
+                    s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
             else:
                 s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
         else:
@@ -411,20 +405,17 @@ class VplxCrm(object):
         Check the crm resource status
         '''
         unique_str = 'UqmUytK3'
-        crm_show_cmd = f'crm res show {res_name}'
+        crm_show_cmd = f'crm res list | grep {res_name}'
         oprt_id = s.get_oprt_id()
         verify_result = s.get_ssh_cmd(SSH, unique_str, crm_show_cmd, oprt_id)
         if verify_result:
-            if verify_result['sts'] == 1:
-                re_start = f'resource {res_name} is running on'
-                if s.re_findall(re_start, verify_result['rst'].decode('utf-8')):
-                    return {'status': 'Started'}
-            elif verify_result['sts'] == 0:
-                re_stopped = f'resource {res_name} is NOT running'
-                if s.re_findall(re_stopped, verify_result['rst'].decode('utf-8')):
-                    return {'status': 'Stopped'}
+            if verify_result['sts']:
+                re_string=f'''{res_name}\s*\(ocf::heartbeat:\w*\):\s*(\w*)'''
+                re_result=s.re_search(re_string, verify_result['rst'].decode('utf-8'))
+                if re_result:
+                    return {'status': re_result.group(1)}
                 else:
-                    s.pwe(f'crm resource {res_name} not found',4,1)
+                    s.pwce('Failed to show crm',4,2)
             else:
                 s.pwce('Failed to show crm',4,2)
         else:
@@ -436,13 +427,13 @@ class VplxCrm(object):
         Determine crm resource status is started/stopped
         '''
         n = 0
-        while n < 10:
+        while n < 100:
             n += 1
             crm_verify = self._crm_verify(res_name)
             if crm_verify['status'] == status:
                 return True
             else:
-                time.sleep(1.5)
+                time.sleep(6)
         else:
             return False
 
@@ -485,6 +476,8 @@ class VplxCrm(object):
                 return True
             else:
                 s.pwce(f'Failed to delete the iSCSILogicalUnit resource "{res_name}"', 3, 2)
+        else:
+            s.handle_exception()
 
     def crm_del(self, res_name):
         s.pwl(f'Deleting crm resource {res_name}',1)
@@ -492,31 +485,6 @@ class VplxCrm(object):
             if self._crm_del(res_name):
                 return True
 
-    # def _get_all_crm(self):
-
-    #     oprt_id = s.get_oprt_id()
-    #     res_show_result = s.get_ssh_cmd(SSH, unique_str, res_show_cmd, oprt_id)
-    #     if res_show_result['sts']:
-    #         re_show =
-    #         list_of_all_crm = s.re_findall(
-    #             re_show, res_show_result['rst'].decode('utf-8'))
-    #         s.dp('out_str',res_show_result['rst'].decode('utf-8'))
-    #         s.dp('list_of_all_crm',list_of_all_crm)
-    #         return list_of_all_crm
-
-    # def get_tgt_to_del(self):
-    #     '''
-    #     Get the crm resource name through regular matching and determine whether these exist
-    #     '''
-    #     crm_show_result = self._get_all_crm()
-    #     if crm_show_result:
-    #         list_of_show_crm = s.get_to_del_list(crm_show_result)
-    #         if list_of_show_crm:
-    #             print('crm：')
-    #             print(s.print_format(list_of_show_crm))
-    #         return list_of_show_crm
-    #     else:
-    #         return False
 
     def get_all_cfgd_res(self):
         # get list of all configured crm res
@@ -529,14 +497,7 @@ class VplxCrm(object):
             crm_res_cfgd_list = s.re_findall(re_crm_res, show_result)
             return crm_res_cfgd_list
 
-    # def get_res_to_del(self):
-    #     '''
-    #     Get all luns through regular matching
-    #     '''
-    #     # get list of all configured luns
-    #     lun_cfgd_list = self._get_all_cfgd_lun()
-    #     lun_to_del_list = s.get_to_del_list(lun_cfgd_list)
-    #     return lun_to_del_list
+
 
     def del_all(self, crm_to_del_list):
         if crm_to_del_list:
@@ -551,14 +512,125 @@ class VplxCrm(object):
         s.scsi_rescan(SSH, 'r')
 
 
+    
+    def modify_allow_initiator(self):
+        iqn_string=' '.join(consts.glo_iqn_list())
+        cmd=f'crm conf set {self.lu_name}.allowed_initiators "{iqn_string}"'
+        oprt_id=s.get_oprt_id()
+        result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if result:
+            if result['sts']:
+                time.sleep(10)
+                if self.cyclic_crm_targetcli_verify():
+                    s.pwl('Success in modify the allow initiator', 2, oprt_id)
+                else:
+                    s.pwe('Failed in verify the allow initiator', 2, 2)   
+            else:
+                s.pwe('Failed in modify the allow initiator', 2, 2)
+        else:
+            s.handle_exception()
+    
+    def _targetcli_verify(self):
+        cmd=f'targetcli ls iscsi/{TARGET_IQN}/tpg1/acls'
+        oprt_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if results:
+            if results['sts']:
+                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun{self.ID}''', re.DOTALL)
+                re_result=restr.findall(results['rst'].decode('utf-8'))
+                if re_result:
+                    if re_result==consts.glo_iqn_list():
+                        return True
+                else:
+                    return False    
+        else:
+            s.handle_exception() 
+
+    def _crm_restart(self):
+        cmd=f'crm res restart {self.lu_name}'
+        oprt_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if results:
+            return True
+        else:
+            s.handle_exception()
+    
+    def _crm_ref(self):
+        cmd=f'crm res ref'
+        oprt_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
+        if results:
+            if results['sts']:
+                return True
+        else:
+            s.handle_exception()
+
+
+        
+    def extension_crm_verify(self):
+        crm = self._crm_verify(self.lu_name)
+        t_test=self._crm_verify(TARGET_NAME)
+
+        if crm['status']=='Stopped':
+            self.cyclic_check_crm_status(self.lu_name,'Started')
+            crm=self._crm_verify(self.lu_name)
+
+        if t_test['status']=='Stopped':
+            self.cyclic_check_crm_status(TARGET_NAME,'Started')
+            t_test=self._crm_verify(TARGET_NAME)
+        if crm['status']=='FAILED':
+            self._crm_ref()
+            if self._crm_failed_time_delay(5):
+                if self._crm_failed_time_delay(10):
+                    self._crm_restart()
+                    time.sleep(5)
+                    crm=self._crm_verify(self.lu_name)
+                    if crm['status'] == 'Stopped':
+                        time.sleep(10)
+                        crm=self._crm_verify(self.lu_name)
+                    if crm['status']!='Started':
+                        s.pwce('Failed to restart CRM resource',2,2)
+
+        if t_test['status']=='Started':
+            if crm['status']=='Started':
+                return True
+            else:    
+                return False  
+
+    def _crm_failed_time_delay(self,time):
+        time.sleep(time)
+        crm=self._crm_verify(self.lu_name)
+        if crm['status']!='Started':
+            return True
+    
+    def crm_targetcli_verify(self):
+        time.sleep(10)
+        if self.extension_crm_verify():
+            if self._targetcli_verify():
+                return True
+    
+    def cyclic_crm_targetcli_verify(self):
+        n=0
+        while n<100:
+            n+=1
+            if self.crm_targetcli_verify():
+                return True
+            else:
+                time.sleep(6)
+        else:
+            s.pwce('Failed to verify the CRM and targetcli status',2,2)
+
+
 if __name__ == '__main__':
-    # logger = log.Log(s.get_transaction_id())
-    # consts._init()
-    # consts.set_glo_log(logger)
-    # consts.set_glo_id('')
-    # consts.set_glo_id_list('')
-    # consts.set_glo_str('luntest')
-    # consts.set_glo_rpl('no')
-    # test_crm = VplxCrm()
-    # test_crm._crm_status_check('res_ttt_2')
-    pass
+    # pass
+    logger = log.Log(s.get_transaction_id())
+    consts._init()
+    consts.set_glo_log(logger)
+    consts.set_glo_id('')
+    consts.set_glo_id_list('')
+    consts.set_glo_str('luntest')
+    consts.set_glo_rpl('no')
+    test_crm = VplxCrm()
+    test_crm._crm_verify('res_hosttest_100')
+    # 
+    
