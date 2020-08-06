@@ -3,6 +3,7 @@ import connect
 import time
 import sundry as s
 import consts
+import log
 
 SSH = None
 
@@ -13,6 +14,7 @@ USER = 'root'
 PASSWORD = 'password'
 TIMEOUT = 3
 MOUNT_POINT = '/mnt'
+TARGET_IQN='iqn.2020-06.com.example:test-max-lun'
 
 
 def init_ssh():
@@ -28,16 +30,17 @@ def umount_mnt():
 
 
 def _find_new_disk():
+    id=consts.glo_id()
     result_lsscsi = s.get_lsscsi(SSH, 's9mf7aYb', s.get_oprt_id())
-    re_lio_disk = r'\:(\d*)\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{1,3})'
-    all_disk = s.re_findall(re_lio_disk, result_lsscsi)
-    disk_dev = s.get_the_disk_with_lun_id(all_disk)
+    re_lio_disk = f'''\:{id}\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'''
+    disk_dev = s.re_search(re_lio_disk, result_lsscsi)
     if disk_dev:
-        return disk_dev
+        return disk_dev.group(1)
 
 
 # -m:这里要注意replay的时候这边程序的调用过程.re-rescan之后又尽心过了一次_find_new_disk(),日志应该需要跳转到下一条lsscsi结果.注意指针及时移动
 def get_disk_dev():
+    # time.sleep(5)
     s.scsi_rescan(SSH, 'n')
     disk_dev = _find_new_disk()
     if disk_dev:
@@ -49,7 +52,7 @@ def get_disk_dev():
         s.scsi_rescan(SSH, 'a')
         disk_dev = _find_new_disk()
         if disk_dev:
-            s.pwl('Found the disk successfully', 4, '', 'finish')
+            s.pwl(f'Found the disk device "{disk_dev}" successfully', 4, '', 'finish')
             return disk_dev
         else:
             s.pwce('No disk found, exit the program', 4, 2)
@@ -80,19 +83,32 @@ class HostTest(object):
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self._prepare()
+        self.iSCSI=s.Iscsi(SSH,VPLX_IP)
 
-    def _create_iscsi_session(self):
-        # -m:这里应该有一个较高级别的说明现在在干啥.至于哪里需要这个函数的string,哪里不需要,我也晕了,需要确认一下
-        s.pwl('Check up the status of session', 2, '', 'start')
-        if not s.find_session(VPLX_IP, SSH):
-            s.pwl(f'No session found, start to login to {VPLX_IP}', 3, '', 'start')
-            if s.iscsi_login(VPLX_IP, SSH):
-                s.pwl(f'Succeed in logining to {VPLX_IP}', 4, '', 'finish')
-            else:
-                s.pwce(f'Can not login to {VPLX_IP}', 4, 2)
+            
+    def _modify_host_iqn(self):
+        if consts.glo_iqn_list():
+            initiator_iqn=consts.glo_iqn_list()[-1]
         else:
-            s.pwl(f'ISCSI has logged in {VPLX_IP}', 3, '', 'finish')
-
+            s.pwe('Global IQN list is None',2,2)
+        cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
+        oport_id=s.get_oprt_id()
+        results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
+        if results:
+            if results['sts']:
+                s.pwl(f'Success in modify initiator IQN "{initiator_iqn}"',2,'','finish')
+                return True
+            else:
+                s.pwe(f'Failed to  modify initiator IQN "{initiator_iqn}"',2,2)
+        else:
+            s.handle_exception()
+      
+    def modify_iqn_and_restart(self):
+        if self.iSCSI.disconnect_iscsi_session(TARGET_IQN):
+            if self._modify_host_iqn():
+                self.iSCSI.restart_iscsi()
+    
+    
     def _prepare(self):
         if self.rpl == 'no':
             init_ssh()
@@ -185,7 +201,7 @@ class HostTest(object):
 
     def start_test(self):
         # s.pwl('Start iscsi login',2,'','start')
-        self._create_iscsi_session()
+        self.iSCSI.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         dev_name = get_disk_dev()
         if self.format(dev_name):
@@ -204,14 +220,18 @@ class HostTest(object):
 
 
 if __name__ == "__main__":
-    # test = HostTest(21)
+    logger = log.Log(s.get_transaction_id())
     consts._init()
-    consts.set_glo_tsc_id('789')
-    w = DebugLog()
-    w.collect_debug_sys()
+    consts.set_glo_log(logger)
+    consts.set_glo_id('')
+    consts.set_glo_id_list('')
+    consts.set_glo_str('luntest')
+    consts.set_glo_rpl('no')
+    test = HostTest()
+    # test.iscsi_logout()
+    # consts._init()
+    # consts.set_glo_tsc_id('789')
+    # w = DebugLog()
+    # w.collect_debug_sys()
     pass
-    # command_result = '''[2:0:0:0]    cd/dvd  NECVMWar VMware SATA CD00 1.00  /dev/sr0
-    # [32:0:0:0]   disk    VMware   Virtual disk     2.0   /dev/sda
-    # [33:0:0:15]  disk    LIO-ORG  res_lun_15       4.0   /dev/sdb
-    # [33:0:0:21]  disk    LIO-ORG  res_luntest_21   4.0   /dev/sdc '''
-    # print(command_result)
+  

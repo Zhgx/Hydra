@@ -61,6 +61,7 @@ class ConnSSH(object):
     def ssh_connect(self):
         self._connect()
         if not self.SSHConnection:
+            s.pwl(f'Retry to connect {self._host} via SSH',2,'','start')
             self.logger.write_to_log(
                 'T', 'INFO', 'info', 'start', '', '  Retry connect to VersaPLX via SSH')
             self._connect()
@@ -142,6 +143,7 @@ class ConnTelnet(object):
     def telnet_connect(self):
         self._connect()
         if not self.telnet:
+            s.pwl('Retry to connect {self._host} via Telnet',2,'','start')
             self._connect()
 
     def close(self):

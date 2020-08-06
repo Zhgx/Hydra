@@ -28,11 +28,13 @@ class HydraArgParse():
         consts.set_glo_tsc_id(self.transaction_id)
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
-        consts.set_glo_tsc_id(self.transaction_id)
         self.argparse_init()
         self.list_tid = None  # for replay
         self.log_user_input()
         self.dict_id_str = {}
+        self.del_print=False
+
+       
 
     def log_user_input(self):
         if sys.argv:
@@ -41,13 +43,20 @@ class HydraArgParse():
                 'T', 'DATA', 'input', 'user_input', '', cmd)
 
     def argparse_init(self):
-        self.parser = argparse.ArgumentParser(prog='max_lun',
-                                              description='Test max lun number of VersaRAID-SDS')
+        self.parser = argparse.ArgumentParser(prog='Hydra',
+                                              description='Auto test max supported LUNs/Hosts/Replicas on VersaRAID-SDS')
         self.parser.add_argument(
             '-d',
             action="store_true",
             dest="delete",
-            help="to confirm delete lun")
+            help="Confirm to delete LUNs")
+
+        self.parser.add_argument(
+            '-ht',
+            action="store_true",
+            dest="hosttest",
+            help="Do the max supported host test")
+
         self.parser.add_argument(
             '-t',
             action="store_true",
@@ -64,13 +73,15 @@ class HydraArgParse():
             default='',
             dest="id_range",
             nargs= '+',
-            help='ID or ID range(split with ",")')
+            help='ID or ID range')
 
         sub_parser = self.parser.add_subparsers(dest='replay')
         parser_replay = sub_parser.add_parser(
             'replay',
             aliases=['re'],
-            formatter_class=argparse.RawTextHelpFormatter
+            formatter_class=argparse.RawTextHelpFormatter,
+            help='Replay the Hydra program'
+
         )
 
         parser_replay.add_argument(
@@ -78,7 +89,7 @@ class HydraArgParse():
             '--transactionid',
             dest='tid',
             metavar='',
-            help='transaction id')
+            help='The transaction id for replay')
 
         parser_replay.add_argument(
             '-d',
@@ -86,7 +97,7 @@ class HydraArgParse():
             dest='date',
             metavar='',
             nargs=2,
-            help='date')
+            help='The time period for replay')
         self.parser_replay = parser_replay
 
     def _storage(self):
@@ -111,6 +122,7 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config iSCSI Target
         '''
+        s.generate_iqn('0')
         crm = vplx.VplxCrm()
         crm.crm_cfg()
 
@@ -120,7 +132,36 @@ class HydraArgParse():
         Umount and start to format, write, and read iSCSI LUN
         '''
         host = host_initiator.HostTest()
+        host.modify_iqn_and_restart()
         host.start_test()
+    
+    def create_max_host_resource(self):
+        consts.set_glo_id_list([0])
+        self.delete_resource()
+        consts.set_glo_id(0)
+        consts.set_glo_str('maxhost')
+        self._storage()
+        self._vplx_drbd()
+    
+    def max_support_host_test(self):
+        num=0
+        self.create_max_host_resource()
+        drbd=vplx.VplxDrbd()
+        crm = vplx.VplxCrm()
+        host=host_initiator.HostTest()
+        while True:
+            num+=1
+            s.prt(f'The current number of max supported hosts test is {num}')
+            s.generate_iqn(num)
+            iqn_list=consts.glo_iqn_list()
+            host.modify_iqn_and_restart()
+            if len(iqn_list)==1:
+                crm.crm_cfg()
+            elif len(iqn_list)>1:
+                drbd.drbd_status_verify()
+                crm.modify_allow_initiator()
+            self._host_test()
+           
 
     def delete_resource(self):
         '''
@@ -132,20 +173,27 @@ class HydraArgParse():
         host = host_initiator.HostTest()
 
         crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
-        if crm_to_del_list:
-            s.prt_res_to_del('\ncrm resource', crm_to_del_list)
-
         drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
-        if drbd_to_del_list:
-            s.prt_res_to_del('\ndrbd resource', drbd_to_del_list)
-
         lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
-        if lun_to_del_list:
-            s.prt_res_to_del('\nstorage lun', lun_to_del_list)
+        if self.del_print:
+            if crm_to_del_list:
+                s.prt_res_to_del('\nCRM resource', crm_to_del_list)
+            if drbd_to_del_list:
+                s.prt_res_to_del('\nDRBD resource', drbd_to_del_list) 
+            if lun_to_del_list:
+                s.prt_res_to_del('\nStorage LUN', lun_to_del_list)
 
         if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
-            answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
-            if answer == 'yes' or answer == 'y':
+            if self.del_print:
+                answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
+                if answer == 'yes' or answer == 'y':
+                    pass
+                else:
+                    self.del_print=False
+            else:
+                self.del_print=True
+            
+            if self.del_print:
                 crm.del_all(crm_to_del_list)
                 drbd.del_all(drbd_to_del_list)
                 stor.del_all(lun_to_del_list)
@@ -157,8 +205,11 @@ class HydraArgParse():
             else:
                 s.pwe('User canceled deleting proccess ...', 2, 2)
         else:
-            print()
-            s.pwe('No qualified resources to be delete.', 2, 2)
+            if self.del_print:
+                print()
+                s.pwe('No qualified resources to be delete.', 2, 2)
+            else:
+                return True
 
     @s.record_exception
     def run(self, dict_args):
@@ -259,7 +310,12 @@ class HydraArgParse():
             consts.set_glo_str(args.uniq_str)
 
         if args.delete:
+            self.del_print=True
             self.delete_resource()
+            return
+        elif args.hosttest:
+            # consts.set_glo_id(args.id_range[0])
+            self.max_support_host_test()
             return
 
         elif args.replay:
@@ -283,3 +339,4 @@ class HydraArgParse():
 if __name__ == '__main__':
     obj = HydraArgParse()
     obj.start()
+
