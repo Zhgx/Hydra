@@ -95,7 +95,7 @@ class VplxDrbd(object):
         global RPL
         RPL = consts.glo_rpl()
         self._prepare()
-        self.iSCSI=s.Iscsi(SSH,NETAPP_IP)
+        self.iscsi=s.Iscsi(SSH,NETAPP_IP)
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -105,7 +105,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
-        self.iSCSI.create_iscsi_session()
+        self.iscsi.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = get_disk_dev()
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
@@ -311,7 +311,7 @@ class VplxCrm(object):
         '''
         oprt_id = s.get_oprt_id()
         if consts.glo_iqn_list():
-            initiator_iqn=consts.glo_iqn_list()[-1]
+            initiator_iqn=' '.join(consts.glo_iqn_list())
         else:
             s.pwe('Global IQN list is None',2,2)
         unique_str = 'LXYV7dft'
@@ -536,8 +536,10 @@ class VplxCrm(object):
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results:
             if results['sts']:
+                # print(results['rst'].decode('utf-8'))
                 restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun{self.ID}''', re.DOTALL)
                 re_result=restr.findall(results['rst'].decode('utf-8'))
+                print(re_result)
                 if re_result:
                     if re_result==consts.glo_iqn_list():
                         return True
@@ -584,9 +586,11 @@ class VplxCrm(object):
                 if self._crm_failed_time_delay(10):
                     self._crm_restart()
                     time.sleep(5)
+                    self.cyclic_check_crm_status(self.lu_name,'Started')
                     crm=self._crm_verify(self.lu_name)
                     if crm['status'] == 'Stopped':
                         time.sleep(10)
+                        self.cyclic_check_crm_status(self.lu_name,'Started')
                         crm=self._crm_verify(self.lu_name)
                     if crm['status']!='Started':
                         s.pwce('Failed to restart CRM resource',2,2)
@@ -599,6 +603,7 @@ class VplxCrm(object):
 
     def _crm_failed_time_delay(self,time):
         time.sleep(time)
+        self.cyclic_check_crm_status(self.lu_name,'Started')
         crm=self._crm_verify(self.lu_name)
         if crm['status']!='Started':
             return True

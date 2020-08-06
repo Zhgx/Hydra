@@ -14,7 +14,7 @@ import os
 import subprocess
 import debug_log
 
-
+INITIATOR_NUMBER=20
 class HydraArgParse():
     '''
     Hydra project
@@ -134,34 +134,32 @@ class HydraArgParse():
         host = host_initiator.HostTest()
         host.modify_iqn_and_restart()
         host.start_test()
-    
-    def create_max_host_resource(self):
-        consts.set_glo_id_list([0])
-        self.delete_resource()
-        consts.set_glo_id(0)
-        consts.set_glo_str('maxhost')
-        self._storage()
-        self._vplx_drbd()
+
+        
     
     def max_support_host_test(self):
-        num=0
-        self.create_max_host_resource()
-        drbd=vplx.VplxDrbd()
-        crm = vplx.VplxCrm()
-        host=host_initiator.HostTest()
-        while True:
-            num+=1
-            s.prt(f'The current number of max supported hosts test is {num}')
-            s.generate_iqn(num)
+        id_list=consts.glo_id_list()
+        iqn_id=0
+        consts.set_glo_str('maxhost')
+        for id in id_list:
+            consts.set_glo_iqn_list([])
+            consts.set_glo_id(id)
+            self._storage()
+            self._vplx_drbd()
+            crm = vplx.VplxCrm()
+            host=host_initiator.HostTest()
+            for i in range(INITIATOR_NUMBER):
+                iqn_id+=1
+                s.generate_iqn(iqn_id)
             iqn_list=consts.glo_iqn_list()
-            host.modify_iqn_and_restart()
-            if len(iqn_list)==1:
-                crm.crm_cfg()
-            elif len(iqn_list)>1:
-                drbd.drbd_status_verify()
-                crm.modify_allow_initiator()
-            self._host_test()
-           
+            crm.crm_cfg()
+            if crm.cyclic_crm_targetcli_verify():
+                for iqn in iqn_list:
+                    consts.set_glo_iqn(iqn)
+                    host.modify_iqn_and_restart()
+                    host.start_test()
+        s.prt(f'The current number of IQNs is {iqn_id}') 
+            
 
     def delete_resource(self):
         '''

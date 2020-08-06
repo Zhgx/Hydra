@@ -63,6 +63,13 @@ def set_glo_id_list(value):
 def append_glo_iqn_list(value):
     _GLOBAL_DICT['IQN_LIST'].append(value)
 
+def set_glo_iqn_list(value):
+    set_value('IQN_LIST', value)
+
+def set_glo_iqn(value):
+    set_value('IQN', value)
+
+
 def glo_log():
     return get_value('LOG')
 
@@ -101,6 +108,8 @@ def glo_id_list():
 def glo_iqn_list():
     return get_value('IQN_LIST')
 
+def glo_iqn():
+    return get_value('IQN')
 
 def get_cmd_debug_sys(debug_folder,host):
     cmd_debug_sys = [
