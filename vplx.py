@@ -17,7 +17,7 @@ TIMEOUT = 3
 NETAPP_IP = '10.203.1.231'
 TARGET_IQN = "iqn.2020-06.com.example:test-max-lun"
 TARGET_NAME = 't_test'
-
+PORTBLOCK_UNBLOCK_NAME="p_iscsi_portblock_off"
 
 
 def init_ssh():
@@ -302,6 +302,7 @@ class VplxCrm(object):
         self.lu_name = f'res_{self.STR}_{self.ID}'
         self.colocation_name = f'co_{self.lu_name}'
         self.order_name = f'or_{self.lu_name}'
+        self.order_name2=f'or_{self.lu_name}_prtoff'
         if self.rpl == 'no':
             init_ssh()
 
@@ -365,11 +366,28 @@ class VplxCrm(object):
                 s.pwce(f'Failed to set order of "{self.lu_name}"', 4, 2)
         else:
             s.handle_exception()
+    
+    def _setting_portblock(self):
+        oprt_id=s.get_oprt_id()
+        unique_str='TgFqUiOkl'
+        cmd=f'crm conf order {self.order_name2} {self.lu_name} {PORTBLOCK_UNBLOCK_NAME}'
+        s.pwl(f'Start to set up portblock of iSCSILogicalUnit "{self.lu_name}"', 3, oprt_id, 'start')
+        results=s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
+        if results:
+            if results['sts']:
+                s.pwl(f'Succeed in setting portblock of "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwce(f'Failed to set portblock of "{self.lu_name}"', 4, 2)
+        else:
+            s.handle_exception()
+
 
     def _crm_setting(self):
         if self._setting_col():
             if self._setting_order():
-                return True
+                if self._setting_portblock():
+                    return True
 
     def _crm_start(self):
         '''
@@ -399,6 +417,11 @@ class VplxCrm(object):
                 if self._crm_start():
                     time.sleep(0.5)
                     return True
+
+    def verify_crm_cfg(self):
+        self.crm_cfg()
+        if self.cyclic_crm_targetcli_verify():
+            return True
 
     def _crm_verify(self, res_name):
         '''
@@ -471,7 +494,7 @@ class VplxCrm(object):
             re_delstr = 'deleted'
             re_result = s.re_findall(
                 re_delstr, del_result['rst'].decode('utf-8'))
-            if len(re_result) == 2:
+            if len(re_result) == 3:
                 s.prt(f'Succeed in deleting the iSCSILogicalUnit resource "{res_name}"', 2)
                 return True
             else:
@@ -537,9 +560,8 @@ class VplxCrm(object):
         if results:
             if results['sts']:
                 # print(results['rst'].decode('utf-8'))
-                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun{self.ID}''', re.DOTALL)
+                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{self.ID}.\d+\w*).*?mapped_lun{self.ID}''', re.DOTALL)
                 re_result=restr.findall(results['rst'].decode('utf-8'))
-                print(re_result)
                 if re_result:
                     if re_result==consts.glo_iqn_list():
                         return True

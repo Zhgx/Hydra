@@ -69,6 +69,9 @@ def set_glo_iqn_list(value):
 def set_glo_iqn(value):
     set_value('IQN', value)
 
+def set_glo_cap(value):
+    set_value('CAP',value)
+
 
 def glo_log():
     return get_value('LOG')
@@ -110,6 +113,9 @@ def glo_iqn_list():
 
 def glo_iqn():
     return get_value('IQN')
+
+def glo_cap():
+    return get_value('CAP')
 
 def get_cmd_debug_sys(debug_folder,host):
     cmd_debug_sys = [
