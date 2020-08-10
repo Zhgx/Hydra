@@ -52,21 +52,36 @@ class HydraArgParse():
             help="Confirm to delete LUNs")
 
         self.parser.add_argument(
-            '-ht',
+            '-mh',
             action="store_true",
-            dest="hosttest",
-            help="Do the max supported host test")
+            dest="maxhost",
+            help="Do the max supported host test with one LUN")
+        
+        self.parser.add_argument(
+            '-mxh',
+            action="store_true",
+            dest="mxh",
+            help="Do the max supported host test with N LUN")
 
         self.parser.add_argument(
             '-t',
             action="store_true",
             dest="test",
             help="just for test")
+
         self.parser.add_argument(
             '-s',
             action="store",
             dest="uniq_str",
             help="The unique string for this test, affects related naming")
+
+        self.parser.add_argument(
+            '-c',
+            action="store",
+            dest="capacity",
+            type=int,
+            help="The capacity for determine the number of IQN every LUN")
+
         self.parser.add_argument(
             '-id',
             action="store",
@@ -134,7 +149,7 @@ class HydraArgParse():
         host = host_initiator.HostTest()
         host.modify_iqn_and_restart()
         host.start_test()
-    
+
     def create_max_host_resource(self):
         consts.set_glo_id_list([0])
         self.delete_resource()
@@ -143,7 +158,7 @@ class HydraArgParse():
         self._storage()
         self._vplx_drbd()
     
-    def max_support_host_test(self):
+    def run_maxhost(self):
         num=0
         self.create_max_host_resource()
         drbd=vplx.VplxDrbd()
@@ -160,8 +175,36 @@ class HydraArgParse():
             elif len(iqn_list)>1:
                 drbd.drbd_status_verify()
                 crm.modify_allow_initiator()
-            self._host_test()
-           
+            self._host_test()   
+            
+    def generate_iqn_list(self):
+        cap=consts.glo_cap()
+        for iqn_id in range(cap):
+            iqn_id+=1
+            s.generate_iqn(iqn_id) 
+
+    def iqn_to_host_test(self):
+        iqn_list=consts.glo_iqn_list()
+        host=host_initiator.HostTest()
+        for iqn in iqn_list:
+            consts.set_glo_iqn(iqn)
+            host.modify_iqn_and_restart()
+            host.start_test()
+
+      
+    def run_mxh(self):
+        id_list=consts.glo_id_list()
+        consts.set_glo_str('maxhost')
+        for id in id_list:
+            consts.set_glo_iqn_list([])
+            consts.set_glo_id(id)
+            self._storage()
+            self._vplx_drbd()
+            self.generate_iqn_list()
+            crm=vplx.VplxCrm()
+            if crm.verify_crm_cfg():
+                self.iqn_to_host_test()      
+            
 
     def delete_resource(self):
         '''
@@ -263,8 +306,6 @@ class HydraArgParse():
         return self.dict_id_str
 
 
-
-
     def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
@@ -309,13 +350,22 @@ class HydraArgParse():
         if args.uniq_str:
             consts.set_glo_str(args.uniq_str)
 
+        if args.capacity:
+            consts.set_glo_cap(args.capacity)
+
         if args.delete:
             self.del_print=True
             self.delete_resource()
             return
-        elif args.hosttest:
+
+        elif args.maxhost:
             # consts.set_glo_id(args.id_range[0])
-            self.max_support_host_test()
+            self.run_maxhost()
+            return
+
+        elif args.mxh:
+            if args.id_range and args.capacity:
+                self.run_mxh()
             return
 
         elif args.replay:

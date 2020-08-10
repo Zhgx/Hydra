@@ -83,14 +83,11 @@ class HostTest(object):
         self.logger = consts.glo_log()
         self.rpl = consts.glo_rpl()
         self._prepare()
-        self.iSCSI=s.Iscsi(SSH,VPLX_IP)
+        self.iscsi=s.Iscsi(SSH,VPLX_IP)
 
             
     def _modify_host_iqn(self):
-        if consts.glo_iqn_list():
-            initiator_iqn=consts.glo_iqn_list()[-1]
-        else:
-            s.pwe('Global IQN list is None',2,2)
+        initiator_iqn=consts.glo_iqn()
         cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
@@ -104,9 +101,9 @@ class HostTest(object):
             s.handle_exception()
       
     def modify_iqn_and_restart(self):
-        if self.iSCSI.disconnect_iscsi_session(TARGET_IQN):
+        if self.iscsi.disconnect_iscsi_session(TARGET_IQN):
             if self._modify_host_iqn():
-                self.iSCSI.restart_iscsi()
+                self.iscsi.restart_iscsi()
     
     
     def _prepare(self):
@@ -201,7 +198,7 @@ class HostTest(object):
 
     def start_test(self):
         # s.pwl('Start iscsi login',2,'','start')
-        self.iSCSI.create_iscsi_session()
+        self.iscsi.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         dev_name = get_disk_dev()
         if self.format(dev_name):

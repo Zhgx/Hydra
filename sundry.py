@@ -16,7 +16,8 @@ import debug_log
 
 
 def generate_iqn(num):
-    iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{num}"
+    lun_id=consts.glo_id()
+    iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{lun_id}.{num}"
     consts.append_glo_iqn_list(iqn)
 
 
