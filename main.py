@@ -202,7 +202,7 @@ class HydraArgParse():
             self._vplx_drbd()
             self.generate_iqn_list()
             crm=vplx.VplxCrm()
-            if crm.verify_crm_cfg():
+            if crm.crm_cfg():
                 self.iqn_to_host_test()      
             
 
