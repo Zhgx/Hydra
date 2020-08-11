@@ -34,8 +34,6 @@ class HydraArgParse():
         self.dict_id_str = {}
         self.del_print=False
 
-       
-
     def log_user_input(self):
         if sys.argv:
             cmd = ' '.join(sys.argv)
@@ -74,6 +72,20 @@ class HydraArgParse():
             dest="id_range",
             nargs= '+',
             help='ID or ID range')
+
+        #code on 2020/08/10 by ethan
+        self.parser.add_argument(
+            '-mxh',
+            action="store_true",
+            dest="maxhosttest",
+            help="max host test new needs"
+        )
+        self.parser.add_argument(
+            '-c',
+            action="store",
+            dest="hostnum",
+            help="Total number of hosts for a Lun mapping"
+        )
 
         sub_parser = self.parser.add_subparsers(dest='replay')
         parser_replay = sub_parser.add_parser(
@@ -161,7 +173,24 @@ class HydraArgParse():
                 drbd.drbd_status_verify()
                 crm.modify_allow_initiator()
             self._host_test()
-           
+
+    #code by ethan
+    def max_host_test(self):
+        #self.delete_resource()
+        consts.set_glo_str('maxhost')
+        for lun_id in consts.glo_id_list():
+            consts.set_glo_id(lun_id)
+            crm = vplx.VplxCrm()
+            host = host_initiator.HostTest()
+            self._storage()
+            self._vplx_drbd()
+            s.generate_iqns(lun_id)
+            crm.crm_cfg()
+            for j in range(int(consts.glo_maxhost_num())):
+                s.prt(f'The current number of max supported hosts test is {lun_id}-{j}')
+                s.modipy_host_iqn(lun_id, j)
+                self._host_test()
+
 
     def delete_resource(self):
         '''
@@ -263,8 +292,6 @@ class HydraArgParse():
         return self.dict_id_str
 
 
-
-
     def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
@@ -309,6 +336,10 @@ class HydraArgParse():
         if args.uniq_str:
             consts.set_glo_str(args.uniq_str)
 
+        #code by ethan
+        if args.hostnum:
+            consts.set_glo_maxhost_num(args.hostnum)
+
         if args.delete:
             self.del_print=True
             self.delete_resource()
@@ -316,6 +347,11 @@ class HydraArgParse():
         elif args.hosttest:
             # consts.set_glo_id(args.id_range[0])
             self.max_support_host_test()
+            return
+
+        #code by ethan
+        elif args.maxhosttest:
+            self.max_host_test()
             return
 
         elif args.replay:
@@ -332,7 +368,6 @@ class HydraArgParse():
         else:
             self.parser.print_help()
             return
-
         self.run(self.dict_id_str)
 
 

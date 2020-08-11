@@ -19,6 +19,21 @@ def generate_iqn(num):
     iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{num}"
     consts.append_glo_iqn_list(iqn)
 
+#code by ethan
+def generate_iqns(lun_id):
+    #iqn = str + lun id + host id
+    iqn_str=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost"
+    result=''
+    for j in range(int(consts.glo_maxhost_num())):
+        result += f'{iqn_str}:{lun_id}-{j} '
+    consts.append_glo_iqn_list(result)
+
+def modipy_host_iqn(lun_id, num):
+    iqn_str = f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost"
+    result = f'{iqn_str}:{lun_id}-{num}'
+    consts.append_glo_iqn_list(result)
+
+
 
 class DebugLog(object):
     def __init__(self, ssh_obj, debug_folder, host):
