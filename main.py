@@ -184,7 +184,7 @@ class HydraArgParse():
             s.generate_iqn(iqn_id) 
 
     def iqn_to_host_test(self):
-        iqn_list=consts.glo_iqn_list()
+        iqn_list=consts.glo_iqn_list()       
         host=host_initiator.HostTest()
         for iqn in iqn_list:
             consts.set_glo_iqn(iqn)

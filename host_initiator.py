@@ -84,10 +84,17 @@ class HostTest(object):
         self.rpl = consts.glo_rpl()
         self._prepare()
         self.iscsi=s.Iscsi(SSH,VPLX_IP)
-
-            
+    
+    def get_iqn(self):
+        if consts.glo_iqn():
+            return consts.glo_iqn()
+        elif consts.glo_iqn_list():
+            return consts.glo_iqn_list()[-1]
+        else:
+            s.pwe('IQN ')
+                 
     def _modify_host_iqn(self):
-        initiator_iqn=consts.glo_iqn()
+        initiator_iqn=self.get_iqn()
         cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
         oport_id=s.get_oprt_id()
         results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
