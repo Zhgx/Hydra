@@ -9,7 +9,7 @@ SSH = None
 
 VPLX_IP = '10.203.1.199'
 HOST = '10.203.1.200'
-PORT = '22'
+PORT = 22
 USER = 'root'
 PASSWORD = 'password'
 TIMEOUT = 3
