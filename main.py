@@ -181,7 +181,6 @@ class HydraArgParse():
         for lun_id in consts.glo_id_list():
             consts.set_glo_id(lun_id)
             crm = vplx.VplxCrm()
-            host = host_initiator.HostTest()
             self._storage()
             self._vplx_drbd()
             s.generate_iqns(lun_id)
