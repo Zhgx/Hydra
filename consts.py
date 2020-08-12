@@ -25,6 +25,10 @@ def get_value(key, dft_val = None):
     except KeyError:
         return dft_val
 
+#code by ethan
+def set_glo_maxhost_num(value):
+    set_value('HOSTNUM', value)
+
 def set_glo_log(value):
     set_value('LOG', value)
 
@@ -62,6 +66,11 @@ def set_glo_id_list(value):
 
 def append_glo_iqn_list(value):
     _GLOBAL_DICT['IQN_LIST'].append(value)
+
+#code by ethan
+def glo_maxhost_num():
+    return get_value('HOSTNUM')
+
 
 def glo_log():
     return get_value('LOG')
