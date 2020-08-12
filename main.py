@@ -137,7 +137,7 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config iSCSI Target
         '''
-        s.generate_iqn('0')
+     
         crm = vplx.VplxCrm()
         crm.crm_cfg()
 
@@ -169,6 +169,7 @@ class HydraArgParse():
             s.prt(f'The current number of max supported hosts test is {num}')
             s.generate_iqn(num)
             iqn_list=consts.glo_iqn_list()
+            consts.set_glo_iqn(iqn_list[-1])
             host.modify_iqn_and_restart()
             if len(iqn_list)==1:
                 crm.crm_cfg()
@@ -178,19 +179,22 @@ class HydraArgParse():
             self._host_test()   
             
     def generate_iqn_list(self):
-        cap=consts.glo_cap()
-        for iqn_id in range(cap):
+        for iqn_id in range(consts.glo_cap()):
             iqn_id+=1
             s.generate_iqn(iqn_id) 
 
-    def iqn_to_host_test(self):
-        iqn_list=consts.glo_iqn_list()       
-        host=host_initiator.HostTest()
+    def _modify_iqn_and_test(self):
+        iqn_list=consts.glo_iqn_list() 
         for iqn in iqn_list:
             consts.set_glo_iqn(iqn)
-            host.modify_iqn_and_restart()
-            host.start_test()
 
+    def _create_lun_and_test(self):
+        '''
+        '''
+        self._storage()
+        self._vplx_drbd()
+        self._vplx_crm()
+        self._modify_iqn_and_test()   
       
     def run_mxh(self):
         id_list=consts.glo_id_list()
@@ -198,13 +202,9 @@ class HydraArgParse():
         for id in id_list:
             consts.set_glo_iqn_list([])
             consts.set_glo_id(id)
-            self._storage()
-            self._vplx_drbd()
             self.generate_iqn_list()
-            crm=vplx.VplxCrm()
-            if crm.crm_cfg():
-                self.iqn_to_host_test()      
-            
+            self._create_lun_and_test()
+                           
 
     def delete_resource(self):
         '''
@@ -256,6 +256,7 @@ class HydraArgParse():
 
     @s.record_exception
     def run(self, dict_args):
+        s.generate_iqn('0')
         rpl = consts.glo_rpl()
         format_width = 105 if rpl == 'yes' else 80
         for id_, str_ in dict_args.items():
