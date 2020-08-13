@@ -17,7 +17,7 @@ TIMEOUT = 3
 NETAPP_IP = '10.203.1.231'
 TARGET_IQN = "iqn.2020-06.com.example:test-max-lun"
 TARGET_NAME = 't_test'
-
+PORTBLOCK_UNBLOCK_NAME="p_iscsi_portblock_off"
 
 
 def init_ssh():
@@ -95,7 +95,7 @@ class VplxDrbd(object):
         global RPL
         RPL = consts.glo_rpl()
         self._prepare()
-        self.iSCSI=s.Iscsi(SSH,NETAPP_IP)
+        self.iscsi=s.Iscsi(SSH,NETAPP_IP)
 
     def _prepare(self):
         if self.rpl == 'no':
@@ -105,7 +105,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
-        self.iSCSI.create_iscsi_session()
+        self.iscsi.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = get_disk_dev()
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
@@ -300,8 +300,6 @@ class VplxCrm(object):
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         self.lu_name = f'res_{self.STR}_{self.ID}'
-        self.colocation_name = f'co_{self.lu_name}'
-        self.order_name = f'or_{self.lu_name}'
         if self.rpl == 'no':
             init_ssh()
 
@@ -311,7 +309,7 @@ class VplxCrm(object):
         '''
         oprt_id = s.get_oprt_id()
         if consts.glo_iqn_list():
-            initiator_iqn=consts.glo_iqn_list()[-1]
+            initiator_iqn=' '.join(consts.glo_iqn_list())
         else:
             s.pwe('Global IQN list is None',2,2)
         unique_str = 'LXYV7dft'
@@ -336,7 +334,7 @@ class VplxCrm(object):
         '''
         oprt_id = s.get_oprt_id()
         unique_str = 'E03YgRBd'
-        cmd = f'crm conf colocation {self.colocation_name} inf: {self.lu_name} {TARGET_NAME}'
+        cmd = f'crm conf colocation co_{self.lu_name} inf: {self.lu_name} {TARGET_NAME}'
         s.pwl(f'Start to set up colocation of iSCSILogicalUnit "{self.lu_name}"', 3, oprt_id, 'start')
         result_crm = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_crm:
@@ -354,7 +352,7 @@ class VplxCrm(object):
         '''
         oprt_id = s.get_oprt_id()
         unique_str = '0GHI63jX'
-        cmd = f'crm conf order {self.order_name} {TARGET_NAME} {self.lu_name}'
+        cmd = f'crm conf order or_{self.lu_name} {TARGET_NAME} {self.lu_name}'
         s.pwl(f'Start to set up order of iSCSILogicalUnit "{self.lu_name}"', 3, oprt_id, 'start')
         result_crm = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_crm:
@@ -365,11 +363,28 @@ class VplxCrm(object):
                 s.pwce(f'Failed to set order of "{self.lu_name}"', 4, 2)
         else:
             s.handle_exception()
+    
+    def _setting_portblock(self):
+        oprt_id=s.get_oprt_id()
+        unique_str='TgFqUiOkl'
+        cmd=f'crm conf order or_{self.lu_name}_prtoff {self.lu_name} {PORTBLOCK_UNBLOCK_NAME}'
+        s.pwl(f'Start to set up portblock of iSCSILogicalUnit "{self.lu_name}"', 3, oprt_id, 'start')
+        results=s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
+        if results:
+            if results['sts']:
+                s.pwl(f'Succeed in setting portblock of "{self.lu_name}"', 4, oprt_id, 'finish')
+                return True
+            else:
+                s.pwce(f'Failed to set portblock of "{self.lu_name}"', 4, 2)
+        else:
+            s.handle_exception()
+
 
     def _crm_setting(self):
         if self._setting_col():
             if self._setting_order():
-                return True
+                if self._setting_portblock():
+                    return True
 
     def _crm_start(self):
         '''
@@ -382,25 +397,31 @@ class VplxCrm(object):
         result_cmd = s.get_ssh_cmd(SSH, unique_str, cmd, oprt_id)
         if result_cmd:
             if result_cmd['sts']:
-                if self.cyclic_check_crm_status(self.lu_name, 'Started'):
-                    s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
                     return True
-                else:
-                    s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
             else:
                 s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
         else:
             s.handle_exception()
+    
+    def _crm_start_and_verify(self):
+        oprt_id = s.get_oprt_id()
+        self._crm_start()
+        if self.cyclic_check_crm_status(self.lu_name,'Started',6,100):
+            s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
+            return True
+        else:
+            s.pwce(f'Failed to start up iSCSILogicaLUnit "{self.lu_name}"', 4, 2)
 
     def crm_cfg(self):
         s.pwl('Start to configure crm resource', 2, '', 'start')
         if self._crm_create():
             if self._crm_setting():
-                if self._crm_start():
+                if self._crm_start_and_verify():
                     time.sleep(0.5)
                     return True
 
-    def _crm_verify(self, res_name):
+
+    def _get_crm_status(self, res_name):
         '''
         Check the crm resource status
         '''
@@ -422,20 +443,18 @@ class VplxCrm(object):
             s.handle_exception()
             
 
-    def cyclic_check_crm_status(self, res_name, status):
+    def cyclic_check_crm_status(self, res_name, expect_status,sec, num):
         '''
         Determine crm resource status is started/stopped
         '''
         n = 0
-        while n < 100:
+        while n < num:
             n += 1
-            crm_verify = self._crm_verify(res_name)
-            if crm_verify['status'] == status:
-                return True
+            if self._get_crm_status(res_name)['status'] != expect_status:
+                time.sleep(sec)
             else:
-                time.sleep(6)
-        else:
-            return False
+                return True
+    
 
     def _crm_stop(self, res_name):
         '''
@@ -447,7 +466,7 @@ class VplxCrm(object):
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
         if crm_stop:
             if crm_stop['sts']:
-                if self.cyclic_check_crm_status(res_name, 'Stopped'):
+                if self.cyclic_check_crm_status(res_name, 'Stopped',6,100):
                     s.prt(f'Succeed in Stopping the iSCSILogicalUnit resource "{res_name}"', 2)
                     return True
                 else:
@@ -471,7 +490,7 @@ class VplxCrm(object):
             re_delstr = 'deleted'
             re_result = s.re_findall(
                 re_delstr, del_result['rst'].decode('utf-8'))
-            if len(re_result) == 2:
+            if len(re_result)==3:
                 s.prt(f'Succeed in deleting the iSCSILogicalUnit resource "{res_name}"', 2)
                 return True
             else:
@@ -511,7 +530,6 @@ class VplxCrm(object):
         '''
         s.scsi_rescan(SSH, 'r')
 
-
     
     def modify_allow_initiator(self):
         iqn_string=' '.join(consts.glo_iqn_list())
@@ -520,8 +538,7 @@ class VplxCrm(object):
         result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if result:
             if result['sts']:
-                time.sleep(10)
-                if self.cyclic_crm_targetcli_verify():
+                if self._check_crm_status(self.lu_name,'Started'):
                     s.pwl('Success in modify the allow initiator', 2, oprt_id)
                 else:
                     s.pwe('Failed in verify the allow initiator', 2, 2)   
@@ -536,7 +553,8 @@ class VplxCrm(object):
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results:
             if results['sts']:
-                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bb\w*).*?mapped_lun{self.ID}''', re.DOTALL)
+                # print(results['rst'].decode('utf-8'))
+                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{self.ID}.\d+).*?mapped_lun{self.ID}''', re.DOTALL)
                 re_result=restr.findall(results['rst'].decode('utf-8'))
                 if re_result:
                     if re_result==consts.glo_iqn_list():
@@ -546,79 +564,26 @@ class VplxCrm(object):
         else:
             s.handle_exception() 
 
-    def _crm_restart(self):
-        cmd=f'crm res restart {self.lu_name}'
-        oprt_id=s.get_oprt_id()
-        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
-        if results:
-            return True
-        else:
-            s.handle_exception()
-    
-    def _crm_ref(self):
-        cmd=f'crm res ref'
-        oprt_id=s.get_oprt_id()
-        results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
-        if results:
-            if results['sts']:
-                return True
-        else:
-            s.handle_exception()
-
-
         
-    def extension_crm_verify(self):
-        crm = self._crm_verify(self.lu_name)
-        t_test=self._crm_verify(TARGET_NAME)
-
-        if crm['status']=='Stopped':
-            self.cyclic_check_crm_status(self.lu_name,'Started')
-            crm=self._crm_verify(self.lu_name)
-
-        if t_test['status']=='Stopped':
-            self.cyclic_check_crm_status(TARGET_NAME,'Started')
-            t_test=self._crm_verify(TARGET_NAME)
-        if crm['status']=='FAILED':
-            self._crm_ref()
-            if self._crm_failed_time_delay(5):
-                if self._crm_failed_time_delay(10):
-                    self._crm_restart()
-                    time.sleep(5)
-                    crm=self._crm_verify(self.lu_name)
-                    if crm['status'] == 'Stopped':
-                        time.sleep(10)
-                        crm=self._crm_verify(self.lu_name)
-                    if crm['status']!='Started':
-                        s.pwce('Failed to restart CRM resource',2,2)
-
-        if t_test['status']=='Started':
-            if crm['status']=='Started':
+    def _check_crm_status(self,res_name,expect_status):
+        if self.cyclic_check_crm_status(res_name,expect_status,6,100):
                 return True
-            else:    
-                return False  
+        elif self._get_crm_status(res_name)['status']=='FAILED':
+            s.pwe('Failed in CRM status is "FAILED"',2,2)
+        
 
-    def _crm_failed_time_delay(self,time):
-        time.sleep(time)
-        crm=self._crm_verify(self.lu_name)
-        if crm['status']!='Started':
-            return True
     
-    def crm_targetcli_verify(self):
-        time.sleep(10)
-        if self.extension_crm_verify():
-            if self._targetcli_verify():
-                return True
     
-    def cyclic_crm_targetcli_verify(self):
-        n=0
-        while n<100:
-            n+=1
-            if self.crm_targetcli_verify():
-                return True
-            else:
-                time.sleep(6)
-        else:
-            s.pwce('Failed to verify the CRM and targetcli status',2,2)
+    # def cyclic_crm_targetcli_verify(self):
+    #     n=0
+    #     while n<100:
+    #         n+=1
+    #         if self.crm_targetcli_verify():
+    #             return True
+    #         else:
+    #             time.sleep(6)
+    #     else:
+    #         s.pwce('Failed to verify the CRM and targetcli status',2,2)
 
 
 if __name__ == '__main__':
@@ -631,6 +596,6 @@ if __name__ == '__main__':
     consts.set_glo_str('luntest')
     consts.set_glo_rpl('no')
     test_crm = VplxCrm()
-    test_crm._crm_verify('res_hosttest_100')
+    # test_crm._crm_verify('res_hosttest_100')
     # 
     
