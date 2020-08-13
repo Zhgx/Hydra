@@ -403,9 +403,8 @@ class VplxCrm(object):
         else:
             s.handle_exception()
     
-    def _crm_start_and_verify(self):
+    def crm_status_verify(self):
         oprt_id = s.get_oprt_id()
-        self._crm_start()
         if self.cyclic_check_crm_status(self.lu_name,'Started',6,100):
             s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
             return True
@@ -416,7 +415,7 @@ class VplxCrm(object):
         s.pwl('Start to configure crm resource', 2, '', 'start')
         if self._crm_create():
             if self._crm_setting():
-                if self._crm_start_and_verify():
+                if self._crm_start():
                     time.sleep(0.5)
                     return True
 
@@ -538,7 +537,7 @@ class VplxCrm(object):
         result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if result:
             if result['sts']:
-                if self._check_crm_status(self.lu_name,'Started'):
+                if self.cyclic_check_crm_start(self.lu_name,6,200):
                     s.pwl('Success in modify the allow initiator', 2, oprt_id)
                 else:
                     s.pwe('Failed in verify the allow initiator', 2, 2)   
@@ -553,7 +552,6 @@ class VplxCrm(object):
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results:
             if results['sts']:
-                # print(results['rst'].decode('utf-8'))
                 restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{self.ID}.\d+).*?mapped_lun{self.ID}''', re.DOTALL)
                 re_result=restr.findall(results['rst'].decode('utf-8'))
                 if re_result:
@@ -562,28 +560,20 @@ class VplxCrm(object):
                 else:
                     return False    
         else:
-            s.handle_exception() 
+            s.handle_exception()
 
+    def cyclic_check_crm_start(self, res_name, sec, num):
+        n = 0
+        while n < num:
+            n += 1
+            if self._get_crm_status(res_name)['status'] =='Stopped':
+                time.sleep(sec)
+            elif self._get_crm_status(res_name)['status']=='FAILED':
+                s.pwe('Failed in CRM status is "FAILED"',2,2)
+            else:
+                if self._targetcli_verify():
+                    return True
         
-    def _check_crm_status(self,res_name,expect_status):
-        if self.cyclic_check_crm_status(res_name,expect_status,6,100):
-                return True
-        elif self._get_crm_status(res_name)['status']=='FAILED':
-            s.pwe('Failed in CRM status is "FAILED"',2,2)
-        
-
-    
-    
-    # def cyclic_crm_targetcli_verify(self):
-    #     n=0
-    #     while n<100:
-    #         n+=1
-    #         if self.crm_targetcli_verify():
-    #             return True
-    #         else:
-    #             time.sleep(6)
-    #     else:
-    #         s.pwce('Failed to verify the CRM and targetcli status',2,2)
 
 
 if __name__ == '__main__':

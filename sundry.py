@@ -16,10 +16,9 @@ import debug_log
 
 
 def generate_iqn(num):
-    lun_id=consts.glo_id()
+    lun_id=consts.glo_id() if consts.glo_id() else 0
     iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{lun_id}.{num}"
     consts.append_glo_iqn_list(iqn)
-
 
 class DebugLog(object):
     def __init__(self, ssh_obj, debug_folder, host):
@@ -136,17 +135,36 @@ class Iscsi(object):
         else:
             handle_exception()
 
-    def restart_iscsi(self):
+    def _restart_iscsi(self):
         cmd=f'systemctl restart iscsid open-iscsi'
         oport_id=get_oprt_id()
         results=get_ssh_cmd(self.SSH,'Uksjdkqi',cmd,oport_id)
         if results:
             if results['sts']:
                 pwl('Success in restarting iscsi service',2,'','finish')
+                return True
             else:
                 pwe('Failed to restart iscsi service',2,2)
         else:
             handle_exception()
+
+    def _modify_host_iqn(self,iqn):
+        cmd=f'echo "InitiatorName={iqn}" > /etc/iscsi/initiatorname.iscsi'
+        oport_id=get_oprt_id()
+        results=get_ssh_cmd(self.SSH,'RTDAJDas',cmd,oport_id)
+        if results:
+            if results['sts']:
+                pwl(f'Success in modify initiator IQN "{iqn}"',2,'','finish')
+                return True
+            else:
+                pwe(f'Failed to  modify initiator IQN "{iqn}"',2,2)
+        else:
+            handle_exception()
+    
+    def change_host_iqn(self,iqn):
+        if self._modify_host_iqn(iqn):
+            if self._restart_iscsi():
+                return True
 
 
 def dp(str, arg):
