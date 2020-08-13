@@ -15,6 +15,7 @@ import subprocess
 import debug_log
 
 
+
 class HydraArgParse():
     '''
     Hydra project
@@ -33,6 +34,7 @@ class HydraArgParse():
         self.log_user_input()
         self.dict_id_str = {}
         self.del_print=False
+        self.capacity=None
 
        
 
@@ -140,6 +142,7 @@ class HydraArgParse():
      
         crm = vplx.VplxCrm()
         crm.crm_cfg()
+        crm.crm_status_verify()
 
     def _host_test(self):
         '''
@@ -147,20 +150,24 @@ class HydraArgParse():
         Umount and start to format, write, and read iSCSI LUN
         '''
         host = host_initiator.HostTest()
-        host.modify_iqn_and_restart()
+        iqn=consts.glo_iqn_list()[-1]
+        host.iscsi_connect(iqn)
         host.start_test()
 
-    def create_max_host_resource(self):
-        consts.set_glo_id_list([0])
-        self.delete_resource()
+    # def create_max_host_resource(self):
+    #     consts.set_glo_id_list([0])
+    #     self.delete_resource()
+    #     consts.set_glo_id(0)
+    #     consts.set_glo_str('maxhost')
+    #     self._storage()
+    #     self._vplx_drbd()
+    
+    def run_maxhost(self):
+        num=0
         consts.set_glo_id(0)
         consts.set_glo_str('maxhost')
         self._storage()
         self._vplx_drbd()
-    
-    def run_maxhost(self):
-        num=0
-        self.create_max_host_resource()
         drbd=vplx.VplxDrbd()
         crm = vplx.VplxCrm()
         host=host_initiator.HostTest()
@@ -169,32 +176,32 @@ class HydraArgParse():
             s.prt(f'The current number of max supported hosts test is {num}')
             s.generate_iqn(num)
             iqn_list=consts.glo_iqn_list()
-            consts.set_glo_iqn(iqn_list[-1])
-            host.modify_iqn_and_restart()
+            iqn=iqn_list[-1]
+            host.iscsi_connect(iqn)
             if len(iqn_list)==1:
                 crm.crm_cfg()
+                crm.crm_status_verify()
             elif len(iqn_list)>1:
                 drbd.drbd_status_verify()
                 crm.modify_allow_initiator()
             self._host_test()   
             
     def generate_iqn_list(self):
-        for iqn_id in range(consts.glo_cap()):
+        for iqn_id in range(self.capacity):
             iqn_id+=1
             s.generate_iqn(iqn_id) 
 
     def _modify_iqn_and_test(self):
         iqn_list=consts.glo_iqn_list() 
+        host=host_initiator.HostTest()
         for iqn in iqn_list:
-            consts.set_glo_iqn(iqn)
+            host.iscsi_connect(iqn)
+            host.start_test()
 
-    def _create_lun_and_test(self):
-        '''
-        '''
-        self._storage()
-        self._vplx_drbd()
-        self._vplx_crm()
-        self._modify_iqn_and_test()   
+    # def _create_and_prepare_lun(self):
+    #     self._storage()
+    #     self._vplx_drbd()
+    #     self._vplx_crm()
       
     def run_mxh(self):
         id_list=consts.glo_id_list()
@@ -203,7 +210,10 @@ class HydraArgParse():
             consts.set_glo_iqn_list([])
             consts.set_glo_id(id)
             self.generate_iqn_list()
-            self._create_lun_and_test()
+            self._storage()
+            self._vplx_drbd()
+            self._vplx_crm()
+            self._modify_iqn_and_test()
                            
 
     def delete_resource(self):
@@ -352,7 +362,7 @@ class HydraArgParse():
             consts.set_glo_str(args.uniq_str)
 
         if args.capacity:
-            consts.set_glo_cap(args.capacity)
+            self.capacity=args.capacity
 
         if args.delete:
             self.del_print=True

@@ -85,26 +85,11 @@ class HostTest(object):
         self._prepare()
         self.iscsi=s.Iscsi(SSH,VPLX_IP)
     
-              
-    def _modify_host_iqn(self):
-        initiator_iqn=consts.glo_iqn()
-        cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
-        oport_id=s.get_oprt_id()
-        results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
-        if results:
-            if results['sts']:
-                s.pwl(f'Success in modify initiator IQN "{initiator_iqn}"',2,'','finish')
-                return True
-            else:
-                s.pwe(f'Failed to  modify initiator IQN "{initiator_iqn}"',2,2)
-        else:
-            s.handle_exception()
       
-    def modify_iqn_and_restart(self):
+    def iscsi_connect(self,initiator_iqn):
         if self.iscsi.disconnect_iscsi_session(TARGET_IQN):
-            if self._modify_host_iqn():
-                self.iscsi.restart_iscsi()
-    
+            if self.iscsi.change_host_iqn(initiator_iqn):
+                self.iscsi.iscsi_login()
     
     def _prepare(self):
         if self.rpl == 'no':
@@ -198,7 +183,6 @@ class HostTest(object):
 
     def start_test(self):
         # s.pwl('Start iscsi login',2,'','start')
-        self.iscsi.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         dev_name = get_disk_dev()
         if self.format(dev_name):
