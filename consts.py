@@ -79,7 +79,7 @@ def glo_str():
 
 
 def glo_id():
-    return get_value('ID')
+    return get_value('ID',0)
 
 
 def glo_rpl():
