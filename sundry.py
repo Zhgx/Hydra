@@ -252,14 +252,6 @@ def re_search(re_string, tgt_string):
     logger.write_to_log('F', 'DATA', 'regular', 'search', oprt_id, re_result)
     return re_result
 
-def get_the_disk_with_lun_id(all_disk):
-    lun_id = str(consts.glo_id())
-    dict_id_disk = dict(all_disk)
-    if lun_id in dict_id_disk.keys():
-        disk_dev = dict_id_disk[lun_id]
-        return disk_dev
-
-
 def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
     """
     Execute command on ssh connected host.If it is replay mode, get relevant data from the log.

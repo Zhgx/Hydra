@@ -13,6 +13,7 @@ import logdb
 import os
 import subprocess
 import debug_log
+import random
 
 
 
@@ -34,6 +35,7 @@ class HydraArgParse():
         self.log_user_input()
         self.dict_id_str = {}
         self.capacity=None
+        self.random_num=3
 
        
 
@@ -82,6 +84,13 @@ class HydraArgParse():
             dest="capacity",
             type=int,
             help="The capacity for determine the number of IQN every LUN")
+        
+        self.parser.add_argument(
+            '-n',
+            action="store",
+            dest="random_num",
+            type=int,
+            help="The number is used to determine the number of random IQN per LUN")
 
         self.parser.add_argument(
             '-id',
@@ -152,14 +161,6 @@ class HydraArgParse():
         iqn=consts.glo_iqn_list()[-1]
         host.iscsi_connect(iqn)
         host.start_test()
-
-    # def create_max_host_resource(self):
-    #     consts.set_glo_id_list([0])
-    #     self.delete_resource()
-    #     consts.set_glo_id(0)
-    #     consts.set_glo_str('maxhost')
-    #     self._storage()
-    #     self._vplx_drbd()
     
     def run_maxhost(self):
         num=0
@@ -192,14 +193,11 @@ class HydraArgParse():
     def _modify_iqn_and_test(self):
         iqn_list=consts.glo_iqn_list() 
         host=host_initiator.HostTest()
-        for iqn in iqn_list:
+        iqn_random_list=sorted(random.sample(iqn_list,self.random_num))
+        for iqn in iqn_random_list:
             host.iscsi_connect(iqn)
             host.start_test()
 
-    # def _create_and_prepare_lun(self):
-    #     self._storage()
-    #     self._vplx_drbd()
-    #     self._vplx_crm()
       
     def run_mxh(self):
         id_list=consts.glo_id_list()
@@ -335,7 +333,6 @@ class HydraArgParse():
             self.get_valid_transaction(self.list_tid)
 
 
-
     def start(self):
         args = self.parser.parse_args()
 
@@ -352,13 +349,15 @@ class HydraArgParse():
 
         if args.capacity:
             self.capacity=args.capacity
+        
+        if args.random_num:
+            self.random_num=args.random_num
 
         if args.delete:
             self.delete_resource()
             return
 
         elif args.maxhost:
-            # consts.set_glo_id(args.id_range[0])
             self.run_maxhost()
             return
 
