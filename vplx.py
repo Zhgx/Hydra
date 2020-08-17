@@ -28,32 +28,6 @@ def init_ssh():
         pass
 
 
-def _find_new_disk():
-    id=consts.glo_id()
-    result_lsscsi = s.get_lsscsi(SSH, 'D37nG6Yi', s.get_oprt_id())
-    re_string = f'\:{id}\].*NETAPP[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'
-    disk_dev= s.re_search(re_string, result_lsscsi)
-    if disk_dev:
-        return disk_dev.group(1)
-
-
-def get_disk_dev():
-    s.scsi_rescan(SSH, 'n')
-    disk_dev = _find_new_disk()
-    if disk_dev:
-        s.pwl(f'Succeed in getting disk device "{disk_dev}" with id {consts.glo_id()}', 3, '', 'finish')
-        return disk_dev
-    else:
-        s.scsi_rescan(SSH, 'a')
-        s.pwl(f'No disk with SCSI ID "{consts.glo_id()}" found, scan again...', 3, '', 'start')
-        disk_dev = _find_new_disk() #这里需要查询到的第二个结果，现在返回第一个。
-        if disk_dev:
-            s.pwl('Found the disk successfully', 4, '', 'finish')
-            return disk_dev
-        else:
-            s.pwce('No disk found, exit the program', 4, 2)
-
-
 class DebugLog(object):
     def __init__(self):
         init_ssh()
@@ -87,7 +61,6 @@ class VplxDrbd(object):
         self.logger = consts.glo_log()
         self.STR = consts.glo_str()
         self.ID = consts.glo_id()
-        self.ID_LIST = consts.glo_id_list()
         self.rpl = consts.glo_rpl()
         self.res_name = f'res_{self.STR}_{self.ID}'
         global DRBD_DEV_NAME
@@ -107,7 +80,7 @@ class VplxDrbd(object):
         '''
         self.iscsi.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
-        blk_dev_name = get_disk_dev()
+        blk_dev_name = s.get_disk_dev(SSH,'NETAPP')
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
         # self.logger.write_to_log('T', 'INFO', 'info', 'start', '',
         #                          f'Start prepare config file for resource {self.res_name}')
@@ -225,7 +198,6 @@ class VplxDrbd(object):
                     status = re_result.group(1)
                     if status == 'UpToDate':
                         s.pwl(f'Succeed in checking DRBD resource "{self.res_name}"', 4, oprt_id, 'finish')
-
                         return True
                     else:
                         s.pwce(f'Failed to check DRBD resource "{self.res_name}"', 4, 2)
@@ -296,7 +268,6 @@ class VplxCrm(object):
     def __init__(self):
         self.logger = consts.glo_log()
         self.ID = consts.glo_id()
-        self.ID_LIST = consts.glo_id_list()
         self.STR = consts.glo_str()
         self.rpl = consts.glo_rpl()
         self.lu_name = f'res_{self.STR}_{self.ID}'
@@ -500,6 +471,7 @@ class VplxCrm(object):
     def crm_del(self, res_name):
         s.pwl(f'Deleting crm resource {res_name}',1)
         if self._crm_stop(res_name):
+
             if self._crm_del(res_name):
                 return True
 
@@ -537,10 +509,7 @@ class VplxCrm(object):
         result=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if result:
             if result['sts']:
-                if self.cyclic_check_crm_start(self.lu_name,6,200):
-                    s.pwl('Success in modify the allow initiator', 2, oprt_id)
-                else:
-                    s.pwe('Failed in verify the allow initiator', 2, 2)   
+                return True 
             else:
                 s.pwe('Failed in modify the allow initiator', 2, 2)
         else:
@@ -562,7 +531,7 @@ class VplxCrm(object):
         else:
             s.handle_exception()
 
-    def cyclic_check_crm_start(self, res_name, sec, num):
+    def _cyclic_check_crm_start(self, res_name, sec, num):
         n = 0
         while n < num:
             n += 1
@@ -573,6 +542,13 @@ class VplxCrm(object):
             else:
                 if self._targetcli_verify():
                     return True
+    
+    def crm_and_targetcli_verify(self):
+        oprt_id=s.get_oprt_id()
+        if self._cyclic_check_crm_start(self.lu_name,6,200):
+            s.pwl('Success in modify the allow initiator', 2, oprt_id)
+        else:
+            s.pwe('Failed in verify the allow initiator', 2, 2)  
         
 
 

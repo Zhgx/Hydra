@@ -16,9 +16,34 @@ import debug_log
 
 
 def generate_iqn(num):
-    lun_id=consts.glo_id() if consts.glo_id() else 0
+    lun_id=consts.glo_id()
     iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{lun_id}.{num}"
-    consts.append_glo_iqn_list(iqn)
+    return iqn
+
+
+def find_new_disk(ssh_obj,string):
+    id=consts.glo_id()
+    result_lsscsi = get_lsscsi(ssh_obj, 'D37nG6Yi', get_oprt_id())
+    re_string = f'\:{id}\].*{string}[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'
+    disk_dev= re_search(re_string, result_lsscsi)
+    if disk_dev:
+        return disk_dev.group(1)
+
+def get_disk_dev(ssh_obj,string):
+    scsi_rescan(ssh_obj, 'n')
+    disk_dev = find_new_disk(ssh_obj,string)
+    if disk_dev:
+        pwl(f'Succeed in getting disk device "{disk_dev}" with id {consts.glo_id()}', 3, '', 'finish')
+        return disk_dev
+    else:
+        scsi_rescan(ssh_obj, 'a')
+        pwl(f'No disk with SCSI ID "{consts.glo_id()}" found, scan again...', 3, '', 'start')
+        disk_dev = find_new_disk(ssh_obj,string)
+        if disk_dev:
+            pwl('Found the disk successfully', 4, '', 'finish')
+            return disk_dev
+        else:
+            pwce('No disk found, exit the program', 4, 2)
 
 class DebugLog(object):
     def __init__(self, ssh_obj, debug_folder, host):
@@ -83,8 +108,8 @@ class Iscsi(object):
     
     def iscsi_logout(self,tgt_iqn):
         cmd=f'iscsiadm -m node -T {tgt_iqn} --logout '
-        oport_ip=get_oprt_id()
-        results=get_ssh_cmd(self.SSH,'HuTg1LaQ', cmd, oport_ip)
+        oprt_ip=get_oprt_id()
+        results=get_ssh_cmd(self.SSH,'HuTg1LaQ', cmd, oprt_ip)
         if results:
             if results['sts']:
                 re_string=f'Logout of.*portal: ({self.tgt_ip}).*successful'
@@ -101,10 +126,9 @@ class Iscsi(object):
         '''
         Discover iSCSI login session, if no, login to vplx
         '''
-        func_str = 'rgjfYl3K'
         oprt_id = get_oprt_id()
         cmd = f'iscsiadm -m discovery -t st -p {self.tgt_ip} -l'
-        result_iscsi_login = get_ssh_cmd(self.SSH, func_str, cmd, oprt_id)
+        result_iscsi_login = get_ssh_cmd(self.SSH, 'rgjfYl3K', cmd, oprt_id)
         if result_iscsi_login:
             if result_iscsi_login['sts']:
                 result_iscsi_login = result_iscsi_login['rst'].decode('utf-8')
@@ -122,10 +146,9 @@ class Iscsi(object):
         '''
         Execute the command and check up the status of session
         '''
-        func_str = 'V9jGOP1i'
         oprt_id = get_oprt_id()
         cmd = 'iscsiadm -m session'
-        result_session = get_ssh_cmd(self.SSH, func_str, cmd, oprt_id)
+        result_session = get_ssh_cmd(self.SSH, 'V9jGOP1i', cmd, oprt_id)
         if result_session:
             if result_session['sts']:
                 result_session = result_session['rst'].decode('utf-8')
@@ -137,8 +160,8 @@ class Iscsi(object):
 
     def _restart_iscsi(self):
         cmd=f'systemctl restart iscsid open-iscsi'
-        oport_id=get_oprt_id()
-        results=get_ssh_cmd(self.SSH,'Uksjdkqi',cmd,oport_id)
+        oprt_id=get_oprt_id()
+        results=get_ssh_cmd(self.SSH,'Uksjdkqi',cmd,oprt_id)
         if results:
             if results['sts']:
                 pwl('Success in restarting iscsi service',2,'','finish')
@@ -150,8 +173,8 @@ class Iscsi(object):
 
     def _modify_host_iqn(self,iqn):
         cmd=f'echo "InitiatorName={iqn}" > /etc/iscsi/initiatorname.iscsi'
-        oport_id=get_oprt_id()
-        results=get_ssh_cmd(self.SSH,'RTDAJDas',cmd,oport_id)
+        oprt_id=get_oprt_id()
+        results=get_ssh_cmd(self.SSH,'RTDAJDas',cmd,oprt_id)
         if results:
             if results['sts']:
                 pwl(f'Success in modify initiator IQN "{iqn}"',2,'','finish')
