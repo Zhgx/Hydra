@@ -29,35 +29,6 @@ def umount_mnt():
     SSH.execute_command(f'umount {MOUNT_POINT}')
 
 
-def _find_new_disk():
-    id=consts.glo_id()
-    result_lsscsi = s.get_lsscsi(SSH, 's9mf7aYb', s.get_oprt_id())
-    re_lio_disk = f'''\:{id}\].*LIO-ORG[ 0-9a-zA-Z._]*(/dev/sd[a-z]{{1,3}})'''
-    disk_dev = s.re_search(re_lio_disk, result_lsscsi)
-    if disk_dev:
-        return disk_dev.group(1)
-
-
-# -m:这里要注意replay的时候这边程序的调用过程.re-rescan之后又尽心过了一次_find_new_disk(),日志应该需要跳转到下一条lsscsi结果.注意指针及时移动
-def get_disk_dev():
-    # time.sleep(5)
-    s.scsi_rescan(SSH, 'n')
-    disk_dev = _find_new_disk()
-    if disk_dev:
-        s.pwl(f'Succeed in getting disk device "{disk_dev}" with id {consts.glo_id()}', 3, '', 'finish')
-        return disk_dev
-    else:
-        scsi_id = consts.glo_id()
-        s.pwl(f'No disk with SCSI ID {scsi_id} found, scan again...', 3, '', 'start')
-        s.scsi_rescan(SSH, 'a')
-        disk_dev = _find_new_disk()
-        if disk_dev:
-            s.pwl(f'Found the disk device "{disk_dev}" successfully', 4, '', 'finish')
-            return disk_dev
-        else:
-            s.pwce('No disk found, exit the program', 4, 2)
-
-
 class DebugLog(object):
     def __init__(self):
         init_ssh()
@@ -84,27 +55,12 @@ class HostTest(object):
         self.rpl = consts.glo_rpl()
         self._prepare()
         self.iscsi=s.Iscsi(SSH,VPLX_IP)
-
-            
-    def _modify_host_iqn(self):
-        initiator_iqn=consts.glo_iqn()
-        cmd=f'echo "InitiatorName={initiator_iqn}" > /etc/iscsi/initiatorname.iscsi'
-        oport_id=s.get_oprt_id()
-        results=s.get_ssh_cmd(SSH,'RTDAJDas',cmd,oport_id)
-        if results:
-            if results['sts']:
-                s.pwl(f'Success in modify initiator IQN "{initiator_iqn}"',2,'','finish')
-                return True
-            else:
-                s.pwe(f'Failed to  modify initiator IQN "{initiator_iqn}"',2,2)
-        else:
-            s.handle_exception()
-      
-    def modify_iqn_and_restart(self):
-        if self.iscsi.disconnect_iscsi_session(TARGET_IQN):
-            if self._modify_host_iqn():
-                self.iscsi.restart_iscsi()
     
+      
+    def iscsi_connect(self,initiator_iqn):
+        if self.iscsi.disconnect_iscsi_session(TARGET_IQN):
+            if self.iscsi.change_host_iqn(initiator_iqn):
+                self.iscsi.iscsi_login()
     
     def _prepare(self):
         if self.rpl == 'no':
@@ -198,9 +154,8 @@ class HostTest(object):
 
     def start_test(self):
         # s.pwl('Start iscsi login',2,'','start')
-        self.iscsi.create_iscsi_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
-        dev_name = get_disk_dev()
+        dev_name = s.get_disk_dev(SSH,'LIO-ORG')
         if self.format(dev_name):
             if self._mount(dev_name):
                 self.get_test_perf()

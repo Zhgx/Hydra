@@ -15,6 +15,7 @@ import subprocess
 import debug_log
 
 
+
 class HydraArgParse():
     '''
     Hydra project
@@ -32,7 +33,7 @@ class HydraArgParse():
         self.list_tid = None  # for replay
         self.log_user_input()
         self.dict_id_str = {}
-        self.del_print=False
+        self.capacity=None
 
        
 
@@ -137,9 +138,10 @@ class HydraArgParse():
         '''
         Connect to VersaPLX, Config iSCSI Target
         '''
-        s.generate_iqn('0')
+     
         crm = vplx.VplxCrm()
         crm.crm_cfg()
+        crm.crm_status_verify()
 
     def _host_test(self):
         '''
@@ -147,50 +149,57 @@ class HydraArgParse():
         Umount and start to format, write, and read iSCSI LUN
         '''
         host = host_initiator.HostTest()
-        host.modify_iqn_and_restart()
+        iqn=consts.glo_iqn_list()[-1]
+        host.iscsi_connect(iqn)
         host.start_test()
 
-    def create_max_host_resource(self):
-        consts.set_glo_id_list([0])
-        self.delete_resource()
-        consts.set_glo_id(0)
-        consts.set_glo_str('maxhost')
-        self._storage()
-        self._vplx_drbd()
+    # def create_max_host_resource(self):
+    #     consts.set_glo_id_list([0])
+    #     self.delete_resource()
+    #     consts.set_glo_id(0)
+    #     consts.set_glo_str('maxhost')
+    #     self._storage()
+    #     self._vplx_drbd()
     
     def run_maxhost(self):
         num=0
-        self.create_max_host_resource()
+        consts.set_glo_str('maxhost')
+        self._storage()
+        self._vplx_drbd()
         drbd=vplx.VplxDrbd()
         crm = vplx.VplxCrm()
-        host=host_initiator.HostTest()
         while True:
             num+=1
             s.prt(f'The current number of max supported hosts test is {num}')
-            s.generate_iqn(num)
+            iqn=s.generate_iqn(num)
+            consts.append_glo_iqn_list(iqn)
             iqn_list=consts.glo_iqn_list()
-            host.modify_iqn_and_restart()
             if len(iqn_list)==1:
                 crm.crm_cfg()
+                crm.crm_status_verify()
             elif len(iqn_list)>1:
                 drbd.drbd_status_verify()
                 crm.modify_allow_initiator()
-            self._host_test()   
+                crm.crm_and_targetcli_verify()
+            self._host_test() 
             
     def generate_iqn_list(self):
-        cap=consts.glo_cap()
-        for iqn_id in range(cap):
+        for iqn_id in range(self.capacity):
             iqn_id+=1
-            s.generate_iqn(iqn_id) 
+            iqn=s.generate_iqn(iqn_id)
+            consts.append_glo_iqn_list(iqn)
 
-    def iqn_to_host_test(self):
-        iqn_list=consts.glo_iqn_list()
+    def _modify_iqn_and_test(self):
+        iqn_list=consts.glo_iqn_list() 
         host=host_initiator.HostTest()
         for iqn in iqn_list:
-            consts.set_glo_iqn(iqn)
-            host.modify_iqn_and_restart()
+            host.iscsi_connect(iqn)
             host.start_test()
 
+    # def _create_and_prepare_lun(self):
+    #     self._storage()
+    #     self._vplx_drbd()
+    #     self._vplx_crm()
       
     def run_mxh(self):
         id_list=consts.glo_id_list()
@@ -198,13 +207,12 @@ class HydraArgParse():
         for id in id_list:
             consts.set_glo_iqn_list([])
             consts.set_glo_id(id)
+            self.generate_iqn_list()
             self._storage()
             self._vplx_drbd()
-            self.generate_iqn_list()
-            crm=vplx.VplxCrm()
-            if crm.crm_cfg():
-                self.iqn_to_host_test()      
-            
+            self._vplx_crm()
+            self._modify_iqn_and_test()
+                           
 
     def delete_resource(self):
         '''
@@ -218,25 +226,17 @@ class HydraArgParse():
         crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
         drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
         lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
-        if self.del_print:
-            if crm_to_del_list:
-                s.prt_res_to_del('\nCRM resource', crm_to_del_list)
-            if drbd_to_del_list:
-                s.prt_res_to_del('\nDRBD resource', drbd_to_del_list) 
-            if lun_to_del_list:
-                s.prt_res_to_del('\nStorage LUN', lun_to_del_list)
+        
+        if crm_to_del_list:
+            s.prt_res_to_del('\nCRM resource', crm_to_del_list)
+        if drbd_to_del_list:
+            s.prt_res_to_del('\nDRBD resource', drbd_to_del_list) 
+        if lun_to_del_list:
+            s.prt_res_to_del('\nStorage LUN', lun_to_del_list)
 
         if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
-            if self.del_print:
-                answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
-                if answer == 'yes' or answer == 'y':
-                    pass
-                else:
-                    self.del_print=False
-            else:
-                self.del_print=True
-            
-            if self.del_print:
+            answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
+            if answer == 'yes' or answer == 'y':
                 crm.del_all(crm_to_del_list)
                 drbd.del_all(drbd_to_del_list)
                 stor.del_all(lun_to_del_list)
@@ -248,14 +248,14 @@ class HydraArgParse():
             else:
                 s.pwe('User canceled deleting proccess ...', 2, 2)
         else:
-            if self.del_print:
-                print()
-                s.pwe('No qualified resources to be delete.', 2, 2)
-            else:
-                return True
+            print()
+            s.pwe('No qualified resources to be delete.', 2, 2)
+
 
     @s.record_exception
     def run(self, dict_args):
+        iqn=s.generate_iqn('0')
+        consts.append_glo_iqn_list(iqn)
         rpl = consts.glo_rpl()
         format_width = 105 if rpl == 'yes' else 80
         for id_, str_ in dict_args.items():
@@ -351,10 +351,9 @@ class HydraArgParse():
             consts.set_glo_str(args.uniq_str)
 
         if args.capacity:
-            consts.set_glo_cap(args.capacity)
+            self.capacity=args.capacity
 
         if args.delete:
-            self.del_print=True
             self.delete_resource()
             return
 
