@@ -153,20 +153,4 @@ class ConnTelnet(object):
 
 
 if __name__ == '__main__':
-    # telnet
-    # host = '10.203.1.231'
-    # port = '22'
-    # username = 'root'
-    # password = 'Feixi@123'
-    # timeout = 5
-    # ssh = ConnSSH(host, port, username, password, timeout)
-    # strout = ssh.execute_command('?')
-    # w = strout.decode('utf-8')
-    # print(type(w))
-    # print(w.split('\n'))
-    # pprint.pprint(w)
-    # time.sleep(2)
-    # strout = ssh.execute_command('lun show -m')
-    # pprint.pprint(strout)
-
     pass

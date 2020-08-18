@@ -98,7 +98,7 @@ class HostTest(object):
         if len(re_resulgt) == 4:
             return True
 
-    def format(self, dev_name):
+    def _format(self, dev_name):
         '''
         Format disk and mount disk
         '''
@@ -139,7 +139,7 @@ class HostTest(object):
         else:
             s.pwce('Can not get test result', 3, 2)
 
-    def get_test_perf(self):
+    def _get_test_perf(self):
         '''
         Calling method to read&write test
         '''
@@ -156,9 +156,9 @@ class HostTest(object):
         # s.pwl('Start iscsi login',2,'','start')
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         dev_name = s.get_disk_dev(SSH,'LIO-ORG')
-        if self.format(dev_name):
+        if self._format(dev_name):
             if self._mount(dev_name):
-                self.get_test_perf()
+                self._get_test_perf()
             else:
                 s.pwce(f'Failed to mount device "{dev_name}"', 3, 2)
         else:
@@ -172,18 +172,5 @@ class HostTest(object):
 
 
 if __name__ == "__main__":
-    logger = log.Log(s.get_transaction_id())
-    consts._init()
-    consts.set_glo_log(logger)
-    consts.set_glo_id('')
-    consts.set_glo_id_list('')
-    consts.set_glo_str('luntest')
-    consts.set_glo_rpl('no')
-    test = HostTest()
-    # test.iscsi_logout()
-    # consts._init()
-    # consts.set_glo_tsc_id('789')
-    # w = DebugLog()
-    # w.collect_debug_sys()
     pass
   
