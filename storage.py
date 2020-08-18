@@ -48,7 +48,7 @@ class Storage:
         if self.rpl == 'no':
             init_telnet()
 
-    def ex_telnet_cmd(self, unique_str, cmd, oprt_id):
+    def _ex_telnet_cmd(self, unique_str, cmd, oprt_id):
         if self.rpl == 'no':
             self.logger.write_to_log(
                 'F', 'DATA', 'STR', unique_str, '', oprt_id)
@@ -77,7 +77,7 @@ class Storage:
         cmd = f'lun create -s 10m -t linux /vol/esxi/{self.lun_name}'
         info_msg = f'Start to create LUN, LUN name: "{self.lun_name}",LUN ID: "{self.ID}"'
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
-        result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        result = self._ex_telnet_cmd(unique_str, cmd, oprt_id)
         if result:
             s.pwl(f'Succeed in creating LUN "{self.lun_name}"', 3, oprt_id, 'finish')
         else:
@@ -92,7 +92,7 @@ class Storage:
         info_msg = f'Start to map LUN, LUN name: "{self.lun_name}", LUN ID: "{self.ID}"'
         cmd = f'lun map /vol/esxi/{self.lun_name} hydra {self.ID}'
         s.pwl(f'{info_msg}', 2, oprt_id, 'start')
-        result = self.ex_telnet_cmd(unique_str, cmd, oprt_id)
+        result = self._ex_telnet_cmd(unique_str, cmd, oprt_id)
         if result:
             re_string=f'LUN /vol/esxi/{self.lun_name} was mapped to initiator group hydra={self.ID}'
             re_result=s.re_search(re_string, result)
@@ -103,14 +103,14 @@ class Storage:
         else:
             s.handle_exception()
 
-    def lun_unmap(self, lun_name):
+    def _lun_unmap(self, lun_name):
         '''
         Unmap LUN and determine its succeed
         '''
         unique_str = '2ltpi6N5'
         oprt_id = s.get_oprt_id()
         unmap = f'lun unmap /vol/esxi/{lun_name} hydra'
-        unmap_result = self.ex_telnet_cmd(unique_str, unmap, oprt_id)
+        unmap_result = self._ex_telnet_cmd(unique_str, unmap, oprt_id)
         if unmap_result:
             unmap_re = r'unmapped from initiator group hydra'
             re_result = s.re_search(unmap_re, unmap_result)
@@ -124,14 +124,14 @@ class Storage:
         else:
             print('unmap command execute failed')
 
-    def lun_destroy(self, lun_name):
+    def _lun_destroy(self, lun_name):
         '''
         delete LUN and determine its succeed
         '''
         unique_str = '2ltpi6N3'
         oprt_id = s.get_oprt_id()
         destroy_cmd = f'lun destroy /vol/esxi/{lun_name}'
-        destroy_result = self.ex_telnet_cmd(unique_str, destroy_cmd, oprt_id)
+        destroy_result = self._ex_telnet_cmd(unique_str, destroy_cmd, oprt_id)
         if destroy_result:
             re_destroy = f'LUN /vol/esxi/{lun_name} destroyed'
             re_result = s.re_search(re_destroy, destroy_result)
@@ -139,36 +139,26 @@ class Storage:
                 s.pwl(f'Destroy the lun /vol/esxi/{lun_name} successfully',2)
                 return True
             else:
-                s.prt(f'can not destroy lun {lun_name}',2)
+                s.pwe(f'can not destroy lun {lun_name}',2,1)
         else:
             print('destroy command execute failed')
 
     def get_all_cfgd_lun(self):
         # get list of all configured luns
         cmd_lun_show = 'lun show'
-        show_result = self.ex_telnet_cmd(
+        show_result = self._ex_telnet_cmd(
             '2lYpiKm3', cmd_lun_show, s.get_oprt_id())
         if show_result:
             re_lun = f'/vol/esxi/(\w*_[0-9]{{1,3}})'
             lun_cfgd_list = s.re_findall(re_lun, show_result)
             return lun_cfgd_list
 
-    # def get_and_show_lun_to_del(self):
-    #     '''
-    #     Get all luns through regular matching
-    #     '''
-    #     # get list of all configured luns
-    #     lun_cfgd_list = self._get_all_cfgd_lun()
-    #     lun_to_del_list = s.get_to_del_list(lun_cfgd_list)
-    #     s.prt_res_to_del(lun_to_del_list)
-    #     return lun_to_del_list
-
     def del_all(self, lun_to_del_list):
         s.pwl('start to delete storage lun', 0, '', 'delete')
         for lun_name in lun_to_del_list:
             s.pwl(f'Deleting LUN "{lun_name}"', 1, '', 'delete')
-            self.lun_unmap(lun_name)
-            self.lun_destroy(lun_name)
+            self._lun_unmap(lun_name)
+            self._lun_destroy(lun_name)
 
 
 if __name__ == '__main__':

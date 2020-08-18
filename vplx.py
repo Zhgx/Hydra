@@ -5,7 +5,6 @@ import time
 import consts
 import log
 import re
-import sys
 SSH = None
 
 HOST = '10.203.1.199'
@@ -251,7 +250,7 @@ class VplxDrbd(object):
             s.handle_exception()
 
 
-    def drbd_del(self, res_name):
+    def _drbd_del(self, res_name):
         s.pwl(f'Deleting DRBD resource {res_name}',1)
         if self._drbd_down(res_name):
             if self._drbd_del_config(res_name):
@@ -261,7 +260,7 @@ class VplxDrbd(object):
         if drbd_to_del_list:
             s.pwl('Start to delete DRBD resource',0)
             for res_name in drbd_to_del_list:
-                self.drbd_del(res_name)
+                self._drbd_del(res_name)
 
 
 class VplxCrm(object):
@@ -376,7 +375,7 @@ class VplxCrm(object):
     
     def crm_status_verify(self):
         oprt_id = s.get_oprt_id()
-        if self.cyclic_check_crm_status(self.lu_name,'Started',6,100):
+        if self._cyclic_check_crm_status(self.lu_name,'Started',6,100):
             s.pwl(f'Succeed in starting up iSCSILogicaLUnit "{self.lu_name}"', 4, oprt_id, 'finish')
             return True
         else:
@@ -413,7 +412,7 @@ class VplxCrm(object):
             s.handle_exception()
             
 
-    def cyclic_check_crm_status(self, res_name, expect_status,sec, num):
+    def _cyclic_check_crm_status(self, res_name, expect_status,sec, num):
         '''
         Determine crm resource status is started/stopped
         '''
@@ -436,7 +435,7 @@ class VplxCrm(object):
         crm_stop = s.get_ssh_cmd(SSH, unique_str, crm_stop_cmd, oprt_id)
         if crm_stop:
             if crm_stop['sts']:
-                if self.cyclic_check_crm_status(res_name, 'Stopped',6,100):
+                if self._cyclic_check_crm_status(res_name, 'Stopped',6,100):
                     s.prt(f'Succeed in Stopping the iSCSILogicalUnit resource "{res_name}"', 2)
                     return True
                 else:
@@ -468,7 +467,7 @@ class VplxCrm(object):
         else:
             s.handle_exception()
 
-    def crm_del(self, res_name):
+    def _crm_del(self, res_name):
         s.pwl(f'Deleting crm resource {res_name}',1)
         if self._crm_stop(res_name):
 
@@ -493,7 +492,7 @@ class VplxCrm(object):
         if crm_to_del_list:
             s.pwl('Start to delete CRM resource',0)
             for res_name in crm_to_del_list:
-                self.crm_del(res_name)
+                self._crm_del(res_name)
 
     def vplx_rescan_r(self):
         '''
@@ -521,13 +520,11 @@ class VplxCrm(object):
         results=s.get_ssh_cmd(SSH,'',cmd,oprt_id)
         if results:
             if results['sts']:
-                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{self.ID}.\d+).*?mapped_lun{self.ID}''', re.DOTALL)
+                restr = re.compile(f'''(iqn.1993-08.org.debian:01:2b129695b8bbmaxhost:{self.ID}-\d+).*?mapped_lun{self.ID}''', re.DOTALL)
                 re_result=restr.findall(results['rst'].decode('utf-8'))
                 if re_result:
                     if re_result==consts.glo_iqn_list():
                         return True
-                else:
-                    return False    
         else:
             s.handle_exception()
 
@@ -553,15 +550,4 @@ class VplxCrm(object):
 
 
 if __name__ == '__main__':
-    # pass
-    logger = log.Log(s.get_transaction_id())
-    consts._init()
-    consts.set_glo_log(logger)
-    consts.set_glo_id('')
-    consts.set_glo_id_list('')
-    consts.set_glo_str('luntest')
-    consts.set_glo_rpl('no')
-    test_crm = VplxCrm()
-    # test_crm._crm_verify('res_hosttest_100')
-    # 
-    
+   pass
