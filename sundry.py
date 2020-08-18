@@ -1,7 +1,6 @@
 #  coding: utf-8
 import random
 import consts
-import logdb
 import sys
 import re
 import time
@@ -10,16 +9,21 @@ import getpass
 import traceback
 import socket
 from random import shuffle
-import log
-import connect
 import debug_log
+
+
 
 
 def generate_iqn(num):
     lun_id=consts.glo_id()
-    iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost{lun_id}.{num}"
+    iqn=f"iqn.1993-08.org.debian:01:2b129695b8bbmaxhost:{lun_id}-{num}"
     return iqn
 
+def generate_iqn_list(capacity):
+    for iqn_id in range(capacity):
+        iqn_id += 1
+        iqn = generate_iqn(iqn_id)
+        consts.append_glo_iqn_list(iqn)
 
 def find_new_disk(ssh_obj,string):
     id=consts.glo_id()
@@ -85,7 +89,7 @@ class Iscsi(object):
 
     def create_iscsi_session(self):
         pwl('Check up the status of session', 2, '', 'start')
-        if not self.find_session():
+        if not self._find_session():
             pwl(f'No session found, start to login to {self.tgt_ip}', 3, '', 'start')
             if self.iscsi_login():
                 pwl(f'Succeed in logining to {self.tgt_ip}', 4, 'finish')
@@ -96,8 +100,8 @@ class Iscsi(object):
             pwl(f'The iSCSI session already logged in to {self.tgt_ip}', 3)
 
     def disconnect_iscsi_session(self,tgt_iqn):
-        if self.find_session():
-            if self.iscsi_logout(tgt_iqn):
+        if self._find_session():
+            if self._iscsi_logout(tgt_iqn):
                 pwl(f'Success in logout {self.tgt_ip}',2,'','finish')
                 return True
             else:
@@ -106,7 +110,7 @@ class Iscsi(object):
             pwl(f'The iSCSI session already logged out to {self.tgt_ip}',3)
             return True
     
-    def iscsi_logout(self,tgt_iqn):
+    def _iscsi_logout(self,tgt_iqn):
         cmd=f'iscsiadm -m node -T {tgt_iqn} --logout '
         oprt_ip=get_oprt_id()
         results=get_ssh_cmd(self.SSH,'HuTg1LaQ', cmd, oprt_ip)
@@ -142,7 +146,7 @@ class Iscsi(object):
         else:
             handle_exception()
     # -m:string 和 oprt id 不用传递过来,在内部定义即可
-    def find_session(self):
+    def _find_session(self):
         '''
         Execute the command and check up the status of session
         '''
@@ -189,9 +193,9 @@ class Iscsi(object):
             if self._restart_iscsi():
                 return True
 
-
-def dp(str, arg):
-    print(f'{str}---------------------\n{arg}')
+#
+# def dp(str, arg):
+#     print(f'{str}---------------------\n{arg}')
 
 
 def change_id_str_to_list(id_str):
@@ -333,16 +337,6 @@ def prt_res_to_del(str_, res_list):
     print()
 
 
-# def getshow(unique_str, id_list, name_list):
-#     '''
-#     Determine the lun to be deleted according to regular matching
-#     '''
-#     if id_list:
-#         list_name = get_list_name(logger, unique_str, id_list, name_list)
-#         return list_name
-#     else:
-#         return name_list
-
 
 def record_exception(func):
     """
@@ -373,19 +367,19 @@ def get_oprt_id():
     return ''.join(str_list)
 
 
-def get_username():
-    return getpass.getuser()
-
-
-def get_hostname():
-    return socket.gethostname()
-
-
-# Get the path of the program
-
-
-def get_path():
-    return os.getcwd()
+# def get_username():
+#     return getpass.getuser()
+#
+#
+# def get_hostname():
+#     return socket.gethostname()
+#
+#
+# # Get the path of the program
+#
+#
+# def get_path():
+#     return os.getcwd()
 
 
 def change_pointer(new_id):
@@ -401,8 +395,6 @@ def re_findall(re_string, tgt_string):
                         oprt_id, {re_string: tgt_string})
     logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
     return re_result
-
-
 
 
 
