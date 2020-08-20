@@ -132,6 +132,7 @@ class HydraArgParse():
 
     def start(self):
         args = self.parser.parse_args()
+        self.cont.log_user_input(args)
 
         try:
             if args.id_range:
@@ -169,6 +170,11 @@ class HydraArgParse():
             consts.set_glo_log_switch('no')
             logdb.prepare_db()
             self.cont.prepare_replay(args)
+
+            #mxl
+            self.cont.run_maxlun(self.cont.dict_id_str)
+
+
         else:
             self.parser.print_help()
         # args.func(args)

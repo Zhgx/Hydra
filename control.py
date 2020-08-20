@@ -12,10 +12,8 @@ import sys
 
 class HydraControl():
     def __init__(self):
-        # t id
         self.transaction_id = s.get_transaction_id()
-        consts.set_glo_tsc_id(self.transaction_id)
-
+        consts.set_glo_tsc_id(f'{self.transaction_id}s')
         #log
         self.logger = log.Log(self.transaction_id)
         consts.set_glo_log(self.logger)
@@ -23,8 +21,6 @@ class HydraControl():
         self.capacity = None
         self.random_num=3
         self.list_tid = None  # for replay
-        self.log_user_input()
-
 
 
     def _storage(self):
@@ -111,7 +107,9 @@ class HydraControl():
         rpl = consts.glo_rpl()
         format_width = 105 if rpl == 'yes' else 80
         host = host_initiator.HostTest()
-        host.modify_host_iqn(iqn)
+
+        if rpl == 'no':
+            host.modify_host_iqn(iqn)
         for id_, str_ in dict_args.items():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
@@ -170,16 +168,20 @@ class HydraControl():
             host.iscsi.login()
             host.start_test()
 
-    def log_user_input(self):
+    def log_user_input(self,args):
+        if args.subcommand in ['re', 'replay']:
+            return
         if sys.argv:
             cmd = ' '.join(sys.argv)
-            self.logger.write_to_log(
-                'T', 'DATA', 'input', 'user_input', '', cmd)
+            if consts.glo_rpl() == 'no':
+                self.logger.write_to_log(
+                    'T', 'DATA', 'input', 'user_input', '', cmd)
 
     def get_valid_transaction(self, list_transaciont):
         db = consts.glo_db()
         lst_tid = list_transaciont[:]
         for tid in lst_tid:
+            consts.set_glo_tsc_id(tid)
             string, id = db.get_string_id(tid)
             if string and id:
                 self.dict_id_str.update({id: string})
@@ -190,6 +192,7 @@ class HydraControl():
         print(f'Transaction to be executed: {" ".join(self.list_tid)}')
         return self.dict_id_str
 
+    #搜集id， str
     def prepare_replay(self, args):
         db = consts.glo_db()
         arg_tid = args.tid
