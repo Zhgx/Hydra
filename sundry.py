@@ -385,7 +385,7 @@ def record_exception(func):
 
 
 def get_transaction_id():
-    return int(time.time())
+    return str(int(time.time()))
 
 
 def get_oprt_id():
