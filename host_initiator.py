@@ -57,10 +57,12 @@ class HostTest(object):
         self.iscsi=s.Iscsi(SSH,VPLX_IP)
     
       
-    def iscsi_connect(self,initiator_iqn):
-        if self.iscsi.disconnect_iscsi_session(TARGET_IQN):
+    def modify_host_iqn(self,initiator_iqn):
+        if self.iscsi.disconnect_session(TARGET_IQN):
             if self.iscsi.change_host_iqn(initiator_iqn):
-                self.iscsi.iscsi_login()
+                return True
+
+
     
     def _prepare(self):
         if self.rpl == 'no':

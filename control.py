@@ -7,14 +7,25 @@ import storage
 import host_initiator
 import sundry as s
 import log
-import random
+import sys
 
 
-class HydraControl(object):
+class HydraControl():
     def __init__(self):
+        # t id
+        self.transaction_id = s.get_transaction_id()
+        consts.set_glo_tsc_id(self.transaction_id)
+
+        #log
+        self.logger = log.Log(self.transaction_id)
+        consts.set_glo_log(self.logger)
         self.dict_id_str = {}
         self.capacity = None
         self.random_num=3
+        self.list_tid = None  # for replay
+        self.log_user_input()
+
+
 
     def _storage(self):
         '''
@@ -42,24 +53,6 @@ class HydraControl(object):
         crm.crm_cfg()
         crm.crm_status_verify()
 
-    def _host_test(self):
-        '''
-        Connect to host
-        Umount and start to format, write, and read iSCSI LUN
-        '''
-        host = host_initiator.HostTest()
-        iqn = consts.glo_iqn_list()[-1]
-        host.iscsi_connect(iqn)
-        host.start_test()
-
-    def _host_modify_iqn_and_test(self):
-        iqn_list = consts.glo_iqn_list()
-        host = host_initiator.HostTest()
-        iqn_random_list=sorted(random.sample(iqn_list,self.random_num))
-        for iqn in iqn_random_list:
-            host.iscsi_connect(iqn)
-            host.start_test()
-
     def delete_resource(self):
         '''
         User determines whether to delete and execute delete method
@@ -72,20 +65,18 @@ class HydraControl(object):
         crm_to_del_list = s.get_to_del_list(crm.get_all_cfgd_res())
         drbd_to_del_list = s.get_to_del_list(drbd.get_all_cfgd_drbd())
         lun_to_del_list = s.get_to_del_list(stor.get_all_cfgd_lun())
-
         if crm_to_del_list:
             s.prt_res_to_del('\nCRM resource', crm_to_del_list)
         if drbd_to_del_list:
             s.prt_res_to_del('\nDRBD resource', drbd_to_del_list)
         if lun_to_del_list:
             s.prt_res_to_del('\nStorage LUN', lun_to_del_list)
-
         if crm_to_del_list or drbd_to_del_list or lun_to_del_list:
             answer = input('\n\nDo you want to delete these resource? (yes/y/no/n):')
-            if answer == 'yes' or answer == 'y':
-                crm.del_all(crm_to_del_list)
-                drbd.del_all(drbd_to_del_list)
-                stor.del_all(lun_to_del_list)
+            if answer.strip() == 'yes' or answer.strip() == 'y':
+                crm.del_crms(crm_to_del_list)
+                drbd.del_drbds(drbd_to_del_list)
+                stor.del_luns(lun_to_del_list)
                 s.pwl('Start to remove all deleted disk device on vplx and host', 0)
                 # remove all deleted disk device on vplx and host
                 crm.vplx_rescan_r()
@@ -107,7 +98,11 @@ class HydraControl(object):
             self._storage()
             self._vplx_drbd()
             self._vplx_crm()
-            self._host_modify_iqn_and_test()
+            host = host_initiator.HostTest()
+            for iqn in s.host_random_iqn(self.random_num):
+                host.modify_host_iqn(iqn)
+                host.iscsi.login()
+                host.start_test()
 
     @s.record_exception
     def run_maxlun(self, dict_args):
@@ -115,6 +110,8 @@ class HydraControl(object):
         consts.append_glo_iqn_list(iqn)
         rpl = consts.glo_rpl()
         format_width = 105 if rpl == 'yes' else 80
+        host = host_initiator.HostTest()
+        host.modify_host_iqn(iqn)
         for id_, str_ in dict_args.items():
             consts.set_glo_id(id_)
             consts.set_glo_str(str_)
@@ -141,22 +138,23 @@ class HydraControl(object):
                 self._vplx_crm()
                 time.sleep(1.5)
                 s.pwl('Start to format，write and read the LUN on Host', 0, s.get_oprt_id(), 'start')
-                self._host_test()
                 print(f'{"":-^{format_width}}', '\n')
                 time.sleep(1.5)
+                host.iscsi.create_session()
+                host.start_test()
             except consts.ReplayExit:
                 print(f'{"":-^{format_width}}', '\n')
-                continue
 
     def run_maxhost(self):
         num = 0
         consts.set_glo_str('maxhost')
         self._storage()
         self._vplx_drbd()
-        drbd = vplx.VplxDrbd()
         crm = vplx.VplxCrm()
+        drbd = vplx.VplxDrbd()
+        host = host_initiator.HostTest()
         while True:
-            s.prt(f'The current number of max supported hosts test is {num+1}')
+            s.prt(f'The current IQN number of max supported hosts test is {num}')
             iqn = s.generate_iqn(num)
             num += 1
             consts.append_glo_iqn_list(iqn)
@@ -168,5 +166,54 @@ class HydraControl(object):
                 drbd.drbd_status_verify()
                 crm.modify_allow_initiator()
                 crm.crm_and_targetcli_verify()
-            self._host_test()
+            host.modify_host_iqn(iqn)
+            host.iscsi.login()
+            host.start_test()
 
+    def log_user_input(self):
+        if sys.argv:
+            cmd = ' '.join(sys.argv)
+            self.logger.write_to_log(
+                'T', 'DATA', 'input', 'user_input', '', cmd)
+
+    def get_valid_transaction(self, list_transaciont):
+        db = consts.glo_db()
+        lst_tid = list_transaciont[:]
+        for tid in lst_tid:
+            string, id = db.get_string_id(tid)
+            if string and id:
+                self.dict_id_str.update({id: string})
+            else:
+                self.list_tid.remove(tid)
+                cmd = db.get_cmd_via_tid(tid)
+                print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
+        print(f'Transaction to be executed: {" ".join(self.list_tid)}')
+        return self.dict_id_str
+
+    def prepare_replay(self, args):
+        db = consts.glo_db()
+        arg_tid = args.tid
+        arg_date = args.date
+        print('* MODE : REPLAY *')
+        time.sleep(1.5)
+        if arg_tid:
+            string, id = db.get_string_id(arg_tid)
+            if not all([string, id]):
+                cmd = db.get_cmd_via_tid(arg_tid)
+                print(
+                    f'事务:{arg_tid} 不满足replay条件，所执行的命令为：{cmd}')
+                return
+            consts.set_glo_tsc_id(arg_tid)
+            self.dict_id_str.update({id: string})
+            print(f'Transaction to be executed: {arg_tid}')
+            # self.replay_run(args.transactionid)
+        elif arg_date:
+            self.list_tid = db.get_transaction_id_via_date(
+                arg_date[0], arg_date[1])
+            self.get_valid_transaction(self.list_tid)
+        elif arg_tid and arg_date:
+            print('Please specify only one type of data for replay')
+        else:
+            # 执行日志全部的事务
+            self.list_tid = db.get_all_transaction()
+            self.get_valid_transaction(self.list_tid)

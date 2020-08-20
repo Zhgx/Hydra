@@ -8,10 +8,10 @@ import sundry as s
 import log
 import logdb
 import debug_log
-import control
+import control as c
 
 
-class HydraArgParse(control.HydraControl):
+class HydraArgParse():
     '''
     Hydra project
     parse argument for auto max lun test program
@@ -19,62 +19,8 @@ class HydraArgParse(control.HydraControl):
     def __init__(self):
         consts._init()
         # -m:可能在某个地方我们要打印出来这个ID,哦,collect debug log时候就需要这个.但是这个id是什么时候更新的??理一下
-        self.transaction_id = s.get_transaction_id()
-        consts.set_glo_tsc_id(self.transaction_id)
-        self.logger = log.Log(self.transaction_id)
-        consts.set_glo_log(self.logger)
         self.argparse_init()
-        self.list_tid = None  # for replay
-        self.log_user_input()
-        super(HydraArgParse, self).__init__()
-
-    def log_user_input(self):
-        if sys.argv:
-            cmd = ' '.join(sys.argv)
-            self.logger.write_to_log(
-                'T', 'DATA', 'input', 'user_input', '', cmd)
-
-    def get_valid_transaction(self, list_transaciont):
-        db = consts.glo_db()
-        lst_tid = list_transaciont[:]
-        for tid in lst_tid:
-            string, id = db.get_string_id(tid)
-            if string and id:
-                self.dict_id_str.update({id: string})
-            else:
-                self.list_tid.remove(tid)
-                cmd = db.get_cmd_via_tid(tid)
-                print(f'事务:{tid} 不满足replay条件，所执行的命令为：{cmd}')
-        print(f'Transaction to be executed: {" ".join(self.list_tid)}')
-        return self.dict_id_str
-
-    def prepare_replay(self, args):
-        db = consts.glo_db()
-        arg_tid = args.tid
-        arg_date = args.date
-        print('* MODE : REPLAY *')
-        time.sleep(1.5)
-        if arg_tid:
-            string, id = db.get_string_id(arg_tid)
-            if not all([string, id]):
-                cmd = db.get_cmd_via_tid(arg_tid)
-                print(
-                    f'事务:{arg_tid} 不满足replay条件，所执行的命令为：{cmd}')
-                return
-            consts.set_glo_tsc_id(arg_tid)
-            self.dict_id_str.update({id: string})
-            print(f'Transaction to be executed: {arg_tid}')
-            # self.replay_run(args.transactionid)
-        elif arg_date:
-            self.list_tid = db.get_transaction_id_via_date(
-                arg_date[0], arg_date[1])
-            self.get_valid_transaction(self.list_tid)
-        elif arg_tid and arg_date:
-            print('Please specify only one type of data for replay')
-        else:
-            # 执行日志全部的事务
-            self.list_tid = db.get_all_transaction()
-            self.get_valid_transaction(self.list_tid)
+        self.cont = c.HydraControl()
 
     def argparse_init(self):
         self.parser = argparse.ArgumentParser(prog='Hydra',
@@ -87,8 +33,8 @@ class HydraArgParse(control.HydraControl):
         # )
         sub_parser = self.parser.add_subparsers(dest='subcommand')
         parser_replay = sub_parser.add_parser(
-            'replay',
-            aliases=['re'],
+            're',
+            aliases=['replay'],
             formatter_class=argparse.RawTextHelpFormatter,
             help='Replay the Hydra program'
         )
@@ -109,8 +55,8 @@ class HydraArgParse(control.HydraControl):
         )
         self.parser_replay = parser_replay
         parser_maxlun = sub_parser.add_parser(
-            'maxlun',
-            aliases=['mxl'],
+            'mxl',
+            aliases=['maxlun'],
             help='Do the max supported LUNs test'
         )
         parser_maxlun.add_argument(
@@ -137,7 +83,6 @@ class HydraArgParse(control.HydraControl):
         #max host test with number luns
         parser_maxhost_luns = sub_parser.add_parser(
             'mxh',
-            #aliases=['mxh'],
             help='Do the max supported Hosts test with N LUNs'
         )
         parser_maxhost_luns.add_argument(
@@ -166,8 +111,8 @@ class HydraArgParse(control.HydraControl):
         )
         #delete resource
         parser_delete_re = sub_parser.add_parser(
-            'delete',
-            aliases=['del'],
+            'del',
+            aliases=['delete'],
             help='Confirm to delete LUNs'
         )
         parser_delete_re.add_argument(
@@ -184,17 +129,13 @@ class HydraArgParse(control.HydraControl):
             dest="uniq_str",
             help="The unique string for this test, affects related naming"
         )
-        # parser_maxlun.set_defaults(func=self.run_maxlun)
-        # parser_maxhost_lun.set_defaults(func=self.run_maxhost)
-        # parser_maxhost_luns.set_defaults(func=self.run_mxh)
-        # parser_delete_re.set_defaults(func=self.delete_resource())
 
     def start(self):
         args = self.parser.parse_args()
-        print('args:',args)
+
         try:
             if args.id_range:
-                id_list = s.change_id_str_to_list(args.id_range)
+                id_list = s.change_id_range_to_list(args.id_range)
                 consts.set_glo_id_list(id_list)
         except:
             pass
@@ -205,29 +146,29 @@ class HydraArgParse(control.HydraControl):
             pass
         try:
             if args.capacity:
-                self.capacity = args.capacity
+                self.cont.capacity = args.capacity
         except:
             pass
         try:
-            self.random_num=args.random_number
+            self.cont.random_num = args.random_number
         except:
             pass
         if args.subcommand in ['mxl','maxlun']:
             id_list = consts.glo_id_list()
             for id_ in id_list:
-                self.dict_id_str.update({id_: args.uniq_str})
-            self.run_maxlun(self.dict_id_str)
+                self.cont.dict_id_str.update({id_: args.uniq_str})
+            self.cont.run_maxlun(self.cont.dict_id_str)
         elif args.subcommand == 'mh':
-            self.run_maxhost()
+            self.cont.run_maxhost()
         elif args.subcommand == 'mxh':
-            self.run_mxh()
+            self.cont.run_mxh()
         elif args.subcommand in ['del', 'delete']:
-            self.delete_resource()
-        elif args.subcommand == 're':
+            self.cont.delete_resource()
+        elif args.subcommand in ['re', 'replay']:
             consts.set_glo_rpl('yes')
             consts.set_glo_log_switch('no')
             logdb.prepare_db()
-            self.prepare_replay(args)
+            self.cont.prepare_replay(args)
         else:
             self.parser.print_help()
         # args.func(args)

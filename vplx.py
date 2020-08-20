@@ -77,7 +77,7 @@ class VplxDrbd(object):
         '''
         Prepare DRDB resource config file
         '''
-        self.iscsi.create_iscsi_session()
+        self.iscsi.create_session()
         s.pwl(f'Start to get the disk device with id {consts.glo_id()}', 2)
         blk_dev_name = s.get_disk_dev(SSH,'NETAPP')
         s.pwl(f'Start to prepare DRBD config file "{self.res_name}.res"', 2, '', 'start')
@@ -256,7 +256,7 @@ class VplxDrbd(object):
             if self._drbd_del_config(res_name):
                 return True
 
-    def del_all(self, drbd_to_del_list):
+    def del_drbds(self, drbd_to_del_list):
         if drbd_to_del_list:
             s.pwl('Start to delete DRBD resource',0)
             for res_name in drbd_to_del_list:
@@ -446,7 +446,7 @@ class VplxCrm(object):
             s.handle_exception()
 
 
-    def _crm_del(self, res_name):
+    def _crm_del_cof(self, res_name):
         '''
         Delete the iSCSILogicalUnit resource
         '''
@@ -470,8 +470,7 @@ class VplxCrm(object):
     def _crm_del(self, res_name):
         s.pwl(f'Deleting crm resource {res_name}',1)
         if self._crm_stop(res_name):
-
-            if self._crm_del(res_name):
+            if self._crm_del_cof(res_name):
                 return True
 
 
@@ -488,7 +487,7 @@ class VplxCrm(object):
 
 
 
-    def del_all(self, crm_to_del_list):
+    def del_crms(self, crm_to_del_list):
         if crm_to_del_list:
             s.pwl('Start to delete CRM resource',0)
             for res_name in crm_to_del_list:
