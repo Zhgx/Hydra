@@ -12,7 +12,10 @@ from random import shuffle
 import debug_log
 
 
-
+def host_random_iqn(random_num):
+    iqn_list = consts.glo_iqn_list()
+    iqn_random_list = sorted(random.sample(iqn_list, random_num))
+    return iqn_random_list
 
 def generate_iqn(num):
     lun_id=consts.glo_id()
@@ -21,7 +24,6 @@ def generate_iqn(num):
 
 def generate_iqn_list(capacity):
     for iqn_id in range(capacity):
-        iqn_id += 1
         iqn = generate_iqn(iqn_id)
         consts.append_glo_iqn_list(iqn)
 
@@ -33,16 +35,16 @@ def find_new_disk(ssh_obj,string):
     if disk_dev:
         return disk_dev.group(1)
 
-def get_disk_dev(ssh_obj,string):
+def get_disk_dev(ssh_obj,dev_vendor):
     scsi_rescan(ssh_obj, 'n')
-    disk_dev = find_new_disk(ssh_obj,string)
+    disk_dev = find_new_disk(ssh_obj,dev_vendor)
     if disk_dev:
         pwl(f'Succeed in getting disk device "{disk_dev}" with id {consts.glo_id()}', 3, '', 'finish')
         return disk_dev
     else:
         scsi_rescan(ssh_obj, 'a')
         pwl(f'No disk with SCSI ID "{consts.glo_id()}" found, scan again...', 3, '', 'start')
-        disk_dev = find_new_disk(ssh_obj,string)
+        disk_dev = find_new_disk(ssh_obj,dev_vendor)
         if disk_dev:
             pwl('Found the disk successfully', 4, '', 'finish')
             return disk_dev
@@ -87,11 +89,11 @@ class Iscsi(object):
         self.SSH = ssh_obj
         self.tgt_ip=tgt_ip
 
-    def create_iscsi_session(self):
+    def create_session(self):
         pwl('Check up the status of session', 2, '', 'start')
         if not self._find_session():
             pwl(f'No session found, start to login to {self.tgt_ip}', 3, '', 'start')
-            if self.iscsi_login():
+            if self.login():
                 pwl(f'Succeed in logining to {self.tgt_ip}', 4, 'finish')
             else:
                 pwce(f'Can not login to {self.tgt_ip}', 4, 2)
@@ -99,9 +101,9 @@ class Iscsi(object):
         else:
             pwl(f'The iSCSI session already logged in to {self.tgt_ip}', 3)
 
-    def disconnect_iscsi_session(self,tgt_iqn):
+    def disconnect_session(self,tgt_iqn):
         if self._find_session():
-            if self._iscsi_logout(tgt_iqn):
+            if self._logout(tgt_iqn):
                 pwl(f'Success in logout {self.tgt_ip}',2,'','finish')
                 return True
             else:
@@ -110,7 +112,7 @@ class Iscsi(object):
             pwl(f'The iSCSI session already logged out to {self.tgt_ip}',3)
             return True
     
-    def _iscsi_logout(self,tgt_iqn):
+    def _logout(self,tgt_iqn):
         cmd=f'iscsiadm -m node -T {tgt_iqn} --logout '
         oprt_ip=get_oprt_id()
         results=get_ssh_cmd(self.SSH,'HuTg1LaQ', cmd, oprt_ip)
@@ -126,7 +128,7 @@ class Iscsi(object):
         else:
             handle_exception()
 
-    def iscsi_login(self):
+    def login(self):
         '''
         Discover iSCSI login session, if no, login to vplx
         '''
@@ -162,7 +164,7 @@ class Iscsi(object):
         else:
             handle_exception()
 
-    def _restart_iscsi(self):
+    def _restart_service(self):
         cmd=f'systemctl restart iscsid open-iscsi'
         oprt_id=get_oprt_id()
         results=get_ssh_cmd(self.SSH,'Uksjdkqi',cmd,oprt_id)
@@ -190,7 +192,7 @@ class Iscsi(object):
     
     def change_host_iqn(self,iqn):
         if self._modify_host_iqn(iqn):
-            if self._restart_iscsi():
+            if self._restart_service():
                 return True
 
 #
@@ -198,18 +200,17 @@ class Iscsi(object):
 #     print(f'{str}---------------------\n{arg}')
 
 
-def change_id_str_to_list(id_str):
+def change_id_range_to_list(id_range):
     id_list = []
-    id_range_list = [int(i) for i in id_str]
-    
+    id_range_list=[int(i) for i in id_range]
+
     if len(id_range_list) not in [1, 2]:
         pwce('Please verify id format', 2, 2)
     elif len(id_range_list) == 1:
-        id_ = id_range_list[0]
-        id_list = [id_]
+        id_list = id_range_list
     elif len(id_range_list) == 2:
-        for id_ in range(id_range_list[0], id_range_list[1] + 1):
-            id_list.append(id_)
+        for id in range(id_range_list[0], id_range_list[1] + 1):
+            id_list.append(id)
     return id_list
 
 
@@ -226,10 +227,13 @@ def scsi_rescan(ssh, mode):
 
     if consts.glo_rpl() == 'no':
         result = ssh.execute_command(cmd)
-        if result['sts']:
-            return True
+        if result:
+            if result['sts']:
+                return True
+            else:
+                pwe('Scan SCSI device failed', 4, 2)
         else:
-            pwl('Scan SCSI device failed', 4, '', 'finish')
+            handle_exception()
     else:
         return True
 
@@ -248,11 +252,11 @@ def get_lsscsi(ssh, func_str, oprt_id):
 
 def re_search(re_string, tgt_string):
     logger = consts.glo_log()
-    re_object = re.compile(re_string)
-    re_result = re_object.search(tgt_string)
     oprt_id = get_oprt_id()
     logger.write_to_log('T', 'OPRT', 'regular', 'search',
                         oprt_id, {re_string: tgt_string})
+    re_object = re.compile(re_string)
+    re_result = re_object.search(tgt_string)
     logger.write_to_log('F', 'DATA', 'regular', 'search', oprt_id, re_result)
     return re_result
 
@@ -287,6 +291,29 @@ def get_ssh_cmd(ssh_obj, unique_str, cmd, oprt_id):
         if db_id:
             change_pointer(db_id)
         return result
+
+def ex_telnet_cmd(telnet_obj, unique_str, cmd, oprt_id):
+    logger = consts.glo_log()
+    global RPL
+    RPL = consts.glo_rpl()
+    if RPL == 'no':
+        logger.write_to_log(
+            'F', 'DATA', 'STR', unique_str, '', oprt_id)
+        logger.write_to_log(
+            'T', 'OPRT', 'cmd', 'telnet', oprt_id, cmd)
+        result = telnet_obj.execute_command(cmd)
+        logger.write_to_log(
+            'F', 'DATA', 'cmd', 'telnet', oprt_id, result)
+        return result
+
+    elif RPL == 'yes':
+        db = consts.glo_db()
+        db_id, oprt_id = db.find_oprt_id_via_string(consts.glo_tsc_id(), unique_str)
+        if db_id:
+            change_pointer(db_id)
+        result_cmd = db.get_cmd_result(oprt_id)
+        if result_cmd:
+            return result_cmd
 
 
 
@@ -389,11 +416,11 @@ def change_pointer(new_id):
 
 def re_findall(re_string, tgt_string):
     logger = consts.glo_log()
-    re_object = re.compile(re_string)
-    re_result = re_object.findall(tgt_string)
     oprt_id = get_oprt_id()
     logger.write_to_log('T', 'OPRT', 'regular', 'findall',
                         oprt_id, {re_string: tgt_string})
+    re_object = re.compile(re_string)
+    re_result = re_object.findall(tgt_string)
     logger.write_to_log('F', 'DATA', 'regular', 'findall', oprt_id, re_result)
     return re_result
 
